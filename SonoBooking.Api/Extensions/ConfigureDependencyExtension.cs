@@ -1,0 +1,430 @@
+using Asp.Versioning;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using NetCore.AutoRegisterDi;
+using Newtonsoft.Json.Converters;
+using SonoTracker.Api.Extensions.Swagger.Headers;
+using SonoTracker.Api.Extensions.Swagger.Options;
+using SonoTracker.Application.Helper;
+using SonoTracker.Application.Mapping;
+using SonoTracker.Application.Services.Base;
+using SonoTracker.Application.Services.Email;
+using SonoTracker.Application.Services.Identity.Account;
+using SonoTracker.Application.Services.Tracker.Organizations;
+using SonoTracker.Application.Services.Validators.Base;
+using SonoTracker.Common.Constants.Auth;
+using SonoTracker.Common.DTO.Email;
+using SonoTracker.Common.DTO.Identity.User;
+using SonoTracker.Common.Extensions;
+using SonoTracker.Common.Helpers.HttpClient.RestSharp;
+using SonoTracker.Common.Helpers.JsonHelper;
+using SonoTracker.Common.Infrastructure.UnitOfWork;
+using SonoTracker.Domain.Entities.Identity;
+using SonoTracker.Infrastructure.Context;
+using SonoTracker.Infrastructure.DataInitializer;
+using SonoTracker.Infrastructure.UnitOfWork;
+using SonoTracker.Integration.CacheRepository;
+using SonoTracker.Integration.FileRepository;
+using SonoTracker.Integration.UserRepository;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Reflection;
+using System.Security.Claims;
+using System.Text;
+
+namespace SonoTracker.Api.Extensions
+{
+    /// <summary>
+    /// Dependency Extensions
+    /// </summary>
+    public static class ConfigureDependencyExtension
+    {
+        private const string ConnectionStringName = "Default";
+        /// <summary>
+        /// Register Extensions
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="configuration"></param>
+        /// <returns></returns>
+        public static IServiceCollection RegisterServices(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.RegisterDbContext(configuration);
+            services.RegisterCores();
+            services.RegisterLocalization();
+            services.RegisterIntegrationRepositories();
+            services.RegisterCustomRepositories();
+            services.RegisterAutoMapper();
+            services.RegisterCommonServices(configuration);
+            services.ConfigureAuthentication(configuration);
+            services.RegisterHttpClientHelpers();
+            services.RegisterValidators();
+            services.RegisterApiMonitoring();
+            services.AddControllers().AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+                options.SerializerSettings.Converters.Add(new StringEnumConverter());
+                options.SerializerSettings.Converters.Add(new TrimmingConverter());
+            });
+            services.RegisterApiVersioning();
+            services.RegisterSwaggerConfig();
+            services.RegisterLowerCaseUrls();
+            services.RegisterSignalR();
+            services.AddScoped<IAccountService, AccountService>();
+            services.AddIdentityCore<User>(options =>
+            {
+                // configuration can be written here:
+                // builder.Services.Configure<IdentityOptions>
+                options.SignIn.RequireConfirmedAccount = true;
+
+                // Password settings.
+                options.Password.RequireDigit = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequiredLength = 3;
+                options.Password.RequiredUniqueChars = 0;
+
+                // Lockout settings.
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(60);
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.AllowedForNewUsers = true;
+
+                // User settings.
+                options.User.AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+                options.User.RequireUniqueEmail = false;
+
+
+                options.Lockout.MaxFailedAccessAttempts = 2;
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
+                options.User.RequireUniqueEmail = true;
+                options.SignIn.RequireConfirmedPhoneNumber = false;
+                options.SignIn.RequireConfirmedEmail = false;
+                options.SignIn.RequireConfirmedAccount = false;
+                options.Tokens.PasswordResetTokenProvider = TokenOptions.DefaultEmailProvider;
+
+            })
+            .AddRoles<Role>().AddEntityFrameworkStores<SonoTrackerDbContext>()
+            .AddApiEndpoints()
+            .AddDefaultTokenProviders();
+            services.AddHttpContextAccessor();
+            // Read User Data from HttpContext
+            services.AddTransient(provider =>
+            {
+                HttpContext context =
+                provider.GetService<IHttpContextAccessor>()?.HttpContext ??
+                throw new NullReferenceException(nameof(HttpContext));
+                ClaimsPrincipal user = context.User;
+
+                string Id =
+                user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value ??
+                string.Empty;
+
+                string name =
+                user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value ??
+                string.Empty;
+
+                string organizationId =
+                user.Claims.FirstOrDefault(x => x.Type == AuthConstants.OrgId)?.Value ??
+                string.Empty;
+
+                string floatingUnitId =
+                user.Claims.FirstOrDefault(x => x.Type == AuthConstants.FloatingUnitId)?.Value ??
+                string.Empty;
+
+                string governorateId =
+                user.Claims.FirstOrDefault(x => x.Type == AuthConstants.GovId)?.Value ??
+                string.Empty;
+
+                string role =
+                user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value ?? "";
+
+
+                List<UserPermissionDto> permissions =
+                [.. user.Claims
+                .Where(c =>
+                    c.Type != ClaimTypes.NameIdentifier && c.Type != ClaimTypes.Name &&
+                    c.Type != AuthConstants.OrgId && c.Type != ClaimTypes.Role &&
+                    c.Type != AuthConstants.FloatingUnitId &&
+                    c.Type != "exp" && c.Type != "iss")
+                .Select(c =>
+                    new UserPermissionDto
+                    {
+                        Name = c.Type,
+                        Value = c.Value
+                    })];
+
+                //bool parsedUserId = int.TryParse(stringId, out int id);
+                //bool parsedOrgId = int.TryParse(stringOrganizationId, out int organizationId);
+
+                return new UserDataDto(Id, name, role, permissions, organizationId, floatingUnitId, governorateId);
+            });
+            services.AddCors(option =>
+            {
+                option
+                .AddPolicy("policy",i =>
+                {
+                    i
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowAnyOrigin()
+                    //.WithOrigins("http://localhost:4200", "http://sonotracker.aswan.gov.eg")
+                    //.AllowCredentials()
+                    ;
+                });
+            });
+
+            // Register Email Service
+            services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
+            services.AddScoped<IEmailService, EmailService>();
+
+            return services;
+        }
+
+        /// <summary>
+        /// Registers SignalR services with custom options.
+        /// </summary>
+        /// <param name="services">The service collection to add SignalR to.</param>
+        public static void RegisterSignalR(this IServiceCollection services)
+        {
+            services.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+                options.MaximumReceiveMessageSize = 102400000; // 100MB
+            });
+        }
+
+
+        /// <summary>
+        /// Add DbContext
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="configuration"></param>
+        private static void RegisterDbContext(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddDbContext<SonoTrackerDbContext>(options =>
+            {
+                options.UseSqlServer(configuration.GetConnectionString(ConnectionStringName));
+            });
+            services.AddScoped<DbContext, SonoTrackerDbContext>();
+            services.AddSingleton<IDataInitializer>(sp =>
+            {
+                var env = sp.GetRequiredService<IWebHostEnvironment>();
+                return new DataInitializer(env.ContentRootPath);
+            });
+        }
+        /// <summary>
+        /// Add DbContext
+        /// </summary>
+        /// <param name="services"></param>
+        private static void RegisterApiMonitoring(this IServiceCollection services)
+        {
+            services.AddHealthChecks()
+                .AddDbContextCheck<SonoTrackerDbContext>();
+        }
+        /// <summary>
+        /// Configure Authentication With Identity Server
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="configuration"></param>
+        public static void ConfigureAuthentication(this IServiceCollection services, IConfiguration configuration)
+        {
+            var jwt = configuration.GetSection("Jwt");
+            services.AddAuthentication(options =>
+            {
+                //options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                //options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    // Remove Default Plus Time (5 min)
+                    ClockSkew = TimeSpan.Zero,
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Key"]!)),
+                };
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+
+                        if (!string.IsNullOrEmpty(accessToken) &&
+                            path.StartsWithSegments("/hubs"))
+                        {
+                            context.Token = accessToken;
+                        }
+
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+            //.AddJwtBearer("Bearer", config =>
+            //{
+            //    config.Authority = configuration["StsConfig:Authority"];
+            //    config.Audience = configuration["StsConfig:Audience"];
+            //    config.RequireHttpsMetadata = false;
+
+            //});
+        }
+        /// <summary>
+        /// Register Http Client Helpers
+        /// </summary>
+        /// <param name="services"></param>
+        private static void RegisterHttpClientHelpers(this IServiceCollection services)
+        {
+            services.AddTransient<IRestSharpClient, RestSharpClient>();
+        }
+
+        /// <summary>
+        /// register auto-mapper
+        /// </summary>
+        /// <param name="services"></param>
+        private static void RegisterAutoMapper(this IServiceCollection services)
+        {
+            services.AddAutoMapper(cfg => cfg.AddMaps(typeof(MappingService).Assembly));
+        }
+
+        /// <summary>
+        /// register auto-mapper
+        /// </summary>
+        /// <param name="services"></param>
+        private static void RegisterLocalization(this IServiceCollection services)
+        {
+            services.AddLocalization();
+        }
+
+
+        /// <summary>
+        /// Register Business Validators
+        /// </summary>
+        /// <param name="services"></param>
+        public static void RegisterValidators(this IServiceCollection services)
+        {
+            services.AddTransient(typeof(IValidator<>), typeof(Validator<>));
+        }
+
+        /// <summary>
+        /// register Integration Repositories
+        /// </summary>
+        /// <param name="services"></param>
+        private static void RegisterIntegrationRepositories(this IServiceCollection services)
+        {
+            services.AddTransient<IFileRepository, FileRepository>();
+            services.AddTransient<ICacheRepository, CacheRepository>();
+            services.AddTransient<IUserRepository, UserRepository>();
+        }
+
+        /// <summary>
+        /// register Custom Repositories
+        /// </summary>
+        /// <param name="services"></param>
+        private static void RegisterCustomRepositories(this IServiceCollection services)
+        {
+            //services.AddScoped<ICompanyCustomRepository, CompanyCustomRepository>();
+        }
+
+
+
+        /// <summary>
+        /// Register Api Versioning
+        /// </summary>
+        /// <param name="services"></param>
+        private static void RegisterApiVersioning(this IServiceCollection services)
+        {
+            services.AddEndpointsApiExplorer();
+            services.AddApiVersioning(config =>
+            {
+                config.DefaultApiVersion = new ApiVersion(1, 0);
+                config.AssumeDefaultVersionWhenUnspecified = true;
+                config.ReportApiVersions = true;
+            })
+            .AddApiExplorer(config =>
+            {
+                config.GroupNameFormat = "'v'VVV";
+                config.SubstituteApiVersionInUrl = true;
+            });
+        }
+
+
+        /// <summary>
+        /// Lower Case Urls
+        /// </summary>
+        /// <param name="services"></param>
+        private static void RegisterLowerCaseUrls(this IServiceCollection services)
+        {
+            services.Configure<RouteOptions>(options => { options.LowercaseUrls = true; });
+        }
+
+        /// <summary>
+        /// Swagger Config
+        /// </summary>
+        /// <param name="services"></param>
+
+        private static void RegisterSwaggerConfig(this IServiceCollection services)
+        {
+            services.AddTransient<IConfigureOptions<SwaggerGenOptions>, SwaggerConfigureOptions>();
+            services.AddSwaggerGen(options =>
+            {
+                var security = new OpenApiSecurityRequirement
+                        {
+                            {
+                                new OpenApiSecurityScheme
+                                {
+                                    Reference = new OpenApiReference
+                                    {
+                                        Type = ReferenceType.SecurityScheme,
+                                        Id = "Bearer"
+                                    }
+                                },
+                                new string[] { }
+
+                            }
+                        };
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "JWT Authorization header using the Bearer scheme."
+                });
+                options.AddSecurityRequirement(security);
+                options.OperationFilter<LanguageHeader>();
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                options.IncludeXmlComments(xmlPath);
+            });
+
+            services.AddSwaggerGenNewtonsoftSupport();
+        }
+        /// <summary>
+        /// Register Main Core
+        /// </summary>
+        /// <param name="services"></param>
+        private static void RegisterCores(this IServiceCollection services)
+        {
+            services.AddSingleton<AppHelper>();
+            services.AddTransient(typeof(IBaseService<,,,,,>), typeof(BaseService<,,,,,>));
+            services.AddTransient(typeof(IServiceBaseParameter<>), typeof(ServiceBaseParameter<>));
+            services.AddTransient(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
+            var servicesToScan = Assembly.GetAssembly(typeof(OrganizationService)); //..or whatever assembly you need
+            services.RegisterAssemblyPublicNonGenericClasses(servicesToScan)
+                .Where(c => c.Name.EndsWith("Service"))
+                .AsPublicImplementedInterfaces();
+            services.RegisterAssemblyPublicNonGenericClasses(servicesToScan)
+                .Where(c => c.Name.EndsWith("Validator"))
+                .AsPublicImplementedInterfaces();
+        }
+    }
+}

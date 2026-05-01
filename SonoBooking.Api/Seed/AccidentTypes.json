@@ -1,0 +1,54 @@
+[
+  {
+    "Id": "019cb31b-0ad0-78e2-bb8f-f66d76945821",
+    "Code": "01",
+    "NameAr": "غرق",
+    "NameEn": "Drowning",
+    "CreatedAt": "01/01/2023",
+    "ModifiedAt": "01/01/2023",
+    "CreatedById": "System",
+    "CreatedBy": "System",
+    "ModifiedById": "System",
+    "ModifiedBy": "System",
+    "IsDeleted": false
+  },
+  {
+    "Id": "019cb31b-0ad7-7714-9eb7-3b6589694e01",
+    "Code": "02",
+    "NameAr": "حريق",
+    "NameEn": "Fire",
+    "CreatedAt": "01/01/2023",
+    "ModifiedAt": "01/01/2023",
+    "CreatedById": "System",
+    "CreatedBy": "System",
+    "ModifiedById": "System",
+    "ModifiedBy": "System",
+    "IsDeleted": false
+  },
+  {
+    "Id": "019cb31b-0ad7-7249-9742-8d48acb946bf",
+    "Code": "03",
+    "NameAr": "شحوط",
+    "NameEn": "Skidding",
+    "CreatedAt": "01/01/2023",
+    "ModifiedAt": "01/01/2023",
+    "CreatedById": "System",
+    "CreatedBy": "System",
+    "ModifiedById": "System",
+    "ModifiedBy": "System",
+    "IsDeleted": false
+  },
+  {
+    "Id": "019cb31b-0ad7-772c-810a-a89a2ca3a730",
+    "Code": "04",
+    "NameAr": "اصطدام",
+    "NameEn": "Collision",
+    "CreatedAt": "01/01/2023",
+    "ModifiedAt": "01/01/2023",
+    "CreatedById": "System",
+    "CreatedBy": "System",
+    "ModifiedById": "System",
+    "ModifiedBy": "System",
+    "IsDeleted": false
+  }
+]
