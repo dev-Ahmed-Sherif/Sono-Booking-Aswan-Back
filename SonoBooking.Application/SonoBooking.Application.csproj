@@ -1,0 +1,66 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Services\Business\**" />
+    <Compile Remove="Services\Lookups\**" />
+    <EmbeddedResource Remove="Services\Business\**" />
+    <EmbeddedResource Remove="Services\Lookups\**" />
+    <None Remove="Services\Business\**" />
+    <None Remove="Services\Lookups\**" />
+  </ItemGroup>
+	<ItemGroup>
+		<None Remove="ReportsFiles\BeneficiaryOrgReport.rdlc" />
+		<None Remove="ReportsFiles\CompaniesOperatingFloatingUnits.rdlc" />
+		<None Remove="ReportsFiles\CompaniesOwningFloatingUnits.rdlc" />
+	</ItemGroup>
+	<!--
+	
+	<ItemGroup>
+		<None Remove="ReportsFiles\BeneficiaryOrgReport.rdlc" />
+		<None Remove="ReportsFiles\CompaniesOperatingFloatingUnits.rdlc" />
+	</ItemGroup>
+	-->
+  <ItemGroup>
+    <Content Include="ReportsFiles\BeneficiaryOrgReport.rdlc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ReportsFiles\CompaniesOperatingFloatingUnits.rdlc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ReportsFiles\TouristMarinasReport.rdlc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ReportsFiles\CompaniesOwningFloatingUnits.rdlc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SonoBooking.Common\SonoBooking.Common.csproj" />
+    <ProjectReference Include="..\SonoBooking.Infrastructure\SonoBooking.Infrastructure.csproj" />
+    <ProjectReference Include="..\SonoBooking.Integration\SonoBooking.Integration.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="reportstr.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>reportstr.xsd</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="reportstr.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>reportstr.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Mapping\Profiles\Attachments\" />
+  </ItemGroup>
+</Project>
