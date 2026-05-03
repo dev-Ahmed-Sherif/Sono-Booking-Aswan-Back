@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Newtonsoft.Json;
-using SonoTracker.Domain.Enum;
+using SonoBooking.Domain;
 
 namespace SonoTracker.Domain.Entities.Audit
 {

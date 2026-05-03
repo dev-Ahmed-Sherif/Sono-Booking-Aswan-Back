@@ -5,9 +5,9 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using SonoBooking.Domain;
 using SonoTracker.Application.Services.Enums.OrganizationTypes;
 using SonoTracker.Common.Core;
-using SonoTracker.Domain.Enum;
 
 namespace SonoTracker.Application.Services.Enums.IDTypes
 {

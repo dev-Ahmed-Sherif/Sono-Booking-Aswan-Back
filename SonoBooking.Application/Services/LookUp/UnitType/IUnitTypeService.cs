@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.LookUp.UnitType
 {
-    public interface IUnitTypeService : IBaseService<Entities.Lookups.UnitType, AddUnitTypeDto, EditUnitTypeDto, UnitTypeDto,string, string>
+    public interface IUnitTypeService : IBaseService<SonoBooking.Domain.Entities.Lookups.UnitType, AddUnitTypeDto, EditUnitTypeDto, UnitTypeDto,string, string>
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<UnitTypeFilter> Filter, CancellationToken cancellationToken = default);
         Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default);

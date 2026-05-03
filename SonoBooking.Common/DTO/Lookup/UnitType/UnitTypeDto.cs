@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using SonoTracker.Domain.Enum;
 using SonoTracker.Common.DTO.Base;
+using SonoBooking.Domain;
 
 namespace SonoTracker.Common.DTO.Lookup.UnitType
 {

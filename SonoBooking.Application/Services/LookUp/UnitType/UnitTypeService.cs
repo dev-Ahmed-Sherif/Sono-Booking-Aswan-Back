@@ -16,18 +16,18 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.LookUp.UnitType
 {
-    public class UnitTypeService(IServiceBaseParameter<Entities.Lookups.UnitType> businessBaseParameter) : BaseService<Entities.Lookups.UnitType, AddUnitTypeDto, EditUnitTypeDto, UnitTypeDto, string, string>(businessBaseParameter), IUnitTypeService
+    public class UnitTypeService(IServiceBaseParameter<SonoBooking.Domain.Entities.Lookups.UnitType> businessBaseParameter) : BaseService<SonoBooking.Domain.Entities.Lookups.UnitType, AddUnitTypeDto, EditUnitTypeDto, UnitTypeDto, string, string>(businessBaseParameter), IUnitTypeService
     {
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Domain.Entities.Lookups.UnitType, bool>> predicate = null, CancellationToken cancellationToken = default)
+        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<SonoBooking.Domain.Entities.Lookups.UnitType, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
-            IEnumerable<Entities.Lookups.UnitType> entities = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking, cancellationToken: cancellationToken);
+            IEnumerable<SonoBooking.Domain.Entities.Lookups.UnitType> entities = await UnitOfWork.Repository.GetAllAsync(disableTracking: disableTracking, cancellationToken: cancellationToken);
 
             var governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
             var filtered = IsSuperAdmin()
                 ? (entities ?? [])
                 : (entities?.Where(e =>
                     !e.IsDeleted && (string.IsNullOrWhiteSpace(governorateId) || e.GovernorateId == governorateId)) ?? []);
-            IEnumerable<UnitTypeDto> mapped = Mapper.Map<IEnumerable<Entities.Lookups.UnitType>, IEnumerable<UnitTypeDto>>(filtered);
+            IEnumerable<UnitTypeDto> mapped = Mapper.Map<IEnumerable<SonoBooking.Domain.Entities.Lookups.UnitType>, IEnumerable<UnitTypeDto>>(filtered);
 
             return ResponseResult.PostResult(result: mapped, status: HttpStatusCode.OK, exception: null,
                                              message: HttpStatusCode.OK.ToString());
@@ -45,7 +45,7 @@ namespace SonoTracker.Application.Services.LookUp.UnitType
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            (int Count, IEnumerable<Entities.Lookups.UnitType> Result) = await UnitOfWork.Repository
+            (int Count, IEnumerable<SonoBooking.Domain.Entities.Lookups.UnitType> Result) = await UnitOfWork.Repository
                 .FindPagedAsync(
                      predicate: PredicateBuilderFunction(unitTypeFilter, governorateId),
                      pageNumber: offset,
@@ -54,9 +54,9 @@ namespace SonoTracker.Application.Services.LookUp.UnitType
                      cancellationToken: cancellationToken);
 
             var filteredResult = isSuperAdmin
-                ? (Result ?? Enumerable.Empty<Entities.Lookups.UnitType>())
-                : (Result?.Where(x => x.IsDeleted != true) ?? Enumerable.Empty<Entities.Lookups.UnitType>());
-            var data = Mapper.Map<IEnumerable<Entities.Lookups.UnitType>, IEnumerable<UnitTypeDto>>(filteredResult);
+                ? (Result ?? Enumerable.Empty<SonoBooking.Domain.Entities.Lookups.UnitType>())
+                : (Result?.Where(x => x.IsDeleted != true) ?? Enumerable.Empty<SonoBooking.Domain.Entities.Lookups.UnitType>());
+            var data = Mapper.Map<IEnumerable<SonoBooking.Domain.Entities.Lookups.UnitType>, IEnumerable<UnitTypeDto>>(filteredResult);
 
             return new PagingResult(pageNumber: filter.PageNumber, pageSize: filter.PageSize, totalCount: Count, result: data,
                                     status: HttpStatusCode.OK, message: MessagesConstants.Success);
@@ -71,14 +71,14 @@ namespace SonoTracker.Application.Services.LookUp.UnitType
 
             var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Entities.Lookups.UnitType>, IEnumerable<UnitTypeDto>>(query.Result.Where(x => x.IsDeleted != true));
+            var data = Mapper.Map<IEnumerable<SonoBooking.Domain.Entities.Lookups.UnitType>, IEnumerable<UnitTypeDto>>(query.Result.Where(x => x.IsDeleted != true));
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
 
-        static Expression<Func<Entities.Lookups.UnitType, bool>> PredicateBuilderFunction(UnitTypeFilter filter, string governorateId)
+        static Expression<Func<SonoBooking.Domain.Entities.Lookups.UnitType, bool>> PredicateBuilderFunction(UnitTypeFilter filter, string governorateId)
         {
-            var predicate = PredicateBuilder.New<Entities.Lookups.UnitType>(x => x.IsDeleted == filter.IsDeleted);
+            var predicate = PredicateBuilder.New<SonoBooking.Domain.Entities.Lookups.UnitType>(x => x.IsDeleted == filter.IsDeleted);
             if (!string.IsNullOrWhiteSpace(filter.NameAr))
             {
                 predicate = predicate.And(x => x.NameAr.Contains(filter.NameAr));
@@ -94,9 +94,9 @@ namespace SonoTracker.Application.Services.LookUp.UnitType
 
             return predicate;
         }
-        static Expression<Func<Entities.Lookups.UnitType, bool>> DropDownPredicateBuilderFunction(SearchCriteriaFilter filter)
+        static Expression<Func<SonoBooking.Domain.Entities.Lookups.UnitType, bool>> DropDownPredicateBuilderFunction(SearchCriteriaFilter filter)
         {
-            var predicate = PredicateBuilder.New<Entities.Lookups.UnitType>(true);
+            var predicate = PredicateBuilder.New<SonoBooking.Domain.Entities.Lookups.UnitType>(true);
             if (!string.IsNullOrWhiteSpace(filter?.SearchCriteria))
             {
                 predicate = predicate.And(b => b.NameAr.Contains(filter.SearchCriteria));
@@ -121,7 +121,7 @@ namespace SonoTracker.Application.Services.LookUp.UnitType
                     return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
                                                            message: MessagesConstants.Existed);
 
-                var entity = Mapper.Map<Entities.Lookups.UnitType>(model);
+                var entity = Mapper.Map<SonoBooking.Domain.Entities.Lookups.UnitType>(model);
                 entity.GovernorateId = GetGovernorateIdFromClaims();
 
                 IFinalResult lastEntity = await GetLastRecordAsync(cancellationToken);
@@ -181,7 +181,7 @@ namespace SonoTracker.Application.Services.LookUp.UnitType
                     return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
                                                            message: MessagesConstants.Existed);
 
-                Entities.Lookups.UnitType entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
+                SonoBooking.Domain.Entities.Lookups.UnitType entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
 
                 var entity = Mapper.Map(model, entityToUpdate);
                 entity.GovernorateId = GetGovernorateIdFromClaims();

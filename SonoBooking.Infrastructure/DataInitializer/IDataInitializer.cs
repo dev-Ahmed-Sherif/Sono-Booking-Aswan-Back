@@ -1,8 +1,7 @@
-using SonoTracker.Domain.Entities.Lookups;
 using City = SonoTracker.Domain.Entities.Lookups.City;
 using System.Collections.Generic;
-using AccidentType = SonoTracker.Domain.Entities.Lookups.AccidentType;
-using Governorate = SonoTracker.Domain.Entities.Lookups.Governorate;
+using BookingType = SonoBooking.Domain.Entities.Lookups.BookingType;
+using Governorate = SonoBooking.Domain.Entities.Lookups.Governorate;
 using Nationality = SonoTracker.Domain.Entities.Lookups.Nationality;
 
 namespace SonoTracker.Infrastructure.DataInitializer
@@ -11,7 +10,7 @@ namespace SonoTracker.Infrastructure.DataInitializer
     {
         IEnumerable<Nationality> SeedNationalitiesAsync();
 
-        IEnumerable<AccidentType> SeedAccidentTypesAsync();
+        IEnumerable<BookingType> SeedAccidentTypesAsync();
 
         IEnumerable<Governorate> SeedGovernoratesAsync();
 

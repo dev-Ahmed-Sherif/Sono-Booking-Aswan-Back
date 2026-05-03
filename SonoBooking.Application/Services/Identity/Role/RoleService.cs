@@ -8,7 +8,7 @@ using SonoTracker.Domain;
 namespace SonoTracker.Application.Services.Identity.Role
 {
 
-    public class RoleService(RoleManager<SonoTracker.Domain.Entities.Identity.Role> roleManager) : IRoleService
+    public class RoleService(RoleManager<SonoBooking.Domain.Entities.Identity.Role> roleManager) : IRoleService
     {
         public PagingResult GetAllPagedAsync(BaseParam<FilterRoleDto> filter)
         {

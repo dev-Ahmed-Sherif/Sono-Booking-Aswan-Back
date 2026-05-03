@@ -1,5 +1,5 @@
-﻿using SonoTracker.Common.DTO.Lookup.AccidentType;
-using SonoTracker.Domain.Entities.Lookups;
+﻿using SonoBooking.Domain.Entities.Lookups;
+using SonoTracker.Common.DTO.Lookup.AccidentType;
 
 namespace SonoTracker.Application.Mapping
 {
@@ -7,11 +7,11 @@ namespace SonoTracker.Application.Mapping
     {
         public void MapAccidentType()
         {
-            CreateMap <AccidentType, AccidentTypeDto>().ReverseMap();
+            CreateMap <BookingType, AccidentTypeDto>().ReverseMap();
 
-            CreateMap<AccidentType, EditAccidentTypeDto>().ReverseMap();
+            CreateMap<BookingType, EditAccidentTypeDto>().ReverseMap();
             
-            CreateMap<AddAccidentTypeDto, AccidentType>()
+            CreateMap<AddAccidentTypeDto, BookingType>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ReverseMap();
         }

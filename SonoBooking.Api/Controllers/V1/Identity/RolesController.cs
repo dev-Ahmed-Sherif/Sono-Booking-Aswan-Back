@@ -1,12 +1,12 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using SonoBooking.Domain.Entities.Identity;
 using SonoTracker.Api.Controllers.V1.Base;
 using SonoTracker.Application.Services.Identity.Role;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Identity.Role;
-using SonoTracker.Domain.Entities.Identity;
 using System.Net;
 
 namespace SonoTracker.Api.Controllers.V1.Identity

@@ -1,5 +1,5 @@
+using SonoBooking.Domain;
 using SonoTracker.Common.DTO.Base;
-using SonoTracker.Domain.Enum;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Lookup.Town
 {
-    public interface ITownService : IBaseService<Domain.Entities.Lookups.Town, AddTownDto, EditTownDto, TownDto, string, string>
+    public interface ITownService : IBaseService<SonoBooking.Domain.Entities.Lookups.Town, AddTownDto, EditTownDto, TownDto, string, string>
     {
     Task<PagingResult> GetAllPagedAsync(BaseParam<TownFilter> filter, CancellationToken cancellationToken = default);
 

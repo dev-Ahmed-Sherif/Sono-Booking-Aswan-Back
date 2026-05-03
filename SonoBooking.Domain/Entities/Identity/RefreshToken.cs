@@ -1,10 +1,9 @@
 using SonoTracker.Domain.Entities.Base;
-using SonoTracker.Domain.Entities.Tracker;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SonoTracker.Domain.Entities.Identity
+namespace SonoBooking.Domain.Entities.Identity
 {
     public class RefreshToken : BaseAudit<string>
     {

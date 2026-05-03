@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
+using SonoBooking.Domain.Entities.Identity;
 using SonoTracker.Application.Services.Tracker.FloatingUnits;
 using SonoTracker.Application.Services.Tracker.TripGeo;
 using SonoTracker.Common.DTO.Tracker.FloatingUnit;
 using SonoTracker.Common.DTO.Tracker.TripGeo;
-using SonoTracker.Domain.Entities.Identity;
 using StackExchange.Redis;
 using System.Security.Claims;
 

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using SonoTracker.Common.DTO.Tracker.AccidentOrganization;
-using SonoTracker.Common.DTO.Tracker.AccidentOrganization.Parameters;
+using SonoBooking.Common.DTO.Tracker.AccidentOrganization.Parameters;
 
 namespace SonoTracker.Application.Services.Tracker.AccidentOrganization
 {

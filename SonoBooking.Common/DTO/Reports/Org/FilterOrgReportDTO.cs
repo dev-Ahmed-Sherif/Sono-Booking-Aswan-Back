@@ -1,5 +1,5 @@
+using SonoBooking.Domain;
 using SonoTracker.Common.DTO.ReportsDTOs;
-using SonoTracker.Domain.Enum;
 using System;
 
 namespace SonoTracker.Common.DTO.Reports.Org

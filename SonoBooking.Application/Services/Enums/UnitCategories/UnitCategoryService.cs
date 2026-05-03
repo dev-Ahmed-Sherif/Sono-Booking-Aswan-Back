@@ -1,5 +1,5 @@
+using SonoBooking.Domain;
 using SonoTracker.Common.Core;
-using SonoTracker.Domain.Enum;
 using System;
 using System.Linq;
 using System.Net;

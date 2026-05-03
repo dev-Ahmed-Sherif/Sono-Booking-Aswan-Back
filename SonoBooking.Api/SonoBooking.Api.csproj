@@ -10,9 +10,13 @@
 
   <ItemGroup>
     <Compile Remove="Controllers\V2\Lookups\**" />
+    <Compile Remove="wwwroot\OrgRequirements\**" />
     <Content Remove="Controllers\V2\Lookups\**" />
+    <Content Remove="wwwroot\OrgRequirements\**" />
     <EmbeddedResource Remove="Controllers\V2\Lookups\**" />
+    <EmbeddedResource Remove="wwwroot\OrgRequirements\**" />
     <None Remove="Controllers\V2\Lookups\**" />
+    <None Remove="wwwroot\OrgRequirements\**" />
   </ItemGroup>
 
 
@@ -33,7 +37,6 @@
 
   <ItemGroup>
     <Folder Include="Controllers\V2\Business\" />
-    <Folder Include="wwwroot\OrgRequirements\" />
   </ItemGroup>
 
 </Project>

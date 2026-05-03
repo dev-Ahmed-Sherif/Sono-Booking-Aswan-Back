@@ -1,7 +1,4 @@
-using SonoTracker.Domain.Enum;
-using System.ComponentModel.DataAnnotations;
-
-namespace SonoTracker.Common.DTO.Reports.Org
+namespace SonoBooking.Common.DTO.Reports.Org
 {
     public class OrgReportDTO
     {

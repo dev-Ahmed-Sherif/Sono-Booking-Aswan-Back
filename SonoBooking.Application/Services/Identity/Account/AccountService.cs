@@ -15,13 +15,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using SonoBooking.Domain.Entities.Identity;
 using SonoTracker.Common.Constants.Auth;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Identity.User;
 using SonoTracker.Common.Infrastructure.UnitOfWork;
 using SonoTracker.Domain;
-using SonoTracker.Domain.Entities.Identity;
 using SonoTracker.Infrastructure.Context;
 
 namespace SonoTracker.Application.Services.Identity.Account
@@ -29,7 +29,7 @@ namespace SonoTracker.Application.Services.Identity.Account
 
     public class AccountService(
                  UserManager<User> userManager,
-                 RoleManager<Entities.Identity.Role> roleManager,
+                 RoleManager<SonoBooking.Domain.Entities.Identity.Role> roleManager,
                  SonoTrackerDbContext context,
                  UserDataDto auditUser,
                  IConfiguration configuration,
@@ -73,7 +73,7 @@ namespace SonoTracker.Application.Services.Identity.Account
 
                 if (!string.IsNullOrWhiteSpace(request.RoleId))
                 {
-                    Entities.Identity.Role role = await roleManager.FindByIdAsync(request.RoleId);
+                    SonoBooking.Domain.Entities.Identity.Role role = await roleManager.FindByIdAsync(request.RoleId);
 
                     IdentityResult res = await userManager.AddToRoleAsync(user, role.Name!);
 
@@ -87,7 +87,7 @@ namespace SonoTracker.Application.Services.Identity.Account
                 }
                 else
                 {
-                    Entities.Identity.Role role = await roleManager.FindByNameAsync(Roles.User);
+                    SonoBooking.Domain.Entities.Identity.Role role = await roleManager.FindByNameAsync(Roles.User);
 
                     IdentityResult res = await userManager.AddToRoleAsync(user, role.Name!);
 
@@ -198,7 +198,7 @@ namespace SonoTracker.Application.Services.Identity.Account
                 }
             }
 
-            Entities.Identity.Role role = await roleManager.FindByIdAsync(updateUser.RoleId.ToString());
+            SonoBooking.Domain.Entities.Identity.Role role = await roleManager.FindByIdAsync(updateUser.RoleId.ToString());
 
             if (role != null)
             {
@@ -333,7 +333,7 @@ namespace SonoTracker.Application.Services.Identity.Account
 
             for (int i = 0; i < userRole.Count; i++)
             {
-                Entities.Identity.Role roleName = await roleManager.FindByNameAsync(userRole[i]);
+                SonoBooking.Domain.Entities.Identity.Role roleName = await roleManager.FindByNameAsync(userRole[i]);
                 perRoleClaim = await roleManager.GetClaimsAsync(roleName!);
             }
 

@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace SonoTracker.Application.Services.Lookup.Town
 {
-    public class TownService(IServiceBaseParameter<Domain.Entities.Lookups.Town> businessBaseParameter) : BaseService<Domain.Entities.Lookups.Town, AddTownDto, EditTownDto, TownDto, string, string>(businessBaseParameter), ITownService
+    public class TownService(IServiceBaseParameter<SonoBooking.Domain.Entities.Lookups.Town> businessBaseParameter) : BaseService<SonoBooking.Domain.Entities.Lookups.Town, AddTownDto, EditTownDto, TownDto, string, string>(businessBaseParameter), ITownService
     {
         public override async Task<IFinalResult> GetByIdForEditAsync(object id, CancellationToken cancellationToken = default)
         {
@@ -27,7 +27,7 @@ namespace SonoTracker.Application.Services.Lookup.Town
                 .Include(t => t.City)
                 .ThenInclude(x => x.Governorate), cancellationToken: cancellationToken);
 
-            var mapped = Mapper.Map<Domain.Entities.Lookups.Town, EditTownDto>(entity);
+            var mapped = Mapper.Map<SonoBooking.Domain.Entities.Lookups.Town, EditTownDto>(entity);
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
 
@@ -37,12 +37,12 @@ namespace SonoTracker.Application.Services.Lookup.Town
                 include: src => src
                 .Include(t => t.City)
                 .ThenInclude(x => x.Governorate), cancellationToken: cancellationToken);
-            var mapped = Mapper.Map<Domain.Entities.Lookups.Town, TownDto>(entity);
+            var mapped = Mapper.Map<SonoBooking.Domain.Entities.Lookups.Town, TownDto>(entity);
 
             return ResponseResult.PostResult(mapped, HttpStatusCode.OK);
         }
 
-        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<Entities.Lookups.Town, bool>> predicate = null, CancellationToken cancellationToken = default)
+        public override async Task<IFinalResult> GetAllAsync(bool disableTracking = false, Expression<Func<SonoBooking.Domain.Entities.Lookups.Town, bool>> predicate = null, CancellationToken cancellationToken = default)
         {
             var entities = await UnitOfWork.Repository.GetAllAsync(include: src => src
                 .Include(t => t.City)
@@ -52,9 +52,9 @@ namespace SonoTracker.Application.Services.Lookup.Town
 
             var governorateId = IsSuperAdmin() ? null : GetGovernorateIdFromClaims();
             var filtered = IsSuperAdmin()
-                ? (entities ?? Enumerable.Empty<Domain.Entities.Lookups.Town>())
-                : (entities?.Where(e => !e.IsDeleted && (string.IsNullOrWhiteSpace(governorateId) || e.City?.GovernorateId == governorateId)) ?? Enumerable.Empty<Domain.Entities.Lookups.Town>());
-            var mapped = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Town>, IEnumerable<TownDto>>(filtered);
+                ? (entities ?? Enumerable.Empty<SonoBooking.Domain.Entities.Lookups.Town>())
+                : (entities?.Where(e => !e.IsDeleted && (string.IsNullOrWhiteSpace(governorateId) || e.City?.GovernorateId == governorateId)) ?? Enumerable.Empty<SonoBooking.Domain.Entities.Lookups.Town>());
+            var mapped = Mapper.Map<IEnumerable<SonoBooking.Domain.Entities.Lookups.Town>, IEnumerable<TownDto>>(filtered);
 
             return ResponseResult.PostResult(result: mapped, status: HttpStatusCode.OK, exception: null,
                 message: HttpStatusCode.OK.ToString());
@@ -73,7 +73,7 @@ namespace SonoTracker.Application.Services.Lookup.Town
 
             var offset = --filter.PageNumber * filter.PageSize;
 
-            (int Count, IEnumerable<Domain.Entities.Lookups.Town> Result) = await UnitOfWork.Repository.FindPagedAsync(
+            (int Count, IEnumerable<SonoBooking.Domain.Entities.Lookups.Town> Result) = await UnitOfWork.Repository.FindPagedAsync(
                 predicate: PredicateBuilderFunction(townFilter, governorateId),
                 pageNumber: offset,
                 pageSize: limit,
@@ -84,9 +84,9 @@ namespace SonoTracker.Application.Services.Lookup.Town
                 cancellationToken: cancellationToken);
 
             var filteredResult = isSuperAdmin
-                ? (Result ?? Enumerable.Empty<Domain.Entities.Lookups.Town>())
-                : (Result?.Where(x => x.IsDeleted != true) ?? Enumerable.Empty<Domain.Entities.Lookups.Town>());
-            var data = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Town>, IEnumerable<TownDto>>(filteredResult);
+                ? (Result ?? Enumerable.Empty<SonoBooking.Domain.Entities.Lookups.Town>())
+                : (Result?.Where(x => x.IsDeleted != true) ?? Enumerable.Empty<SonoBooking.Domain.Entities.Lookups.Town>());
+            var data = Mapper.Map<IEnumerable<SonoBooking.Domain.Entities.Lookups.Town>, IEnumerable<TownDto>>(filteredResult);
 
             return new PagingResult(filter.PageNumber, filter.PageSize, Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
@@ -108,13 +108,13 @@ namespace SonoTracker.Application.Services.Lookup.Town
 
             var query = await UnitOfWork.Repository.FindPagedAsync(predicate: predicate, pageNumber: offset, pageSize: limit, cancellationToken: cancellationToken);
 
-            var data = Mapper.Map<IEnumerable<Domain.Entities.Lookups.Town>, IEnumerable<TownDto>>(query.Result);
+            var data = Mapper.Map<IEnumerable<SonoBooking.Domain.Entities.Lookups.Town>, IEnumerable<TownDto>>(query.Result);
 
             return new PagingResult(filter.PageNumber, filter.PageSize, query.Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
-        static Expression<Func<Domain.Entities.Lookups.Town, bool>> PredicateBuilderFunction(TownFilter filter, string governorateId)
+        static Expression<Func<SonoBooking.Domain.Entities.Lookups.Town, bool>> PredicateBuilderFunction(TownFilter filter, string governorateId)
         {
-            var predicate = PredicateBuilder.New<Domain.Entities.Lookups.Town>(x => x.IsDeleted == filter.IsDeleted);
+            var predicate = PredicateBuilder.New<SonoBooking.Domain.Entities.Lookups.Town>(x => x.IsDeleted == filter.IsDeleted);
             if (!string.IsNullOrWhiteSpace(filter.NameAr))
             {
                 predicate = predicate.And(x => x.NameAr.Contains(filter.NameAr));
@@ -131,9 +131,9 @@ namespace SonoTracker.Application.Services.Lookup.Town
 
             return predicate;
         }
-        static Expression<Func<Domain.Entities.Lookups.Town, bool>> DropDownPredicateBuilderFunction(SearchCriteriaFilter filter)
+        static Expression<Func<SonoBooking.Domain.Entities.Lookups.Town, bool>> DropDownPredicateBuilderFunction(SearchCriteriaFilter filter)
         {
-            var predicate = PredicateBuilder.New<Domain.Entities.Lookups.Town>(true);
+            var predicate = PredicateBuilder.New<SonoBooking.Domain.Entities.Lookups.Town>(true);
             if (!string.IsNullOrWhiteSpace(filter?.SearchCriteria))
             {
                 predicate = predicate.And(b => b.NameAr.Contains(filter.SearchCriteria));
@@ -155,7 +155,7 @@ namespace SonoTracker.Application.Services.Lookup.Town
                     return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
                         message: MessagesConstants.Existed);
 
-                var entity = Mapper.Map<Entities.Lookups.Town>(model);
+                var entity = Mapper.Map<SonoBooking.Domain.Entities.Lookups.Town>(model);
 
                 IFinalResult lastEntity = await GetLastRecordAsync(cancellationToken);
 
@@ -207,7 +207,7 @@ namespace SonoTracker.Application.Services.Lookup.Town
                     return new ResponseResult().PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
                         message: MessagesConstants.Existed);
 
-                Domain.Entities.Lookups.Town entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
+                SonoBooking.Domain.Entities.Lookups.Town entityToUpdate = await UnitOfWork.Repository.GetAsync(cancellationToken, model.Id);
 
                 var entity = Mapper.Map(model, entityToUpdate);
 

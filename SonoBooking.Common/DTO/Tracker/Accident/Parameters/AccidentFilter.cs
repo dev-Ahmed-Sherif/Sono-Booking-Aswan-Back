@@ -1,4 +1,4 @@
-using SonoTracker.Domain.Enum;
+using SonoBooking.Domain;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;

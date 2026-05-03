@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using SonoTracker.Domain.Entities.Identity;
+using SonoBooking.Domain.Entities.Identity;
 using SonoTracker.Infrastructure.Context;
 using SonoTracker.Infrastructure.DataInitializer;
 

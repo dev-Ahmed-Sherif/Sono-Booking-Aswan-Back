@@ -1,8 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using SonoTracker.Domain.Enum;
 
-namespace SonoTracker.Common.DTO.Tracker.AccidentOrganization.Parameters
+namespace SonoBooking.Common.DTO.Tracker.AccidentOrganization.Parameters
 {
     [ExcludeFromCodeCoverage]
 

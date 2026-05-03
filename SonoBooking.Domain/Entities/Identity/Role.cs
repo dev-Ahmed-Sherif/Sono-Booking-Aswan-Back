@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using SonoTracker.Domain.Entities.Lookups;
-using SonoTracker.Domain.Entities.Tracker;
+using SonoBooking.Domain.Entities.Lookups;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SonoTracker.Domain.Entities.Identity
+namespace SonoBooking.Domain.Entities.Identity
 {
     public class Role : IdentityRole
     {

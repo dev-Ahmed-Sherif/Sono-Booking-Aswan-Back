@@ -1,17 +1,13 @@
 
 using Microsoft.AspNetCore.Identity;
-using SonoTracker.Domain.Entities.Lookups;
-using SonoTracker.Domain.Entities.Tracker;
-using SonoTracker.Domain.Entities.TrackerNotification;
+using SonoBooking.Domain.Entities.BusinessNotification;
+using SonoBooking.Domain.Entities.Lookups;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SonoTracker.Domain.Entities.Identity
+namespace SonoBooking.Domain.Entities.Identity
 {
     public class User : IdentityUser
     {
@@ -28,6 +24,18 @@ namespace SonoTracker.Domain.Entities.Identity
 
         [Required, MaxLength(70)]
         public required string FullName { get; set; }
+
+        [Required]
+        public required Gender Gender { get; set; }
+
+        [Required]
+        public required DateOnly BirthDate { get; set; }
+
+        [Required, MaxLength(14)]
+        public required string NationalId { get; set; }
+
+        [Required, MaxLength(140)]
+        public required string NationalIdImage { get; set; }
 
         public bool IsLogedIn { get; set; }
 
@@ -48,14 +56,6 @@ namespace SonoTracker.Domain.Entities.Identity
         public required string ModifiedBy { get; set; }
 
         public bool IsDeleted { get; set; }
-
-        [MaxLength(50), ForeignKey(nameof(Organization))]
-        public string? OrganizationId { get; set; }
-        public virtual Organization? Organization { get; set; }
-
-        [MaxLength(50), ForeignKey(nameof(FloatingUnit))]
-        public string? FloatingUnitId { get; set; }
-        public virtual FloatingUnit? FloatingUnit { get; set; }
 
         [MaxLength(50), ForeignKey(nameof(Governorate))]
         public string? GovernorateId { get; set; }

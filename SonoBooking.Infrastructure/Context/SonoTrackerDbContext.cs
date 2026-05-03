@@ -3,9 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using SonoTracker.Domain.Entities.Tracker;
 using SonoTracker.Domain.Entities.Lookups;
-using SonoTracker.Domain.Entities.Identity;
 using SonoTracker.Domain.Entities.Attachments;
-using SonoTracker.Domain.Entities.TrackerNotification;
+using SonoBooking.Domain.Entities.Lookups;
+using SonoBooking.Domain.Entities.BusinessNotification;
+using SonoBooking.Domain.Entities.Identity;
 
 namespace SonoTracker.Infrastructure.Context
 {
@@ -70,7 +71,7 @@ namespace SonoTracker.Infrastructure.Context
         #region Lookups – Core
 
         public virtual DbSet<Attachment> Attachments { get; set; }
-        public virtual DbSet<AccidentType> AccidentTypes { get; set; }
+        public virtual DbSet<BookingType> AccidentTypes { get; set; }
         public virtual DbSet<InspectionType> InspectionTypes { get; set; }
         public virtual DbSet<MaintenanceType> MaintenanceTypes { get; set; }
         public virtual DbSet<Nationality> Nationalities { get; set; }
@@ -559,7 +560,7 @@ namespace SonoTracker.Infrastructure.Context
                 .HasForeignKey(g => g.GovernorateId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<AccidentType>()
+            modelBuilder.Entity<BookingType>()
                 .HasOne(x => x.Governorate)
                 .WithMany()
                 .HasForeignKey(x => x.GovernorateId)

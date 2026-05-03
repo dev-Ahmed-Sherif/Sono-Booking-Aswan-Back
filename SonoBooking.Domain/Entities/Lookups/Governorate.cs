@@ -1,11 +1,11 @@
 ﻿using SonoTracker.Domain.Entities.Base;
-using SonoTracker.Domain.Entities.Tracker;
+using SonoTracker.Domain.Entities.Lookups;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
-namespace SonoTracker.Domain.Entities.Lookups
+namespace SonoBooking.Domain.Entities.Lookups
 {
     [ExcludeFromCodeCoverage]
     public class Governorate : Lookup<string>

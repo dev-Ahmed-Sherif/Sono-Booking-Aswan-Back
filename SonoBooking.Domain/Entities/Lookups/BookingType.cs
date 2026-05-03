@@ -1,24 +1,21 @@
 using SonoTracker.Domain.Entities.Base;
-using SonoTracker.Domain.Entities.Lookups;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SonoBooking.Domain.Entities.Lookups
 {
-    public class Town : Lookup<string>
+    [ExcludeFromCodeCoverage]
+    public class BookingType : Lookup<string>
     {
-        public Town()
+        public BookingType()
         {
             if (string.IsNullOrEmpty(Id))
             {
                 Id = Guid.CreateVersion7().ToString();
             }
         }
-
-        [MaxLength(50), ForeignKey(nameof(City))]
-        public string? CityId { get; set; }
-        public virtual City? City { get; set; }
     }
 }

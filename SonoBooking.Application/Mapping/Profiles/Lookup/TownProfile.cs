@@ -1,5 +1,5 @@
-﻿using SonoTracker.Common.DTO.Lookup.Town;
-using SonoTracker.Domain.Entities.Lookups;
+﻿using SonoBooking.Domain.Entities.Lookups;
+using SonoTracker.Common.DTO.Lookup.Town;
 
 namespace SonoTracker.Application.Mapping
 {

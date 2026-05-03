@@ -4,9 +4,9 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using SonoBooking.Domain;
 using SonoTracker.Application.Services.Enums.Genders;
 using SonoTracker.Common.Core;
-using SonoTracker.Domain.Enum;
 
 namespace SonoTracker.Application.Services.Enums.Genders
 {
