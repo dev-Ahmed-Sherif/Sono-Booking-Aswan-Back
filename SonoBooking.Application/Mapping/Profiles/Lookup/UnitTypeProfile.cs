@@ -12,13 +12,13 @@ namespace SonoTracker.Application.Mapping
     {
         public void MapUnitType()
         {
-            CreateMap<UnitType, UnitTypeDto>().ReverseMap();
+            //CreateMap<UnitType, UnitTypeDto>().ReverseMap();
             
-            CreateMap<UnitType, EditUnitTypeDto>().ReverseMap();
+            //CreateMap<UnitType, EditUnitTypeDto>().ReverseMap();
 
-            CreateMap<AddUnitTypeDto, UnitType>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ReverseMap();
+            //CreateMap<AddUnitTypeDto, UnitType>()
+            //    .ForMember(dest => dest.Id, opt => opt.Ignore())
+            //    .ReverseMap();
         }
     }
 }

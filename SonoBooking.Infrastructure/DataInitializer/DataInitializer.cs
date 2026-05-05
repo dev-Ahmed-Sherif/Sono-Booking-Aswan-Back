@@ -1,31 +1,14 @@
 using System.Collections.Generic;
 using System.IO;
 using SonoTracker.Common.Extensions;
-using BookingType = SonoBooking.Domain.Entities.Lookups.BookingType;
-using City = SonoTracker.Domain.Entities.Lookups.City;
+using City = SonoBooking.Domain.Entities.Lookups.City;
 using Governorate = SonoBooking.Domain.Entities.Lookups.Governorate;
-using Nationality = SonoTracker.Domain.Entities.Lookups.Nationality;
 
-namespace SonoTracker.Infrastructure.DataInitializer
+namespace SonoBooking.Infrastructure.DataInitializer
 {
     public class DataInitializer(string contentRootPath) : IDataInitializer
     {
-        public IEnumerable<Nationality> SeedNationalitiesAsync()
-        {
-            var path = Path.Combine(contentRootPath, "Seed", "Nationalities.json");
-            var dataText = File.ReadAllText(path);
-            var nationalities = Seeder<List<Nationality>>.SeedIt(dataText);
-            return nationalities ?? [];
-        }
-
-        public IEnumerable<BookingType> SeedAccidentTypesAsync()
-        {
-            var path = Path.Combine(contentRootPath, "Seed", "AccidentTypes.json");
-            var dataText = File.ReadAllText(path);
-            var accidentTypes = Seeder<List<BookingType>>.SeedIt(dataText);
-            return accidentTypes ?? [];
-        }
-
+       
         public IEnumerable<Governorate> SeedGovernoratesAsync()
         {
             var path = Path.Combine(contentRootPath, "Seed", "Governorates.json");

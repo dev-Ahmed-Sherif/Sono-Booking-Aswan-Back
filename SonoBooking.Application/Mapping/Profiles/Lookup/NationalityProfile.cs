@@ -1,5 +1,4 @@
 ﻿using SonoTracker.Common.DTO.Lookup.Nationality;
-using SonoTracker.Domain.Entities.Lookups;
 
 namespace SonoTracker.Application.Mapping
 {
@@ -7,13 +6,13 @@ namespace SonoTracker.Application.Mapping
     {
         public void MapNationality()
         {
-            CreateMap<Nationality, NationalityDto>().ReverseMap();
+            //CreateMap<Nationality, NationalityDto>().ReverseMap();
 
-            CreateMap<Nationality, EditNationalityDto>().ReverseMap();
+            //CreateMap<Nationality, EditNationalityDto>().ReverseMap();
             
-            CreateMap<AddNationalityDto, Nationality>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ReverseMap();
+            //CreateMap<AddNationalityDto, Nationality>()
+            //    .ForMember(dest => dest.Id, opt => opt.Ignore())
+            //    .ReverseMap();
         }
     }
 }

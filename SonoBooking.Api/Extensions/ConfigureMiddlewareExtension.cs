@@ -3,9 +3,9 @@ using FluentScheduler;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using SonoTracker.Application.Services.BackgroundJobs.Jobs;
-using SonoTracker.Infrastructure.Context;
 using SonoTracker.Domain;
 using Serilog;
+using SonoBooking.Infrastructure.Context;
 #pragma warning disable CS1591
 
 namespace SonoTracker.Api.Extensions
@@ -46,7 +46,7 @@ namespace SonoTracker.Api.Extensions
             {
                 using var scope =
                     app.ApplicationServices.CreateScope();
-                using var context = scope.ServiceProvider.GetService<SonoTrackerDbContext>();
+                using var context = scope.ServiceProvider.GetService<SonoBookingDbContext>();
 
                 var pendingMigrations = context!.Database.GetPendingMigrations();
 

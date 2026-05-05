@@ -4,18 +4,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 
-namespace SonoTracker.Infrastructure.Context
+namespace SonoBooking.Infrastructure.Context
 {
     /// <summary>
-    /// Design-time factory for creating <see cref="SonoTrackerDbContext"/> when running EF Core tools (e.g. migrations).
+    /// Design-time factory for creating <see cref="SonoBookingDbContext"/> when running EF Core tools (e.g. migrations).
     /// </summary>
-    public class SonoTrackerDbContextFactory : IDesignTimeDbContextFactory<SonoTrackerDbContext>
+    public class SonoBookingDbContextFactory : IDesignTimeDbContextFactory<SonoBookingDbContext>
     {
-        public SonoTrackerDbContext CreateDbContext(string[] args)
+        public SonoBookingDbContext CreateDbContext(string[] args)
         {
             // Prefer startup project directory (e.g. SonoTracker.Api) when running dotnet ef
             var basePath = Directory.GetCurrentDirectory();
-            var apiPath = Path.Combine(basePath, "..", "SonoTracker.Api");
+            var apiPath = Path.Combine(basePath, "..", "SonoBooking.Api");
             if (Directory.Exists(apiPath))
                 basePath = Path.GetFullPath(apiPath);
 
@@ -27,12 +27,12 @@ namespace SonoTracker.Infrastructure.Context
 
             var connectionString = configuration.GetConnectionString("Default");
             if (string.IsNullOrEmpty(connectionString))
-                throw new InvalidOperationException("Connection string 'Default' not found. Ensure appsettings.json is in the startup project (e.g. SonoTracker.Api).");
+                throw new InvalidOperationException("Connection string 'Default' not found. Ensure appsettings.json is in the startup project (e.g. SonoBooking.Api).");
 
-            var optionsBuilder = new DbContextOptionsBuilder<SonoTrackerDbContext>();
+            var optionsBuilder = new DbContextOptionsBuilder<SonoBookingDbContext>();
             optionsBuilder.UseSqlServer(connectionString);
 
-            return new SonoTrackerDbContext(optionsBuilder.Options);
+            return new SonoBookingDbContext();
         }
     }
 }

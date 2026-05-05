@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using SonoTracker.Domain.Entities.Base;
+using SonoBooking.Domain.Entities.Base;
 
 namespace SonoBooking.Domain.Entities.Lookups
 {
@@ -24,6 +24,6 @@ namespace SonoBooking.Domain.Entities.Lookups
         [Required, MaxLength(250)]
         public required string Url { get; set; }
 
-        public bool IsPublic { get; set; }
+        // public bool IsPublic { get; set; }
     }
 }

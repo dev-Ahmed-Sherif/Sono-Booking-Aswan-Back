@@ -7,7 +7,11 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NetCore.AutoRegisterDi;
 using Newtonsoft.Json.Converters;
+using SonoBooking.Application.Services.Identity.Account;
 using SonoBooking.Domain.Entities.Identity;
+using SonoBooking.Infrastructure.Context;
+using SonoBooking.Infrastructure.DataInitializer;
+using SonoBooking.Infrastructure.UnitOfWork;
 using SonoTracker.Api.Extensions.Swagger.Headers;
 using SonoTracker.Api.Extensions.Swagger.Options;
 using SonoTracker.Application.Helper;
@@ -15,7 +19,6 @@ using SonoTracker.Application.Mapping;
 using SonoTracker.Application.Services.Base;
 using SonoTracker.Application.Services.Email;
 using SonoTracker.Application.Services.Identity.Account;
-using SonoTracker.Application.Services.Tracker.Organizations;
 using SonoTracker.Application.Services.Validators.Base;
 using SonoTracker.Common.Constants.Auth;
 using SonoTracker.Common.DTO.Email;
@@ -24,9 +27,6 @@ using SonoTracker.Common.Extensions;
 using SonoTracker.Common.Helpers.HttpClient.RestSharp;
 using SonoTracker.Common.Helpers.JsonHelper;
 using SonoTracker.Common.Infrastructure.UnitOfWork;
-using SonoTracker.Infrastructure.Context;
-using SonoTracker.Infrastructure.DataInitializer;
-using SonoTracker.Infrastructure.UnitOfWork;
 using SonoTracker.Integration.CacheRepository;
 using SonoTracker.Integration.FileRepository;
 using SonoTracker.Integration.UserRepository;
@@ -106,7 +106,7 @@ namespace SonoTracker.Api.Extensions
                 options.Tokens.PasswordResetTokenProvider = TokenOptions.DefaultEmailProvider;
 
             })
-            .AddRoles<Role>().AddEntityFrameworkStores<SonoTrackerDbContext>()
+            .AddRoles<Role>().AddEntityFrameworkStores<SonoBookingDbContext>()
             .AddApiEndpoints()
             .AddDefaultTokenProviders();
             services.AddHttpContextAccessor();
@@ -204,11 +204,11 @@ namespace SonoTracker.Api.Extensions
         /// <param name="configuration"></param>
         private static void RegisterDbContext(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<SonoTrackerDbContext>(options =>
+            services.AddDbContext<SonoBookingDbContext>(options =>
             {
                 options.UseSqlServer(configuration.GetConnectionString(ConnectionStringName));
             });
-            services.AddScoped<DbContext, SonoTrackerDbContext>();
+            services.AddScoped<DbContext, SonoBookingDbContext>();
             services.AddSingleton<IDataInitializer>(sp =>
             {
                 var env = sp.GetRequiredService<IWebHostEnvironment>();
@@ -222,7 +222,7 @@ namespace SonoTracker.Api.Extensions
         private static void RegisterApiMonitoring(this IServiceCollection services)
         {
             services.AddHealthChecks()
-                .AddDbContextCheck<SonoTrackerDbContext>();
+                .AddDbContextCheck<SonoBookingDbContext>();
         }
         /// <summary>
         /// Configure Authentication With Identity Server
@@ -418,7 +418,7 @@ namespace SonoTracker.Api.Extensions
             services.AddTransient(typeof(IBaseService<,,,,,>), typeof(BaseService<,,,,,>));
             services.AddTransient(typeof(IServiceBaseParameter<>), typeof(ServiceBaseParameter<>));
             services.AddTransient(typeof(IUnitOfWork<>), typeof(UnitOfWork<>));
-            var servicesToScan = Assembly.GetAssembly(typeof(OrganizationService)); //..or whatever assembly you need
+            var servicesToScan = Assembly.GetAssembly(typeof(AccountService));
             services.RegisterAssemblyPublicNonGenericClasses(servicesToScan)
                 .Where(c => c.Name.EndsWith("Service"))
                 .AsPublicImplementedInterfaces();

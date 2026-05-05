@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System;
-using SonoTracker.Domain.Entities.Lookups;
 using SonoTracker.Common.DTO.ReportsDTOs;
 
 namespace SonoBooking.Common.DTO.Reports.TouristMarina

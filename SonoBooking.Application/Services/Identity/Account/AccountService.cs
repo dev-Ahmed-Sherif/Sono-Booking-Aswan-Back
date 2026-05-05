@@ -15,22 +15,24 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using SonoBooking.Domain;
 using SonoBooking.Domain.Entities.Identity;
+using SonoBooking.Infrastructure.Context;
+using SonoTracker.Application.Services.Identity.Account;
 using SonoTracker.Common.Constants.Auth;
 using SonoTracker.Common.Core;
 using SonoTracker.Common.DTO.Base;
 using SonoTracker.Common.DTO.Identity.User;
 using SonoTracker.Common.Infrastructure.UnitOfWork;
 using SonoTracker.Domain;
-using SonoTracker.Infrastructure.Context;
 
-namespace SonoTracker.Application.Services.Identity.Account
+namespace SonoBooking.Application.Services.Identity.Account
 {
 
     public class AccountService(
                  UserManager<User> userManager,
-                 RoleManager<SonoBooking.Domain.Entities.Identity.Role> roleManager,
-                 SonoTrackerDbContext context,
+                 RoleManager<Role> roleManager,
+                 SonoBookingDbContext context,
                  UserDataDto auditUser,
                  IConfiguration configuration,
                  IUnitOfWork<User> UnitOfWork,
@@ -49,6 +51,8 @@ namespace SonoTracker.Application.Services.Identity.Account
                     Email = request.Email,
                     UserName = request.Email,
                     FullName = request.Username,
+                    Gender = Gender.Male,
+                    BirthDate = DateOnly.FromDateTime(DateTime.UtcNow),
                     CreatedBy = auditUser.Name != "" ? auditUser.Name : request.Username,
                     CreatedById = auditUser.Id != "" ? auditUser.Id : "",
                     CreatedAt = DateTime.UtcNow,
@@ -73,7 +77,7 @@ namespace SonoTracker.Application.Services.Identity.Account
 
                 if (!string.IsNullOrWhiteSpace(request.RoleId))
                 {
-                    SonoBooking.Domain.Entities.Identity.Role role = await roleManager.FindByIdAsync(request.RoleId);
+                    Role role = await roleManager.FindByIdAsync(request.RoleId);
 
                     IdentityResult res = await userManager.AddToRoleAsync(user, role.Name!);
 
@@ -87,7 +91,7 @@ namespace SonoTracker.Application.Services.Identity.Account
                 }
                 else
                 {
-                    SonoBooking.Domain.Entities.Identity.Role role = await roleManager.FindByNameAsync(Roles.User);
+                    Role role = await roleManager.FindByNameAsync(Roles.User);
 
                     IdentityResult res = await userManager.AddToRoleAsync(user, role.Name!);
 
@@ -136,7 +140,7 @@ namespace SonoTracker.Application.Services.Identity.Account
 
             if (user is not null)
             {
-                RefreshToken refreshToken = await context.RefreshTokens.Where(rf => rf.User.Id == user.Id).FirstOrDefaultAsync(cancellationToken);
+                RefreshToken refreshToken = await context.RefreshTokens.Where(rf => rf.UserId == user.Id).FirstOrDefaultAsync(cancellationToken);
                 if (refreshToken is not null)
                 {
                     await RemoveOldRefreshToken(id, refreshToken!.Token, cancellationToken);
@@ -167,7 +171,6 @@ namespace SonoTracker.Application.Services.Identity.Account
             user.Email = updateUser.Email;
             user.UserName = updateUser.Email;
             user.FullName = updateUser.UserName;
-            user.OrganizationId = updateUser.OrganizationId?.ToString();
 
             user.ModifiedById = auditUser.Name != "" ? auditUser.Name : user.FullName;
             user.ModifiedAt = DateTime.UtcNow;
@@ -198,7 +201,7 @@ namespace SonoTracker.Application.Services.Identity.Account
                 }
             }
 
-            SonoBooking.Domain.Entities.Identity.Role role = await roleManager.FindByIdAsync(updateUser.RoleId.ToString());
+            Role role = await roleManager.FindByIdAsync(updateUser.RoleId.ToString());
 
             if (role != null)
             {
@@ -235,8 +238,8 @@ namespace SonoTracker.Application.Services.Identity.Account
                 Email = user.Email,
                 UserName = user.FullName,
                 Role = (await userManager.GetRolesAsync(user)).FirstOrDefault() ?? "",
-                FloatingUnitId = user.FloatingUnitId ?? "",
-                OrganizationId = user.OrganizationId ?? "",
+                FloatingUnitId = "",
+                OrganizationId = "",
             };
 
             userDto.RoleId = roleManager.Roles.Where(r => r.Name == userDto.Role)
@@ -264,7 +267,7 @@ namespace SonoTracker.Application.Services.Identity.Account
                     UserName = u.FullName,
                     Role = roles.FirstOrDefault() ?? "",
                     RoleId = "",
-                    OrganizationId = u.OrganizationId ?? "",
+                    OrganizationId = "",
                     CreatedAt = u.CreatedAt,
                     CreatedBy = u.CreatedBy,
                     ModifiedAt = u.ModifiedAt,
@@ -333,7 +336,7 @@ namespace SonoTracker.Application.Services.Identity.Account
 
             for (int i = 0; i < userRole.Count; i++)
             {
-                SonoBooking.Domain.Entities.Identity.Role roleName = await roleManager.FindByNameAsync(userRole[i]);
+                Role roleName = await roleManager.FindByNameAsync(userRole[i]);
                 perRoleClaim = await roleManager.GetClaimsAsync(roleName!);
             }
 
@@ -352,7 +355,7 @@ namespace SonoTracker.Application.Services.Identity.Account
 
             var token = await context.RefreshTokens
                         .Where(x => x.Token == refreshToken &&
-                               x.User.Id == userId &&
+                               x.UserId == userId &&
                                x.ExpiryTime >= DateTime.Now)
                         .FirstOrDefaultAsync(cancellationToken);
 
@@ -369,7 +372,7 @@ namespace SonoTracker.Application.Services.Identity.Account
         private async Task<RefreshToken> RemoveOldRefreshToken(string userId, string refreshToken, CancellationToken cancellationToken = default)
         {
             var OldToken = await context.RefreshTokens
-                   .Where(x => x.Token == refreshToken && x.User.Id == userId)
+                   .Where(x => x.Token == refreshToken && x.UserId == userId)
                    .FirstOrDefaultAsync(cancellationToken);
 
             if (OldToken is not null)
@@ -425,9 +428,8 @@ namespace SonoTracker.Application.Services.Identity.Account
                 new Claim(ClaimTypes.NameIdentifier,user.Id.ToString()),
                 new Claim(ClaimTypes.Name,user.FullName),
                 new Claim(ClaimTypes.Role, role),
-                new Claim(AuthConstants.OrgId, user.OrganizationId != null ? user.OrganizationId.ToString() : ""),
-                new Claim(AuthConstants.FloatingUnitId, user.FloatingUnitId != null ? user.FloatingUnitId.ToString() : ""),
-                new Claim(AuthConstants.GovId, user.GovernorateId != null ? user.GovernorateId.ToString() : ""),
+                new Claim(AuthConstants.OrgId, ""),
+                new Claim(AuthConstants.FloatingUnitId, ""),
 
             }.Union(claimDB);
 

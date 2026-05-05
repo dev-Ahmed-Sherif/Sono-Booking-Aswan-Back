@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
-namespace SonoTracker.Domain.Entities.Base
+namespace SonoBooking.Domain.Entities.Base
 {
     [ExcludeFromCodeCoverage]
     public class BaseEntity<TKey>

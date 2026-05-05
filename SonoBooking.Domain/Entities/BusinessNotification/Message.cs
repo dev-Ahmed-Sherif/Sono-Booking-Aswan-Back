@@ -2,9 +2,9 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using SonoBooking.Domain.Entities.Base;
 using SonoBooking.Domain.Entities.Identity;
 using SonoBooking.Domain.Entities.Lookups;
-using SonoTracker.Domain.Entities.Base;
 
 namespace SonoBooking.Domain.Entities.BusinessNotification
 {

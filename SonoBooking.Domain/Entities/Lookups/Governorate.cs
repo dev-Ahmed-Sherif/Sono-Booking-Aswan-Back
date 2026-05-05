@@ -1,5 +1,4 @@
-﻿using SonoTracker.Domain.Entities.Base;
-using SonoTracker.Domain.Entities.Lookups;
+﻿using SonoBooking.Domain.Entities.Base;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
