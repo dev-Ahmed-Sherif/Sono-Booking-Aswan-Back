@@ -16,20 +16,20 @@ public class Bed : BaseAudit<string>
         }
     }
 
-    [MaxLength(50)]
-    public string? BedNumber { get; set; }
+    [Required, MaxLength(20)]
+    public required string BedNumber { get; set; }
 
     [Required, MaxLength(250)]
     public required string Description { get; set; }
 
-    [Required, MaxLength(50)]
+    [Required, MaxLength(100)]
     public required string Dimensions { get; set; }
 
     [Required]
-    public required decimal Price { get; set; } = 0;
+    public required decimal Price { get; set; }
 
     [Required]
-    public UnitStatus Status { get; set; } = UnitStatus.Available;
+    public required UnitStatus Status { get; set; } = UnitStatus.Available;
 
     [Required, MaxLength(50)]
     [ForeignKey(nameof(Room))]

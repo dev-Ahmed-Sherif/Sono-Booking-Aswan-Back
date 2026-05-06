@@ -1,6 +1,6 @@
 using Serilog;
 using Serilog.Events;
-using SonoTracker.Api.Seed;
+using SonoBooking.Api.Seed;
 using SonoTracker.Common.Extensions;
 
 namespace SonoTracker.Api

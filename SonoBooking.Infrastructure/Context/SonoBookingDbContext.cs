@@ -1,12 +1,15 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using SonoBooking.Domain;
 using SonoBooking.Domain.Entities.BusinessNotification;
 using SonoBooking.Domain.Entities.Identity;
 using SonoBooking.Domain.Entities.Lookups;
 using SonoBooking.Domain.Entities.Housing;
 
 namespace SonoBooking.Infrastructure.Context;
-public partial class SonoBookingDbContext : DbContext
+public partial class SonoBookingDbContext(
+            DbContextOptions<SonoBookingDbContext> options)
+        : IdentityDbContext<User, Role, string>(options)
 {
     public virtual DbSet<Apartment> Apartments { get; set; }
 
@@ -18,7 +21,13 @@ public partial class SonoBookingDbContext : DbContext
 
     public virtual DbSet<Leader> Leaders { get; set; }
 
+    public virtual DbSet<Message> Messages { get; set; }
+
+    public virtual DbSet<Notification> Notifications { get; set; }
+
     public virtual DbSet<Payment> Payments { get; set; }
+
+    public virtual DbSet<Relationship> Relationships { get; set; }
 
     public virtual DbSet<Request> Requests { get; set; }
 
@@ -38,11 +47,51 @@ public partial class SonoBookingDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<Role>()
+                    .Ignore(r => r.ConcurrencyStamp);
+
+        modelBuilder.Entity<User>()
+                    .Ignore(r => r.ConcurrencyStamp);
+
         modelBuilder.Entity<RefreshToken>()
             .HasOne(rt => rt.User)
             .WithMany(u => u.RefreshTokens)
             .HasForeignKey(rt => rt.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Message>(entity =>
+        {
+            entity.ToTable("Messages");
+
+            entity.Property(e => e.Content)
+                .IsRequired()
+                .HasMaxLength(14000);
+
+            entity.HasOne(d => d.Sender).WithMany()
+                .HasForeignKey(d => d.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Receiver).WithMany()
+                .HasForeignKey(d => d.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.ToTable("Notifications");
+
+            entity.Property(e => e.Content)
+                .IsRequired()
+                .HasMaxLength(14000);
+
+            entity.HasOne(d => d.Sender).WithMany()
+                .HasForeignKey(d => d.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.Receiver).WithMany()
+                .HasForeignKey(d => d.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
 
         modelBuilder.Entity<Apartment>(entity =>
         {
@@ -54,24 +103,25 @@ public partial class SonoBookingDbContext : DbContext
 
             entity.HasIndex(e => e.Status, "IDX_Apartments_Status");
 
-            entity.HasIndex(e => new { e.ApartmentNumber, e.BuildingNumber, e.Street, e.City }, "UX_Apartment_Number_Location").IsUnique();
+            entity.HasIndex(e => new { e.ApartmentNumber, e.BuildingNumber, e.Street, e.CityId }, "UX_Apartment_Number_Location").IsUnique();
 
             entity.Property(e => e.AllocationType)
                 .IsRequired()
+                .HasConversion<string>()
                 .HasMaxLength(10)
-                .HasDefaultValue("fixed");
+                .HasDefaultValue(AllocationType.Fixed);
             entity.Property(e => e.ApartmentNumber)
                 .IsRequired()
                 .HasMaxLength(20);
-            entity.Property(e => e.ApartmentType)
+            entity.Property(e => e.ApartmentTypeId)
                 .IsRequired()
-                .HasMaxLength(20);
+                .HasMaxLength(50);
             entity.Property(e => e.BuildingNumber)
                 .IsRequired()
                 .HasMaxLength(20);
-            entity.Property(e => e.City)
+            entity.Property(e => e.CityId)
                 .IsRequired()
-                .HasMaxLength(100);
+                .HasMaxLength(50);
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -86,19 +136,33 @@ public partial class SonoBookingDbContext : DbContext
                 .HasMaxLength(10);
             entity.Property(e => e.Gender)
                 .IsRequired()
+                .HasConversion<string>()
                 .HasMaxLength(10)
-                .HasDefaultValue("male");
-            entity.Property(e => e.Governorate)
+                .HasDefaultValue(Gender.Male);
+            entity.Property(e => e.GovernorateId)
                 .IsRequired()
-                .HasMaxLength(100);
+                .HasMaxLength(50);
             entity.Property(e => e.Price).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.Status)
                 .IsRequired()
+                .HasConversion<string>()
                 .HasMaxLength(20)
-                .HasDefaultValue("available");
+                .HasDefaultValue(UnitStatus.Available);
             entity.Property(e => e.Street)
                 .IsRequired()
-                .HasMaxLength(150);
+                .HasMaxLength(50);
+
+            entity.HasOne(d => d.ApartmentType).WithMany()
+                .HasForeignKey(d => d.ApartmentTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.City).WithMany()
+                .HasForeignKey(d => d.CityId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Governorate).WithMany()
+                .HasForeignKey(d => d.GovernorateId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<Approval>(entity =>
@@ -155,8 +219,9 @@ public partial class SonoBookingDbContext : DbContext
             entity.Property(e => e.Price).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.Status)
                 .IsRequired()
+                .HasConversion<string>()
                 .HasMaxLength(20)
-                .HasDefaultValue("available");
+                .HasDefaultValue(UnitStatus.Available);
 
             entity.HasOne(d => d.Room).WithMany(p => p.Beds)
                 .HasForeignKey(d => d.RoomId)
@@ -171,25 +236,51 @@ public partial class SonoBookingDbContext : DbContext
 
             entity.HasIndex(e => e.DocumentNumber, "UX_Companions_DocumentNumber").IsUnique();
 
-            entity.Property(e => e.NationalIdUrl)
+            entity.Property(e => e.DocumentImageUrl)
                 .IsRequired()
-                .HasMaxLength(255);
+                .HasMaxLength(140);
             entity.Property(e => e.DocumentNumber)
                 .IsRequired()
                 .HasMaxLength(20);
             entity.Property(e => e.DocumentType)
                 .IsRequired()
+                .HasConversion<string>()
                 .HasMaxLength(20);
             entity.Property(e => e.FullName)
                 .IsRequired()
-                .HasMaxLength(150);
+                .HasMaxLength(100);
             entity.Property(e => e.Gender)
                 .IsRequired()
+                .HasConversion<string>()
                 .HasMaxLength(10);
+
+            entity.HasOne(d => d.Relationship).WithMany()
+                .HasForeignKey(d => d.RelationshipId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Companions_Relationship");
 
             entity.HasOne(d => d.User).WithMany(p => p.Companions)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("FK_Companions_Users");
+        });
+
+        modelBuilder.Entity<Relationship>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_Relationships");
+
+            entity.ToTable("Relationships");
+
+            entity.Property(e => e.Id)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.Property(e => e.NameAr)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            entity.Property(e => e.NameEn)
+                .HasMaxLength(200)
+                .IsRequired();
         });
 
         modelBuilder.Entity<Leader>(entity =>
@@ -231,11 +322,13 @@ public partial class SonoBookingDbContext : DbContext
             entity.Property(e => e.PaymentDate).HasColumnType("datetime");
             entity.Property(e => e.PaymentMethod)
                 .IsRequired()
+                .HasConversion<string>()
                 .HasMaxLength(20);
             entity.Property(e => e.PaymentStatus)
                 .IsRequired()
+                .HasConversion<string>()
                 .HasMaxLength(20)
-                .HasDefaultValue("pending");
+                .HasDefaultValue(PaymentStatus.Pending);
             entity.Property(e => e.TransactionReference).HasMaxLength(100);
 
             entity.HasOne(d => d.Reservation).WithMany(p => p.Payments)
@@ -263,10 +356,27 @@ public partial class SonoBookingDbContext : DbContext
                 .IsRequired()
                 .HasMaxLength(30);
 
+            entity.Property(e => e.RequestTypeId)
+                .IsRequired()
+                .HasMaxLength(50);
+
             entity.Property(e => e.Status)
                 .IsRequired()
+                .HasConversion<string>()
                 .HasMaxLength(20)
-                .HasDefaultValue("pending");
+                .HasDefaultValue(Status.Pending);
+
+            entity.HasOne(d => d.User).WithMany(p => p.Requests)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.ApprovedBy).WithMany()
+                .HasForeignKey(d => d.ApprovedById)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne(d => d.RequestType).WithMany()
+                .HasForeignKey(d => d.RequestTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<RequestParticipant>(entity =>
@@ -333,8 +443,9 @@ public partial class SonoBookingDbContext : DbContext
                 .HasColumnType("datetime");
             entity.Property(e => e.Status)
                 .IsRequired()
+                .HasConversion<string>()
                 .HasMaxLength(20)
-                .HasDefaultValue("reserved");
+                .HasDefaultValue(ReservationStatus.Reserved);
             entity.Property(e => e.TotalAmount).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.UnitPrice).HasColumnType("decimal(10, 2)");
 
@@ -383,17 +494,22 @@ public partial class SonoBookingDbContext : DbContext
             entity.Property(e => e.RoomNumber)
                 .IsRequired()
                 .HasMaxLength(20);
-            entity.Property(e => e.RoomType)
+            entity.Property(e => e.RoomTypeId)
                 .IsRequired()
-                .HasMaxLength(10);
+                .HasMaxLength(50);
             entity.Property(e => e.Status)
                 .IsRequired()
+                .HasConversion<string>()
                 .HasMaxLength(20)
-                .HasDefaultValue("available");
+                .HasDefaultValue(UnitStatus.Available);
 
             entity.HasOne(d => d.Apartment).WithMany(p => p.Rooms)
                 .HasForeignKey(d => d.ApartmentId)
                 .HasConstraintName("FK_Rooms_Apartments");
+
+            entity.HasOne(d => d.RoomType).WithMany()
+                .HasForeignKey(d => d.RoomTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<UnitImage>(entity =>

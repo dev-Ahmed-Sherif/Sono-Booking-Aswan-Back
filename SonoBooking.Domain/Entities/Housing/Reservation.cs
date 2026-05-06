@@ -27,7 +27,8 @@ public class Reservation : BaseAudit<string>
 
     public DateTime? ActualCheckOutDate { get; set; }
 
-    public ReservationStatus Status { get; set; } = ReservationStatus.Reserved;
+    [Required]
+    public required ReservationStatus Status { get; set; } = ReservationStatus.Reserved;
 
     [Required]
     public required decimal UnitPrice { get; set; }

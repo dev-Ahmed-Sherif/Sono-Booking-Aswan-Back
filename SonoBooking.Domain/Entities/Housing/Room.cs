@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using SonoBooking.Domain.Entities.Base;
+using SonoBooking.Domain.Entities.Lookups;
 
 namespace SonoBooking.Domain.Entities.Housing;
 
@@ -17,20 +18,26 @@ public class Room : BaseAudit<string>
     }
 
     [Required, MaxLength(50)]
+    public required string RoomNumber { get; set; }
+
+    [Required, MaxLength(500)]
+    public required string Description { get; set; }
+
+    [Required]
+    public required decimal Price { get; set; }
+
+    [Required]
+    public required UnitStatus Status { get; set; } = UnitStatus.Available;
+
+    [Required, MaxLength(50)]
     [ForeignKey(nameof(Apartment))]
     public required string ApartmentId { get; set; }
     public virtual Apartment? Apartment { get; set; }
 
     [Required, MaxLength(50)]
-    public required string RoomNumber { get; set; }
-
-    public string RoomType { get; set; }
-    public string Description { get; set; } = string.Empty;
-
-    [Required]
-    public required decimal Price { get; set; }
-
-    public UnitStatus Status { get; set; }
+    [ForeignKey(nameof(RoomType))]
+    public required string RoomTypeId { get; set; }
+    public virtual RoomType? RoomType { get; set; }
 
     public virtual ICollection<RequestUnit> RequestUnits { get; set; } = [];
 

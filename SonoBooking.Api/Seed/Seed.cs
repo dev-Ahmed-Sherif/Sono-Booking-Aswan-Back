@@ -3,7 +3,7 @@ using Serilog;
 using SonoBooking.Domain;
 using SonoBooking.Domain.Entities.Identity;
 
-namespace SonoTracker.Api.Seed
+namespace SonoBooking.Api.Seed
 {
     /// <summary>
     /// Runs all database seed operations on startup.

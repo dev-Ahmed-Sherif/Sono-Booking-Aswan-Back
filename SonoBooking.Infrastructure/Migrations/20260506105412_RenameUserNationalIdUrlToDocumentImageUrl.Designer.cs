@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SonoBooking.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using SonoBooking.Infrastructure.Context;
 namespace SonoBooking.Infrastructure.Migrations
 {
     [DbContext(typeof(SonoBookingDbContext))]
-    partial class SonoBookingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260506105412_RenameUserNationalIdUrlToDocumentImageUrl")]
+    partial class RenameUserNationalIdUrlToDocumentImageUrl
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1528,6 +1531,10 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("GovernorateId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -1558,6 +1565,8 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GovernorateId");
 
                     b.HasIndex("NormalizedName")
                         .IsUnique()
@@ -2528,6 +2537,15 @@ namespace SonoBooking.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SonoBooking.Domain.Entities.Identity.Role", b =>
+                {
+                    b.HasOne("SonoBooking.Domain.Entities.Lookups.Governorate", "Governorate")
+                        .WithMany()
+                        .HasForeignKey("GovernorateId");
+
+                    b.Navigation("Governorate");
                 });
 
             modelBuilder.Entity("SonoBooking.Domain.Entities.Lookups.City", b =>

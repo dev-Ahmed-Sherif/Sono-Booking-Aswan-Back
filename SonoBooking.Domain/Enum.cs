@@ -74,6 +74,27 @@ namespace SonoBooking.Domain
         NoShow = 5
     }
 
+    public enum PaymentStatus
+    {
+        [Values("Pending", "معلق", "PENDING")]
+        Pending = 1,
+        [Values("Paid", "مدفوع", "PAID")]
+        Paid = 2,
+        [Values("Failed", "فشل", "FAILED")]
+        Failed = 3,
+        [Values("Refunded", "مسترجع", "REFUNDED")]
+        Refunded = 4
+    }
+
+    public enum PaymentMethod
+    {
+        [Values("Cash", "نقدي", "CASH")]
+        Cash = 1,
+        [Values("Card", "بطاقة", "CARD")]
+        Card = 2,
+        [Values("Transfer", "تحويل", "TRANSFER")]
+        BankTransfer = 3
+    }
     public enum AllocationType
     {
         [Values("Fixed", "ثابت", "FIXED")]

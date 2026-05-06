@@ -31,7 +31,7 @@ namespace SonoBooking.Domain.Entities.Identity
         public DateOnly? BirthDate { get; set; }
 
         [MaxLength(140)]
-        public string? NationalIdUrl { get; set; }
+        public string? DocumentImageUrl { get; set; }
 
         [MaxLength(20)]
         public string? DocumentNumber { get; set; }

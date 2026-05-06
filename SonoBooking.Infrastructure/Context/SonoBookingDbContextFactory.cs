@@ -32,7 +32,7 @@ namespace SonoBooking.Infrastructure.Context
             var optionsBuilder = new DbContextOptionsBuilder<SonoBookingDbContext>();
             optionsBuilder.UseSqlServer(connectionString);
 
-            return new SonoBookingDbContext();
+            return new SonoBookingDbContext(optionsBuilder.Options);
         }
     }
 }

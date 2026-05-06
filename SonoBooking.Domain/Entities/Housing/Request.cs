@@ -19,17 +19,24 @@ public class Request : BaseAudit<string>
         }
     }
 
-    public string RequestNumber { get; set; } = string.Empty;
 
-    public DateTime RequestDate { get; set; } = DateTime.UtcNow;
+    [Required, MaxLength(30)]
+    public required string RequestNumber { get; set; }
 
+    [Required]
+    public required DateTime RequestDate { get; set; }
+
+    [Required]
     public required DateOnly StartDate { get; set; }
 
-    public DateOnly EndDate { get; set; }
+    [Required]
+    public required DateOnly EndDate { get; set; }
 
-    public Status Status { get; set; } = Status.Pending;
+    [Required]
+    public required Status Status { get; set; } = Status.Pending;
 
-    public string RejectionReason { get; set; } = string.Empty;
+    [MaxLength(500)]
+    public string? RejectionReason { get; set; }
 
     [Required, MaxLength(50)]
     [ForeignKey(nameof(RequestType))]

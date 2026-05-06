@@ -7,9 +7,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SonoBooking.Domain.Entities.Lookups
 {
-    public class Relation : Lookup<string>
+    public class Relationship : Lookup<string>
     {
-        public Relation() 
+        public Relationship() 
         {
             if (string.IsNullOrEmpty(Id))
             {

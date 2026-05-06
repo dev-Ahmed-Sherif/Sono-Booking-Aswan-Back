@@ -1,26 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using SonoBooking.Domain.Entities.Base;
 using SonoBooking.Domain.Entities.Housing;
 
 namespace SonoBooking.Domain.Entities.Housing;
 
-public partial class Payment
+public class Payment : BaseAudit<string>
 {
-    public int Id { get; set; }
+    public Payment()
+    {
+        if (string.IsNullOrEmpty(Id))
+        {
+            Id = Guid.CreateVersion7().ToString();
+        }
+    }
 
-    public int ReservationId { get; set; }
+    [Required]
+    public required decimal Amount { get; set; }
 
-    public decimal Amount { get; set; }
+    [Required, MaxLength(50)]
+    public required PaymentMethod PaymentMethod { get; set; }
 
-    public string PaymentMethod { get; set; }
+    [Required, MaxLength(50)]
+    public required PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Pending;
 
-    public string PaymentStatus { get; set; }
+    [Required]
+    public required DateTime PaymentDate { get; set; }
 
-    public DateTime? PaymentDate { get; set; }
+    [Required, MaxLength(100)]
+    public required string TransactionReference { get; set; }
 
-    public string TransactionReference { get; set; }
-
-    public DateTime CreatedAt { get; set; }
-
-    public virtual Reservation Reservation { get; set; }
+    [Required, MaxLength(50)]
+    [ForeignKey(nameof(Reservation))]
+    public required string ReservationId { get; set; }
+    public virtual Reservation? Reservation { get; set; }
 }

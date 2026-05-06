@@ -29,7 +29,7 @@ public class Companion : BaseAudit<string>
     public required DateOnly BirthDate { get; set; }
 
     [Required, MaxLength(140)]
-    public required string NationalIdUrl { get; set; }
+    public required string DocumentImageUrl { get; set; }
 
     [Required, MaxLength(20)]
     public required string DocumentNumber { get; set; }
@@ -43,9 +43,9 @@ public class Companion : BaseAudit<string>
     public virtual User? User { get; set; }
 
     [Required, MaxLength(50)]
-    [ForeignKey(nameof(Relation))]
-    public required string RelationId { get; set; }
-    public virtual Relation? Relation { get; set; }
+    [ForeignKey(nameof(Relationship))]
+    public required string RelationshipId { get; set; }
+    public virtual Relationship? Relationship { get; set; }
 
     public virtual ICollection<RequestParticipant> RequestParticipants { get; set; } = [];
 }

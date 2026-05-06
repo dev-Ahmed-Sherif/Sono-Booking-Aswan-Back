@@ -27,11 +27,13 @@ public class Approval : BaseAudit<string>
     [ForeignKey(nameof(Leader))]
     public required string LeaderId { get; set; }
     public virtual Leader? Leader { get; set; }
+    [Required, MaxLength(20)]
+    public required string Decision { get; set; }   
 
-    public string Decision { get; set; } = string.Empty;
+    [MaxLength(500)]
+    public required string Notes { get; set; }
 
-    public string Notes { get; set; } = string.Empty;
-
-    public DateTime DecisionDate { get; set; }
+    [Required]
+    public required DateTime DecisionDate { get; set; }
 
 }

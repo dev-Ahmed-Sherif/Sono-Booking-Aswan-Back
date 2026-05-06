@@ -17,23 +17,23 @@ public class Apartment : BaseAudit<string>
         }
     }
 
-    [MaxLength(50)]
-    public string? ApartmentNumber { get; set; }
+    [MaxLength(20)]
+    public required string ApartmentNumber { get; set; }
 
     [MaxLength(250)]
-    public string? Description { get; set; }
+    public required string Description { get; set; }
 
     [Required]
     public required decimal Price { get; set; }
 
     [Required]
-    public UnitStatus Status { get; set; } = UnitStatus.Available;
+    public required UnitStatus Status { get; set; } = UnitStatus.Available;
 
     [Required]
-    public Gender Gender { get; set; }
+    public required Gender Gender { get; set; }
 
     [Required]
-    public AllocationType AllocationType { get; set; } = AllocationType.Fixed;
+    public required AllocationType AllocationType { get; set; } = AllocationType.Fixed;
 
     [Required, MaxLength(50)]
     public required string Street { get; set; }

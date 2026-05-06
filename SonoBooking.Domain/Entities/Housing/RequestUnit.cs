@@ -26,12 +26,12 @@ public class RequestUnit : BaseAudit<string>
     public string? ApartmentId { get; set; }
     public virtual Apartment? Apartment { get; set; }
 
-    [Required, MaxLength(50)]
+    [MaxLength(50)]
     [ForeignKey(nameof(Bed))]
     public string? BedId { get; set; }
     public virtual Bed? Bed { get; set; }
 
-    [Required, MaxLength(50)]
+    [MaxLength(50)]
     [ForeignKey(nameof(Room))]
     public string? RoomId { get; set; }
     public virtual Room? Room { get; set; }

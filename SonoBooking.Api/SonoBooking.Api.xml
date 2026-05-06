@@ -411,16 +411,6 @@
             Web Host Builder
             </summary>
         </member>
-        <member name="T:SonoTracker.Api.Seed.DatabaseSeed">
-            <summary>
-            Runs all database seed operations on startup.
-            </summary>
-        </member>
-        <member name="M:SonoTracker.Api.Seed.DatabaseSeed.SeedIdentityAsync(Microsoft.Extensions.Hosting.IHost)">
-            <summary>
-            Seed base role (SuperAdmin) and super user on startup.
-            </summary>
-        </member>
         <member name="T:SonoTracker.Api.Startup">
             <summary>
             Start Up Class
@@ -450,6 +440,16 @@
             <param name="app"></param>
             <param name="env"></param>
             <param name="provider"></param>
+        </member>
+        <member name="T:SonoBooking.Api.Seed.DatabaseSeed">
+            <summary>
+            Runs all database seed operations on startup.
+            </summary>
+        </member>
+        <member name="M:SonoBooking.Api.Seed.DatabaseSeed.SeedIdentityAsync(Microsoft.Extensions.Hosting.IHost)">
+            <summary>
+            Seed base role (SuperAdmin) and super user on startup.
+            </summary>
         </member>
     </members>
 </doc>
