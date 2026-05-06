@@ -1,20 +1,29 @@
-using City = SonoTracker.Domain.Entities.Lookups.City;
+using City = SonoBooking.Domain.Entities.Lookups.City;
 using System.Collections.Generic;
-using BookingType = SonoBooking.Domain.Entities.Lookups.BookingType;
+using ApartmentType = SonoBooking.Domain.Entities.Lookups.ApartmentType;
 using Governorate = SonoBooking.Domain.Entities.Lookups.Governorate;
-using Nationality = SonoTracker.Domain.Entities.Lookups.Nationality;
+using RequestType = SonoBooking.Domain.Entities.Lookups.RequestType;
+using Relationship = SonoBooking.Domain.Entities.Lookups.Relationship;
+using RoomType = SonoBooking.Domain.Entities.Lookups.RoomType;
+using Role = SonoBooking.Domain.Entities.Identity.Role;
 
-namespace SonoTracker.Infrastructure.DataInitializer
+namespace SonoBooking.Infrastructure.DataInitializer
 {
     public interface IDataInitializer
     {
-        IEnumerable<Nationality> SeedNationalitiesAsync();
-
-        IEnumerable<BookingType> SeedAccidentTypesAsync();
-
         IEnumerable<Governorate> SeedGovernoratesAsync();
 
         IEnumerable<City> SeedCitiesAsync();
+
+        IEnumerable<ApartmentType> SeedApartmentTypesAsync();
+
+        IEnumerable<RoomType> SeedRoomTypesAsync();
+
+        IEnumerable<RequestType> SeedRequestTypesAsync();
+
+        IEnumerable<Relationship> SeedRelationshipsAsync();
+
+        IEnumerable<Role> SeedRolesAsync();
 
         //IEnumerable<Status> SeedStatusesAsync();
     }

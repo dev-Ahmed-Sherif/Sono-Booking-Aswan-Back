@@ -1,5 +1,4 @@
 using SonoTracker.Common.DTO.Base;
-using SonoTracker.Domain.Entities.Base;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;

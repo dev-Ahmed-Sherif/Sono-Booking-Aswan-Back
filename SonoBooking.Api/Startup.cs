@@ -1,6 +1,5 @@
 using Asp.Versioning.ApiExplorer;
 using SonoTracker.Api.Extensions;
-using SonoTracker.Api.Hubs;
 using SonoTracker.Api.MiddleWares;
 using SonoTracker.Application.DependencyExtension;
 
@@ -57,7 +56,6 @@ namespace SonoTracker.Api
             app.UseStaticFiles();
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapHub<GeoHub>("/hubs/geo");
                 endpoints.MapControllers();
             });
         }

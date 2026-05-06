@@ -39,10 +39,5 @@ namespace SonoBooking.Domain.Entities.Identity
         public required string ModifiedBy { get; set; }
 
         public bool IsDeleted { get; set; }
-
-        [MaxLength(50)]
-        [ForeignKey(nameof(Governorate))]
-        public string? GovernorateId { get; set; }
-        public virtual Governorate? Governorate { get; set; }
     }
 }

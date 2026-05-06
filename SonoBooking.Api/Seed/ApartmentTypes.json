@@ -1,0 +1,41 @@
+[
+  {
+    "Id": "019f0d6c-3a9b-7a5c-9c9b-5b44b1a1c001",
+    "Code": "3_rooms",
+    "NameAr": "شقة 3 غرف",
+    "NameEn": "3 Rooms",
+    "CreatedAt": "01/01/2023",
+    "CreatedById": "System",
+    "CreatedBy": "System",
+    "ModifiedAt": "01/01/2023",
+    "ModifiedById": "System",
+    "ModifiedBy": "System",
+    "IsDeleted": false
+  },
+  {
+    "Id": "019f0d6c-3a9b-7a5c-9c9b-5b44b1a1c002",
+    "Code": "2_rooms",
+    "NameAr": "شقة غرفتين",
+    "NameEn": "2 Rooms",
+    "CreatedAt": "01/01/2023",
+    "CreatedById": "System",
+    "CreatedBy": "System",
+    "ModifiedAt": "01/01/2023",
+    "ModifiedById": "System",
+    "ModifiedBy": "System",
+    "IsDeleted": false
+  },
+  {
+    "Id": "019f0d6c-3a9b-7a5c-9c9b-5b44b1a1c003",
+    "Code": "studio",
+    "NameAr": "استوديو",
+    "NameEn": "Studio",
+    "CreatedAt": "01/01/2023",
+    "CreatedById": "System",
+    "CreatedBy": "System",
+    "ModifiedAt": "01/01/2023",
+    "ModifiedById": "System",
+    "ModifiedBy": "System",
+    "IsDeleted": false
+  }
+]

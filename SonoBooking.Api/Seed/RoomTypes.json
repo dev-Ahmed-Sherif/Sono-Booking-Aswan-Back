@@ -1,0 +1,28 @@
+[
+  {
+    "Id": "019f0d6c-3a9b-7a5c-9c9b-5b44b1a1d001",
+    "Code": "shared",
+    "NameAr": "مشترك",
+    "NameEn": "Shared",
+    "CreatedAt": "01/01/2023",
+    "CreatedById": "System",
+    "CreatedBy": "System",
+    "ModifiedAt": "01/01/2023",
+    "ModifiedById": "System",
+    "ModifiedBy": "System",
+    "IsDeleted": false
+  },
+  {
+    "Id": "019f0d6c-3a9b-7a5c-9c9b-5b44b1a1d002",
+    "Code": "private",
+    "NameAr": "خاص",
+    "NameEn": "Private",
+    "CreatedAt": "01/01/2023",
+    "CreatedById": "System",
+    "CreatedBy": "System",
+    "ModifiedAt": "01/01/2023",
+    "ModifiedById": "System",
+    "ModifiedBy": "System",
+    "IsDeleted": false
+  }
+]

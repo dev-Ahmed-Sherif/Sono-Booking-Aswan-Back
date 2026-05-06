@@ -11,10 +11,6 @@ namespace SonoTracker.Application.Mapping
             MapTown();
             MapUnitType();
             MapNationality();
-            MapFloatingUnit();
-            MapFloatingUnitStaff();
-            MapFloatingUnitOrganization();
-            MapAccident();
         }
     }
 }

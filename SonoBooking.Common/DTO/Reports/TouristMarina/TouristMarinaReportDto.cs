@@ -1,4 +1,4 @@
-using SonoTracker.Domain.Entities.Lookups;
+
 using System;
 
 namespace SonoTracker.Common.DTO.Reports.TouristMarina

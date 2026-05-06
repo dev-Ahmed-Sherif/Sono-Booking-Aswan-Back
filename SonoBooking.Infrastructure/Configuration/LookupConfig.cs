@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using SonoTracker.Domain.Entities.Base;
+using SonoBooking.Domain.Entities.Base;
 using System.Diagnostics.CodeAnalysis;
 
 namespace SonoTracker.Infrastructure.Configuration

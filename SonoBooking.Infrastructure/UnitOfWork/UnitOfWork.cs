@@ -8,11 +8,9 @@ using Microsoft.EntityFrameworkCore.Storage;
 using SonoTracker.Common.DTO.Identity.User;
 using SonoTracker.Common.Infrastructure.Repository;
 using SonoTracker.Common.Infrastructure.UnitOfWork;
-using SonoTracker.Domain.Entities.Base;
-using SonoTracker.Domain.Entities.Identity;
 using SonoTracker.Infrastructure.Repository;
 
-namespace SonoTracker.Infrastructure.UnitOfWork
+namespace SonoBooking.Infrastructure.UnitOfWork
 {
     public class UnitOfWork<T> : IUnitOfWork<T> where T : class 
     {

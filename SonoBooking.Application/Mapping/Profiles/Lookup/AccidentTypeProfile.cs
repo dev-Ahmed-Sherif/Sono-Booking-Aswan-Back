@@ -7,13 +7,13 @@ namespace SonoTracker.Application.Mapping
     {
         public void MapAccidentType()
         {
-            CreateMap <BookingType, AccidentTypeDto>().ReverseMap();
+            //CreateMap <BookingType, AccidentTypeDto>().ReverseMap();
 
-            CreateMap<BookingType, EditAccidentTypeDto>().ReverseMap();
+            //CreateMap<BookingType, EditAccidentTypeDto>().ReverseMap();
             
-            CreateMap<AddAccidentTypeDto, BookingType>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ReverseMap();
+            //CreateMap<AddAccidentTypeDto, BookingType>()
+            //    .ForMember(dest => dest.Id, opt => opt.Ignore())
+            //    .ReverseMap();
         }
     }
 }

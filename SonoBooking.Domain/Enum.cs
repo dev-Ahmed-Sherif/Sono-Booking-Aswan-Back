@@ -40,13 +40,69 @@ namespace SonoBooking.Domain
     
     public enum Status
     {
-        [Values("Pending", "جارى المراجعة", "PENDING")]
-        Approved = 1,
         [Values("Approved", "مقبول", "APPROVED")]
+        Approved = 1,
+        [Values("Pending", "معلق", "PENDING")]
         NeedCompelete = 2,
         [Values("Rejected", "مرفوض", "REJECTED")]
-        Pending = 3
+        Pending = 3,
+        [Values("Canceled", "ملغى", "CANCELED")]
+        Canceled = 4
     }
+
+    public enum UnitStatus
+    {
+        [Values("Available", "متاح", "AVAILABLE")]
+        Available = 1,
+        [Values("Reserved", "محجوز", "RESERVED")]
+        Reserved = 2,
+        [Values("Occupied", "مشغول", "OCCUPIED")]
+        Occupied = 3
+    }
+
+    public enum ReservationStatus
+    {
+        [Values("Reserved", "محجوز", "RESERVED")]
+        Reserved = 1,
+        [Values("CheckedIn", "تأكيد وصول", "CHECKEDIN")]
+        CheckedIn = 2,
+        [Values("Completed", "تم اكتمال الاقامة", "COMPLETED")]
+        Completed = 3,
+         [Values("Canceled", "ملغى", "CANCELED")]
+        Canceled = 4,
+        [Values("NoShow", "لم يظهر", "NOSHOW")]
+        NoShow = 5
+    }
+
+    public enum PaymentStatus
+    {
+        [Values("Pending", "معلق", "PENDING")]
+        Pending = 1,
+        [Values("Paid", "مدفوع", "PAID")]
+        Paid = 2,
+        [Values("Failed", "فشل", "FAILED")]
+        Failed = 3,
+        [Values("Refunded", "مسترجع", "REFUNDED")]
+        Refunded = 4
+    }
+
+    public enum PaymentMethod
+    {
+        [Values("Cash", "نقدي", "CASH")]
+        Cash = 1,
+        [Values("Card", "بطاقة", "CARD")]
+        Card = 2,
+        [Values("Transfer", "تحويل", "TRANSFER")]
+        BankTransfer = 3
+    }
+    public enum AllocationType
+    {
+        [Values("Fixed", "ثابت", "FIXED")]
+        Fixed = 1,
+        [Values("Movable", "متحرك", "MOVABLE")]
+        Movable = 2
+    }
+
     public enum Case
     {
         [Values("InProgress", "جاري الأصلاح", "InProgress")]
@@ -59,7 +115,9 @@ namespace SonoBooking.Domain
         [Values("IDCard", "بطاقة شخصية", "IDCard")]
         IDCard = 1,
         [Values("Passport", "جواز سفر", "Passport")]
-        Passport = 2
+        Passport = 2,
+        [Values("ResidencePermit", "شهادة ميلاد", "ResidencePermit")]
+        ResidencePermit = 3
     }
 
 

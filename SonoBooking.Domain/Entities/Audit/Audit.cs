@@ -1,6 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using SonoTracker.Domain.Entities.Base;
+using SonoBooking.Domain.Entities.Base;
 
 namespace SonoTracker.Domain.Entities.Audit
 {

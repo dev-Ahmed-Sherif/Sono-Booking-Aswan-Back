@@ -1,0 +1,41 @@
+[
+  {
+    "Id": "019f0d6c-3a9b-7a5c-9c9b-5b44b1a1f001",
+    "Code": "mission",
+    "NameAr": "مأمورية",
+    "NameEn": "Mission",
+    "CreatedAt": "01/01/2023",
+    "CreatedById": "System",
+    "CreatedBy": "System",
+    "ModifiedAt": "01/01/2023",
+    "ModifiedById": "System",
+    "ModifiedBy": "System",
+    "IsDeleted": false
+  },
+  {
+    "Id": "019f0d6c-3a9b-7a5c-9c9b-5b44b1a1f002",
+    "Code": "medical",
+    "NameAr": "طبي",
+    "NameEn": "Medical",
+    "CreatedAt": "01/01/2023",
+    "CreatedById": "System",
+    "CreatedBy": "System",
+    "ModifiedAt": "01/01/2023",
+    "ModifiedById": "System",
+    "ModifiedBy": "System",
+    "IsDeleted": false
+  },
+  {
+    "Id": "019f0d6c-3a9b-7a5c-9c9b-5b44b1a1f003",
+    "Code": "personal",
+    "NameAr": "شخصي",
+    "NameEn": "Personal",
+    "CreatedAt": "01/01/2023",
+    "CreatedById": "System",
+    "CreatedBy": "System",
+    "ModifiedAt": "01/01/2023",
+    "ModifiedById": "System",
+    "ModifiedBy": "System",
+    "IsDeleted": false
+  }
+]

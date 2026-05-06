@@ -1,6 +1,6 @@
 using Serilog;
 using Serilog.Events;
-using SonoTracker.Api.Seed;
+using SonoBooking.Api.Seed;
 using SonoTracker.Common.Extensions;
 
 namespace SonoTracker.Api
@@ -39,10 +39,6 @@ namespace SonoTracker.Api
                 var host = CreateHostBuilder(args).Build();
 
                 await DatabaseSeed.SeedIdentityAsync(host);
-                await DatabaseSeed.SeedNationalitiesAsync(host);
-                await DatabaseSeed.SeedAccidentTypesAsync(host);
-                await DatabaseSeed.SeedGovernoratesAsync(host);
-                await DatabaseSeed.SeedCitiesAsync(host);
 
                 await host.RunAsync();
             }
