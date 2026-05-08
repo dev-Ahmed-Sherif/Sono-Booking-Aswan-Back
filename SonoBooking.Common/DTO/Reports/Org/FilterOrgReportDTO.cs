@@ -1,8 +1,8 @@
-using SonoBooking.Domain;
-using SonoTracker.Common.DTO.ReportsDTOs;
+﻿using SonoBooking.Domain;
+using SonoBooking.Common.DTO.Reports;
 using System;
 
-namespace SonoTracker.Common.DTO.Reports.Org
+namespace SonoBooking.Common.DTO.Reports.Org
 {
     public class FilterOrgReportDTO : BaseReportSearch
     {
@@ -18,3 +18,5 @@ namespace SonoTracker.Common.DTO.Reports.Org
         public bool IsDeleted { get; set; } = false;
     }
 }
+
+

@@ -1,12 +1,11 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SonoTracker.Api.Controllers.V1.Base;
-using SonoTracker.Application.Services.Enums.Genders;
-using SonoTracker.Common.Core;
-using System.Threading;
+using SonoBooking.Api.Controllers.V1.Base;
+using SonoBooking.Application.Services.Enums.Genders;
+using SonoBooking.Common.Core;
 
-namespace SonoTracker.Api.Controllers.V1.Lookups.Enums
+namespace SonoBooking.Api.Controllers.V1.Lookups.Enums
 {
     /// <summary>
     /// Constructor
@@ -14,7 +13,6 @@ namespace SonoTracker.Api.Controllers.V1.Lookups.Enums
 
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize]
     public class GendersController(IGenderService gender) : BaseController
     {
         /// <summary>
@@ -25,3 +23,4 @@ namespace SonoTracker.Api.Controllers.V1.Lookups.Enums
         public async Task<IFinalResult> GetAllAsync(CancellationToken cancellationToken = default) => await gender.GetAllAsync(cancellationToken);
     }
 }
+

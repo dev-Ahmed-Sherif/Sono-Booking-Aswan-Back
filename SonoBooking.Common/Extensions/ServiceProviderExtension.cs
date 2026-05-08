@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace SonoTracker.Common.Extensions
+namespace SonoBooking.Common.Extensions
 {
     [ExcludeFromCodeCoverage]
     public static class ServiceProviderExtension
@@ -13,3 +13,4 @@ namespace SonoTracker.Common.Extensions
         }
     }
 }
+

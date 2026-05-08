@@ -2,7 +2,7 @@
 using SonoBooking.Domain.Entities.Base;
 using System.Diagnostics.CodeAnalysis;
 
-namespace SonoTracker.Infrastructure.Configuration
+namespace SonoBooking.Infrastructure.Configuration
 {
     [ExcludeFromCodeCoverage]
     public class LookupConfig<TEntity,TId> : BaseConfig<TEntity, TId> where TEntity : Lookup<TId> where TId : struct
@@ -17,3 +17,4 @@ namespace SonoTracker.Infrastructure.Configuration
         }
     }
 }
+

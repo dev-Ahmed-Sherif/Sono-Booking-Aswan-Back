@@ -1,14 +1,14 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using SonoTracker.Common.DTO.Identity.User;
-using SonoTracker.Common.Infrastructure.Repository;
-using SonoTracker.Common.Infrastructure.UnitOfWork;
-using SonoTracker.Infrastructure.Repository;
+using SonoBooking.Common.DTO.Identity.User;
+using SonoBooking.Common.Infrastructure.Repository;
+using SonoBooking.Common.Infrastructure.UnitOfWork;
+using SonoBooking.Infrastructure.Repository;
 
 namespace SonoBooking.Infrastructure.UnitOfWork
 {

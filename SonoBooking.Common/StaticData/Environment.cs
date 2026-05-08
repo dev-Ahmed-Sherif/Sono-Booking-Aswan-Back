@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace SonoTracker.Common.StaticData
+namespace SonoBooking.Common.StaticData
 {
     [ExcludeFromCodeCoverage]
     public static class Environment
@@ -10,3 +10,4 @@ namespace SonoTracker.Common.StaticData
         public static string Production = "Prod";
     }
 }
+

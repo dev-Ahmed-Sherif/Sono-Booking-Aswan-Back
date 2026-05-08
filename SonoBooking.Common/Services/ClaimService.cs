@@ -1,8 +1,8 @@
 ﻿using System;
 using Microsoft.AspNetCore.Http;
-using SonoTracker.Common.DTO.Base;
+using SonoBooking.Common.DTO.Base;
 
-namespace SonoTracker.Common.Services
+namespace SonoBooking.Common.Services
 {
     public class ClaimService : IClaimService
     {
@@ -32,3 +32,4 @@ namespace SonoTracker.Common.Services
 
     }
 }
+

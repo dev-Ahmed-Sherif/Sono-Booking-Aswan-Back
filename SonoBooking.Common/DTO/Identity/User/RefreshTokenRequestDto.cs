@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace SonoTracker.Common.DTO.Identity.User
+namespace SonoBooking.Common.DTO.Identity.User
 {
     public class RefreshTokenRequestDto
     {
@@ -12,3 +12,4 @@ namespace SonoTracker.Common.DTO.Identity.User
         public required string RefreshToken { get; set; }
     }
 }
+

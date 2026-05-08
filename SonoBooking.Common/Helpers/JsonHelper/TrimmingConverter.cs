@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json;
 
-namespace SonoTracker.Common.Helpers.JsonHelper
+namespace SonoBooking.Common.Helpers.JsonHelper
 {
     [ExcludeFromCodeCoverage]
     public class TrimmingConverter : JsonConverter
@@ -31,3 +31,4 @@ namespace SonoTracker.Common.Helpers.JsonHelper
         }
     }
 }
+

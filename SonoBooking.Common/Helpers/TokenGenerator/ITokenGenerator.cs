@@ -1,4 +1,4 @@
-﻿namespace SonoTracker.Common.Helpers.TokenGenerator
+﻿namespace SonoBooking.Common.Helpers.TokenGenerator
 {
     public interface ITokenGenerator
     {
@@ -7,3 +7,4 @@
         string DecodeToken(string token);
     }
 }
+

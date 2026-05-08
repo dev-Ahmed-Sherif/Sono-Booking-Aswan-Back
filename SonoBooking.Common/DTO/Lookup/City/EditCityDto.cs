@@ -1,7 +1,7 @@
-using SonoTracker.Common.DTO.Base;
+﻿using SonoBooking.Common.DTO.Base;
 using System;
 
-namespace SonoTracker.Common.DTO.Lookup.City
+namespace SonoBooking.Common.DTO.Lookup.City
 {
     public class EditCityDto : LookupDto<string>
     {
@@ -14,3 +14,5 @@ namespace SonoTracker.Common.DTO.Lookup.City
         public string ModifiedById { get; set; }
     }
 }
+
+

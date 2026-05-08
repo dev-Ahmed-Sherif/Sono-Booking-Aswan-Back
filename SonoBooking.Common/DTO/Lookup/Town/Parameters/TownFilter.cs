@@ -1,8 +1,10 @@
-using SonoTracker.Common.DTO.Base;
+﻿using SonoBooking.Common.DTO.Base;
 
-namespace SonoTracker.Common.DTO.Lookup.Town.Parameters
+namespace SonoBooking.Common.DTO.Lookup.Town.Parameters
 {
     public class TownFilter : MainFilter
     {
     }
 }
+
+

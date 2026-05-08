@@ -1,14 +1,14 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Query;
-using SonoTracker.Common.Extensions;
+using SonoBooking.Common.Extensions;
 using SonoTracker.Domain.Entities.Identity;
 
-namespace SonoTracker.Common.Infrastructure.Repository
+namespace SonoBooking.Common.Infrastructure.Repository
 {
     public interface IRepository<T> where T : class
     {
@@ -270,3 +270,4 @@ namespace SonoTracker.Common.Infrastructure.Repository
         //Task<(int Count, IEnumerable<RoleTable> Result)> FindPagedAsync(Expression<Func<RoleTable, bool>> predicate, int pageNumber, int pageSize, IEnumerable<SortModel> orderByValue);
     }
 }
+

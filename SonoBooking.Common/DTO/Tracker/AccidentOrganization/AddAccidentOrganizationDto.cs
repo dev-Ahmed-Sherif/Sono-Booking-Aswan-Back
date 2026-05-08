@@ -1,9 +1,9 @@
-using SonoTracker.Common.Core;
+﻿using SonoBooking.Common.Core;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
-namespace SonoTracker.Common.DTO.Tracker.AccidentOrganization
+namespace SonoBooking.Common.DTO.Tracker.AccidentOrganization
 {
     [ExcludeFromCodeCoverage]
 
@@ -19,3 +19,5 @@ namespace SonoTracker.Common.DTO.Tracker.AccidentOrganization
 
     }
 }
+
+

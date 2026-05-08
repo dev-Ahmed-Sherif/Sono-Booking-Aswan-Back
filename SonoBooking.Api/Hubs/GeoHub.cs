@@ -9,7 +9,7 @@ using StackExchange.Redis;
 using System.Security.Claims;
 
 
-namespace SonoTracker.Api.Hubs
+namespace SonoBooking.Api.Hubs
 {
 
     /// <summary>  
@@ -122,3 +122,4 @@ namespace SonoTracker.Api.Hubs
         }
     }
 }
+

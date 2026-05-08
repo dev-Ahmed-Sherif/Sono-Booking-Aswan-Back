@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 
-namespace SonoTracker.Common.Helpers.HttpClient
+namespace SonoBooking.Common.Helpers.HttpClient
 {
     [ExcludeFromCodeCoverage]
     public class MicroServicesUrls
@@ -29,3 +29,4 @@ namespace SonoTracker.Common.Helpers.HttpClient
 
     }
 }
+

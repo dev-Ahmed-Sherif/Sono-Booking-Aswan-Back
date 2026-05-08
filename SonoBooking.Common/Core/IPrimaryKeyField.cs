@@ -1,7 +1,8 @@
-﻿namespace SonoTracker.Common.Core
+﻿namespace SonoBooking.Common.Core
 {
     public interface IEntityDto<TPrimaryKey>
     {
         TPrimaryKey Id { get; set; }
     }
 }
+

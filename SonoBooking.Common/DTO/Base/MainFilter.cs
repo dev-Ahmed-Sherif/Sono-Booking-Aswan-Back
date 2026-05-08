@@ -1,6 +1,6 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
-namespace SonoTracker.Common.DTO.Base
+namespace SonoBooking.Common.DTO.Base
 {
     [ExcludeFromCodeCoverage]
     public class MainFilter
@@ -11,3 +11,4 @@ namespace SonoTracker.Common.DTO.Base
         public bool IsDeleted { get; set; } = false;
     }
 }
+

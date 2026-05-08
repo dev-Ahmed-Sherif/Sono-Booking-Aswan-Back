@@ -1,4 +1,4 @@
-namespace SonoTracker.Common.DTO.Identity.Role
+﻿namespace SonoBooking.Common.DTO.Identity.Role
 {
     public class AddRoleDto
     {
@@ -7,3 +7,4 @@ namespace SonoTracker.Common.DTO.Identity.Role
         public string GovernorateId { get; set; }
     }
 }
+

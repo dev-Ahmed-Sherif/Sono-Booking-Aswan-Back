@@ -1,12 +1,12 @@
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using SonoBooking.Domain;
-using SonoTracker.Common.Core;
+using SonoBooking.Common.Core;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace SonoTracker.Common.DTO.Tracker.Accident
+namespace SonoBooking.Common.DTO.Tracker.Accident
 {
     [ExcludeFromCodeCoverage]
     public class AddAccidentDto : IEntityDto<string>
@@ -26,3 +26,5 @@ namespace SonoTracker.Common.DTO.Tracker.Accident
         public ICollection<string> Organizations { get; set; }
     }
 }
+
+

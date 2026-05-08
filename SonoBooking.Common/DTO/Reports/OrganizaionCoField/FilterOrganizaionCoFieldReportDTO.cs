@@ -1,4 +1,4 @@
-namespace SonoTracker.Common.DTO.Reports.OrganizaionCoField
+﻿namespace SonoBooking.Common.DTO.Reports.OrganizaionCoField
 {
     public class FilterOrganizaionCoFieldReportDTO 
     {
@@ -9,3 +9,4 @@ namespace SonoTracker.Common.DTO.Reports.OrganizaionCoField
         public string Description { get; set; }
     }
 }
+

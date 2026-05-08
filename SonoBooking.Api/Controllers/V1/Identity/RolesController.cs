@@ -1,15 +1,15 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SonoBooking.Domain.Entities.Identity;
-using SonoTracker.Api.Controllers.V1.Base;
-using SonoTracker.Application.Services.Identity.Role;
-using SonoTracker.Common.Core;
-using SonoTracker.Common.DTO.Base;
-using SonoTracker.Common.DTO.Identity.Role;
+using SonoBooking.Api.Controllers.V1.Base;
 using System.Net;
+using SonoBooking.Common.Core;
+using SonoBooking.Common.DTO.Identity.Role;
+using SonoBooking.Application.Services.Identity.Role;
+using SonoBooking.Common.DTO.Base;
 
-namespace SonoTracker.Api.Controllers.V1.Identity
+namespace SonoBooking.Api.Controllers.V1.Identity
 {
     /// <summary>
     /// Controller for managing roles in the application.
@@ -186,3 +186,4 @@ namespace SonoTracker.Api.Controllers.V1.Identity
         }
     }   
 }
+

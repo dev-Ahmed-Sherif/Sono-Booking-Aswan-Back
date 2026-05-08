@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using SonoTracker.Common.DTO.Integration.File;
+using SonoBooking.Common.DTO.Integration.File;
 
-namespace SonoTracker.Integration.FileRepository
+namespace SonoBooking.Integration.FileRepository
 {
     public interface IFileRepository
     {
@@ -15,3 +15,4 @@ namespace SonoTracker.Integration.FileRepository
         Task<List<TokenDto>> GetTokens(List<Guid> ids);
     }
 }
+

@@ -2,11 +2,11 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using SonoTracker.Common.Core;
-using SonoTracker.Common.Infrastructure.UnitOfWork;
-using SonoTracker.Integration.CacheRepository;
+using SonoBooking.Common.Core;
+using SonoBooking.Common.Infrastructure.UnitOfWork;
+using SonoBooking.Integration.CacheRepository;
 
-namespace SonoTracker.Application.Services.Base
+namespace SonoBooking.Application.Services.Base
 {
     public interface IServiceBaseParameter<T> where T : class
     {

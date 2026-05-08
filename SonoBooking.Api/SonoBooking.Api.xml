@@ -4,34 +4,34 @@
         <name>SonoBooking.Api</name>
     </assembly>
     <members>
-        <member name="T:SonoTracker.Api.Controllers.V1.Base.BaseController">
+        <member name="T:SonoBooking.Api.Controllers.V1.Base.BaseController">
             <inheritdoc />
             <remarks>
             Add <c>CancellationToken cancellationToken</c> to action parameters to support request cancellation
             (e.g. client disconnect). It is bound to <see cref="P:Microsoft.AspNetCore.Http.HttpContext.RequestAborted"/> by default.
             </remarks>
         </member>
-        <member name="T:SonoTracker.Api.Controllers.V1.Identity.AccountsController">
+        <member name="T:SonoBooking.Api.Controllers.V1.Identity.AccountsController">
             <summary>
             Controller for managing user accounts, including registration, login, and role updates.
             </summary>
             <remarks>
-            Initializes a new instance of the <see cref="T:SonoTracker.Api.Controllers.V1.Identity.AccountsController"/> class.
+            Initializes a new instance of the <see cref="T:SonoBooking.Api.Controllers.V1.Identity.AccountsController"/> class.
             </remarks>
             <param name="accountService">Service for handling account-related operations.</param>
             <param name="userData">Data of the currently logged-in user.</param>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.#ctor(SonoTracker.Application.Services.Identity.Account.IAccountService,SonoTracker.Common.DTO.Identity.User.UserDataDto)">
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.AccountsController.#ctor(SonoBooking.Application.Services.Identity.Account.IAccountService,SonoBooking.Common.DTO.Identity.User.UserDataDto)">
             <summary>
             Controller for managing user accounts, including registration, login, and role updates.
             </summary>
             <remarks>
-            Initializes a new instance of the <see cref="T:SonoTracker.Api.Controllers.V1.Identity.AccountsController"/> class.
+            Initializes a new instance of the <see cref="T:SonoBooking.Api.Controllers.V1.Identity.AccountsController"/> class.
             </remarks>
             <param name="accountService">Service for handling account-related operations.</param>
             <param name="userData">Data of the currently logged-in user.</param>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.RegisterAsync(SonoTracker.Common.DTO.Identity.User.RegisterDto,System.Threading.CancellationToken)">
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.AccountsController.RegisterAsync(SonoBooking.Common.DTO.Identity.User.RegisterDto,System.Threading.CancellationToken)">
             <summary>
             Registers a new user with the provided details.
             </summary>
@@ -41,39 +41,39 @@
             or a conflict response if the registration fails.
             </returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.LoginAsync(SonoTracker.Common.DTO.Identity.User.LoginRequestDto,System.Threading.CancellationToken)">
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.AccountsController.LoginAsync(SonoBooking.Common.DTO.Identity.User.LoginRequestDto,System.Threading.CancellationToken)">
             <summary>
             Authenticates a user and generates an access token and refresh token.
             </summary>
             <param name="user">The login request containing the user's email and password.</param>
             <returns>
-            An <see cref="T:SonoTracker.Common.Core.IFinalResult"/> containing a <see cref="T:SonoTracker.Common.Core.IFinalResult"/> if the login is successful, 
+            An <see cref="T:SonoBooking.Common.Core.IFinalResult"/> containing a <see cref="T:SonoBooking.Common.Core.IFinalResult"/> if the login is successful, 
             or an unauthorized response if the login fails.
             </returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.Logout(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.AccountsController.Logout(System.Guid,System.Threading.CancellationToken)">
             <summary>
             Logs out the user with the specified user ID.
             </summary>
             <returns>An IActionResult indicating the result of the logout operation.</returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.RefreshTokenAsync(SonoTracker.Common.DTO.Identity.User.RefreshTokenRequestDto,System.Threading.CancellationToken)">
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.AccountsController.RefreshTokenAsync(SonoBooking.Common.DTO.Identity.User.RefreshTokenRequestDto,System.Threading.CancellationToken)">
             <summary>
             Refreshes the access token and refresh token for the user.
             </summary>
             <param name="model">The refresh token request containing user ID, access token, and refresh token.</param>
             <returns>
-            An <see cref="T:ActionResult"/> containing a <see cref="T:SonoTracker.Common.DTO.Identity.User.LoginResponseDto"/> if successful, 
+            An <see cref="T:ActionResult"/> containing a <see cref="T:SonoBooking.Common.DTO.Identity.User.LoginResponseDto"/> if successful, 
             or an unauthorized response if the refresh operation fails.
             </returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.AccessTokenData">
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.AccountsController.AccessTokenData">
             <summary>
             Retrieves the data of the currently logged-in user from the access token.
             </summary>
-            <returns>An <see cref="T:ActionResult"/> containing the <see cref="T:SonoTracker.Common.DTO.Identity.User.UserDataDto"/> of the logged-in user.</returns>
+            <returns>An <see cref="T:ActionResult"/> containing the <see cref="T:SonoBooking.Common.DTO.Identity.User.UserDataDto"/> of the logged-in user.</returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.GetUserByIdAsync(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.AccountsController.GetUserByIdAsync(System.Guid,System.Threading.CancellationToken)">
             <summary>
             Retrieves a user by their unique identifier.
             </summary>
@@ -83,13 +83,13 @@
             or a not found response if the user does not exist.
             </returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.GetAllUsersAsync(System.Threading.CancellationToken)">
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.AccountsController.GetAllUsersAsync(System.Threading.CancellationToken)">
             <summary>
             Gets all users in the application.
             </summary>
             <returns>A list of users.</returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.GetAllPagedAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Identity.User.FilterUserDto},System.Threading.CancellationToken)">
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.AccountsController.GetAllPagedAsync(SonoBooking.Common.DTO.Base.BaseParam{SonoBooking.Common.DTO.Identity.User.FilterUserDto},System.Threading.CancellationToken)">
             <summary>
             Retrieves a paginated list of users in the application.
             </summary>
@@ -98,7 +98,7 @@
             or a not found response if no users exist.
             </returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.UpdateUserPersonalData(SonoTracker.Common.DTO.Identity.User.UpdateUserDto,System.Threading.CancellationToken)">
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.AccountsController.UpdateUserPersonalData(SonoBooking.Common.DTO.Identity.User.UpdateUserDto,System.Threading.CancellationToken)">
             <summary>
             Updates the personal data of the currently logged-in user.
             </summary>
@@ -108,7 +108,7 @@
             Returns a success message if the update is successful, or a bad request response if the operation fails.
             </returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.AccountsController.DelereUser(System.Guid,System.Threading.CancellationToken)">
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.AccountsController.DelereUser(System.Guid,System.Threading.CancellationToken)">
             <summary>
             Removes a user by their unique identifier.
             </summary>
@@ -117,24 +117,24 @@
             An <see cref="T:ActionResult"/> indicating whether the user was successfully removed.
             </returns>
         </member>
-        <member name="T:SonoTracker.Api.Controllers.V1.Identity.RolesController">
+        <member name="T:SonoBooking.Api.Controllers.V1.Identity.RolesController">
             <summary>
             Controller for managing roles in the application.
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.RolesController.#ctor(Microsoft.AspNetCore.Identity.RoleManager{SonoBooking.Domain.Entities.Identity.Role},SonoTracker.Application.Services.Identity.Role.IRoleService)">
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.RolesController.#ctor(Microsoft.AspNetCore.Identity.RoleManager{SonoBooking.Domain.Entities.Identity.Role},SonoBooking.Application.Services.Identity.Role.IRoleService)">
             <summary>
             Controller for managing roles in the application.
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.RolesController.GetAllRolesAsync(System.Threading.CancellationToken)">
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.RolesController.GetAllRolesAsync(System.Threading.CancellationToken)">
             <summary>
             Gets all roles in the application.
             </summary>
             <param name="cancellationToken"></param>
             <returns>A list of roles.</returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.RolesController.GetPagedRolesAsync(SonoTracker.Common.DTO.Base.BaseParam{SonoTracker.Common.DTO.Identity.Role.FilterRoleDto},System.Threading.CancellationToken)">
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.RolesController.GetPagedRolesAsync(SonoBooking.Common.DTO.Base.BaseParam{SonoBooking.Common.DTO.Identity.Role.FilterRoleDto},System.Threading.CancellationToken)">
             <summary>
             Retrieves a paginated list of users in the application.
             </summary>
@@ -145,7 +145,7 @@
             or a not found response if no users exist.
             </returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.RolesController.GetRoleByIdAsync(System.String,System.Threading.CancellationToken)">
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.RolesController.GetRoleByIdAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Gets a role by its ID.
             </summary>
@@ -153,7 +153,7 @@
             <param name="cancellationToken"></param>
             <returns>The role with the specified ID, or a not found result if the role does not exist.</returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.RolesController.CreateRoleAsync(SonoTracker.Common.DTO.Identity.Role.AddRoleDto,System.Threading.CancellationToken)">
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.RolesController.CreateRoleAsync(SonoBooking.Common.DTO.Identity.Role.AddRoleDto,System.Threading.CancellationToken)">
             <summary>
             Creates a new role in the application.
             </summary>
@@ -161,7 +161,7 @@
             <param name="cancellationToken"></param>
             <returns>An ActionResult indicating the result of the role creation operation.</returns>
         </member>
-        <member name="M:SonoTracker.Api.Controllers.V1.Identity.RolesController.DeleteRoleAsync(System.String,System.Threading.CancellationToken)">
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.RolesController.DeleteRoleAsync(System.String,System.Threading.CancellationToken)">
             <summary>
             Deletes a role from the application.
             </summary>
@@ -171,15 +171,228 @@
             An IActionResult indicating the result of the delete operation.
             </returns>
         </member>
-        <member name="T:SonoTracker.Api.Controllers.V2.Base.BaseController">
+        <member name="T:SonoBooking.Api.Controllers.V1.Lookups.CitiesController">
+            <summary>
+            EntityTypes Controller
+            </summary>
+            <remarks>
+            Constructor
+            </remarks>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.CitiesController.#ctor(SonoBooking.Application.Services.Lookup.City.ICityService)">
+            <summary>
+            EntityTypes Controller
+            </summary>
+            <remarks>
+            Constructor
+            </remarks>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.CitiesController.GetAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.CitiesController.GetAllAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get all cities. SuperAdmin may pass an optional governorate filter; other users are scoped by JWT governorate when the query is omitted.
+            </summary>
+            <param name="governorateId">Optional query: filter by governorate ID (e.g. <c>?governorateId=...</c>).</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.CitiesController.GetPagedAsync(SonoBooking.Common.DTO.Base.BaseParam{SonoBooking.Common.DTO.Lookup.City.Parameters.CityFilter},System.Threading.CancellationToken)">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.CitiesController.GetDropDownAsync(SonoBooking.Common.DTO.Base.BaseParam{SonoBooking.Common.DTO.Base.SearchCriteriaFilter},System.Threading.CancellationToken)">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.CitiesController.AddAsync(SonoBooking.Common.DTO.Lookup.City.AddCityDto,System.Threading.CancellationToken)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.CitiesController.UpdateAsync(SonoBooking.Common.DTO.Lookup.City.AddCityDto,System.Threading.CancellationToken)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.CitiesController.DeleteAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.CitiesController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoBooking.Api.Controllers.V1.Lookups.Enums.GendersController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.Enums.GendersController.#ctor(SonoBooking.Application.Services.Enums.Genders.IGenderService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.Enums.GendersController.GetAllAsync(System.Threading.CancellationToken)">
+            <summary>
+            Get all 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:SonoBooking.Api.Controllers.V1.Lookups.Enums.IDTypesController">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.Enums.IDTypesController.#ctor(SonoBooking.Application.Services.Enums.IDTypes.IIDTypeService)">
+            <summary>
+            Constructor
+            </summary>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.Enums.IDTypesController.GetAllAsync(System.Threading.CancellationToken)">
+            <summary>
+            Get all 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.RelationshipsController.#ctor(SonoBooking.Application.Services.LookUp.Relationship.IRelationshipService)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SonoBooking.Api.Controllers.V1.Lookups.RelationshipsController"/> class.
+            </summary>
+            <param name="relationshipService">Service used to perform relationship operations.</param>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.RelationshipsController.GetAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Retrieves a relationship by its identifier.
+            </summary>
+            <param name="id">The identifier of the relationship.</param>
+            <param name="cancellationToken">A CancellationToken to cancel the operation.</param>
+            <returns>An ActionResult wrapping an IFinalResult containing the operation result.</returns>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.RelationshipsController.GetAllAsync(System.Threading.CancellationToken)">
+            <summary>
+            Retrieves all relationships.
+            </summary>
+            <param name="cancellationToken">A CancellationToken to cancel the operation.</param>
+            <returns>An ActionResult wrapping an IFinalResult containing the operation result.</returns>
+        </member>
+        <member name="T:SonoBooking.Api.Controllers.V1.Lookups.TownController">
+            <summary>
+            EntityTypes Controller
+            </summary>
+            <remarks>
+            Constructor
+            </remarks>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.TownController.#ctor(SonoBooking.Application.Services.Lookup.Town.ITownService)">
+            <summary>
+            EntityTypes Controller
+            </summary>
+            <remarks>
+            Constructor
+            </remarks>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.TownController.GetAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get By Id 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.TownController.GetEditAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Get For Edit 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.TownController.GetAllAsync(System.Threading.CancellationToken)">
+            <summary>
+            Get All 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.TownController.GetPagedAsync(SonoBooking.Common.DTO.Base.BaseParam{SonoBooking.Common.DTO.Lookup.Town.Parameters.TownFilter},System.Threading.CancellationToken)">
+            <summary>
+            GetAll Data paged
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.TownController.GetDropDownAsync(SonoBooking.Common.DTO.Base.BaseParam{SonoBooking.Common.DTO.Base.SearchCriteriaFilter},System.Threading.CancellationToken)">
+            <summary>
+            Get All Data paged For Drop Down
+            </summary>
+            <param name="filter">Filter responsible for search and sort</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.TownController.AddAsync(SonoBooking.Common.DTO.Lookup.Town.AddTownDto,System.Threading.CancellationToken)">
+            <summary>
+            Add 
+            </summary>
+            <param name="dto"></param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.TownController.UpdateAsync(SonoBooking.Common.DTO.Lookup.Town.AddTownDto,System.Threading.CancellationToken)">
+            <summary>
+            Update  
+            </summary>
+            <param name="model">Object content</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.TownController.DeleteAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.TownController.DeleteSoftAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Soft Remove  by id
+            </summary>
+            <param name="id">PK</param>
+            <param name="cancellationToken"></param>
+            <returns></returns>
+        </member>
+        <member name="T:SonoBooking.Api.Controllers.V2.Base.BaseController">
             <inheritdoc />
         </member>
-        <member name="T:SonoTracker.Api.Extensions.ConfigureDependencyExtension">
+        <member name="T:SonoBooking.Api.Extensions.ConfigureDependencyExtension">
             <summary>
             Dependency Extensions
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+        <member name="M:SonoBooking.Api.Extensions.ConfigureDependencyExtension.RegisterServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>
             Register Extensions
             </summary>
@@ -187,110 +400,110 @@
             <param name="configuration"></param>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterSignalR(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+        <member name="M:SonoBooking.Api.Extensions.ConfigureDependencyExtension.RegisterSignalR(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <summary>
             Registers SignalR services with custom options.
             </summary>
             <param name="services">The service collection to add SignalR to.</param>
         </member>
-        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterDbContext(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+        <member name="M:SonoBooking.Api.Extensions.ConfigureDependencyExtension.RegisterDbContext(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>
             Add DbContext
             </summary>
             <param name="services"></param>
             <param name="configuration"></param>
         </member>
-        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterApiMonitoring(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+        <member name="M:SonoBooking.Api.Extensions.ConfigureDependencyExtension.RegisterApiMonitoring(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <summary>
             Add DbContext
             </summary>
             <param name="services"></param>
         </member>
-        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.ConfigureAuthentication(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+        <member name="M:SonoBooking.Api.Extensions.ConfigureDependencyExtension.ConfigureAuthentication(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>
             Configure Authentication With Identity Server
             </summary>
             <param name="services"></param>
             <param name="configuration"></param>
         </member>
-        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterHttpClientHelpers(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+        <member name="M:SonoBooking.Api.Extensions.ConfigureDependencyExtension.RegisterHttpClientHelpers(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <summary>
             Register Http Client Helpers
             </summary>
             <param name="services"></param>
         </member>
-        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterAutoMapper(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+        <member name="M:SonoBooking.Api.Extensions.ConfigureDependencyExtension.RegisterAutoMapper(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <summary>
             register auto-mapper
             </summary>
             <param name="services"></param>
         </member>
-        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterLocalization(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+        <member name="M:SonoBooking.Api.Extensions.ConfigureDependencyExtension.RegisterLocalization(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <summary>
             register auto-mapper
             </summary>
             <param name="services"></param>
         </member>
-        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterValidators(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+        <member name="M:SonoBooking.Api.Extensions.ConfigureDependencyExtension.RegisterValidators(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <summary>
             Register Business Validators
             </summary>
             <param name="services"></param>
         </member>
-        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterIntegrationRepositories(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+        <member name="M:SonoBooking.Api.Extensions.ConfigureDependencyExtension.RegisterIntegrationRepositories(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <summary>
             register Integration Repositories
             </summary>
             <param name="services"></param>
         </member>
-        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterCustomRepositories(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+        <member name="M:SonoBooking.Api.Extensions.ConfigureDependencyExtension.RegisterCustomRepositories(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <summary>
             register Custom Repositories
             </summary>
             <param name="services"></param>
         </member>
-        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterApiVersioning(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+        <member name="M:SonoBooking.Api.Extensions.ConfigureDependencyExtension.RegisterApiVersioning(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <summary>
             Register Api Versioning
             </summary>
             <param name="services"></param>
         </member>
-        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterLowerCaseUrls(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+        <member name="M:SonoBooking.Api.Extensions.ConfigureDependencyExtension.RegisterLowerCaseUrls(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <summary>
             Lower Case Urls
             </summary>
             <param name="services"></param>
         </member>
-        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterSwaggerConfig(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+        <member name="M:SonoBooking.Api.Extensions.ConfigureDependencyExtension.RegisterSwaggerConfig(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <summary>
             Swagger Config
             </summary>
             <param name="services"></param>
         </member>
-        <member name="M:SonoTracker.Api.Extensions.ConfigureDependencyExtension.RegisterCores(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+        <member name="M:SonoBooking.Api.Extensions.ConfigureDependencyExtension.RegisterCores(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <summary>
             Register Main Core
             </summary>
             <param name="services"></param>
         </member>
-        <member name="T:SonoTracker.Api.Extensions.ConfigureMiddlewareExtension">
+        <member name="T:SonoBooking.Api.Extensions.ConfigureMiddlewareExtension">
             <summary>
             Pipeline Extensions
             </summary>
         </member>
-        <member name="T:SonoTracker.Api.Extensions.Swagger.Headers.LanguageHeader">
+        <member name="T:SonoBooking.Api.Extensions.Swagger.Headers.LanguageHeader">
             <summary>
             Language Header
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Extensions.Swagger.Headers.LanguageHeader.Apply(Microsoft.OpenApi.Models.OpenApiOperation,Swashbuckle.AspNetCore.SwaggerGen.OperationFilterContext)">
+        <member name="M:SonoBooking.Api.Extensions.Swagger.Headers.LanguageHeader.Apply(Microsoft.OpenApi.Models.OpenApiOperation,Swashbuckle.AspNetCore.SwaggerGen.OperationFilterContext)">
             <summary>
             Apply
             </summary>
             <param name="operation"></param>
             <param name="context"></param>
         </member>
-        <member name="T:SonoTracker.Api.Extensions.Swagger.Options.SwaggerConfigureOptions">
+        <member name="T:SonoBooking.Api.Extensions.Swagger.Options.SwaggerConfigureOptions">
             <summary>
               Configures the Swagger generation options.
             </summary>
@@ -299,83 +512,83 @@
               cref="T:Asp.Versioning.ApiExplorer.IApiVersionDescriptionProvider"/> service has been resolved from the service container.
             </remarks>
         </member>
-        <member name="M:SonoTracker.Api.Extensions.Swagger.Options.SwaggerConfigureOptions.#ctor(Asp.Versioning.ApiExplorer.IApiVersionDescriptionProvider)">
+        <member name="M:SonoBooking.Api.Extensions.Swagger.Options.SwaggerConfigureOptions.#ctor(Asp.Versioning.ApiExplorer.IApiVersionDescriptionProvider)">
             <summary>
-              Initializes a new instance of the <see cref="T:SonoTracker.Api.Extensions.Swagger.Options.SwaggerConfigureOptions"/> class.
+              Initializes a new instance of the <see cref="T:SonoBooking.Api.Extensions.Swagger.Options.SwaggerConfigureOptions"/> class.
             </summary>
             <param name="provider">
               The <see cref="T:Asp.Versioning.ApiExplorer.IApiVersionDescriptionProvider">provider</see> used to generate Swagger documents.
             </param>
         </member>
-        <member name="M:SonoTracker.Api.Extensions.Swagger.Options.SwaggerConfigureOptions.Configure(Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions)">
+        <member name="M:SonoBooking.Api.Extensions.Swagger.Options.SwaggerConfigureOptions.Configure(Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions)">
             <inheritdoc/>
         </member>
-        <member name="T:SonoTracker.Api.MiddleWares.ExceptionMiddleware">
+        <member name="T:SonoBooking.Api.MiddleWares.ExceptionMiddleware">
             <summary>
             Exception Middleware
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.MiddleWares.ExceptionMiddleware.#ctor(Microsoft.AspNetCore.Http.RequestDelegate,Microsoft.Extensions.Configuration.IConfiguration)">
+        <member name="M:SonoBooking.Api.MiddleWares.ExceptionMiddleware.#ctor(Microsoft.AspNetCore.Http.RequestDelegate,Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.MiddleWares.ExceptionMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext)">
+        <member name="M:SonoBooking.Api.MiddleWares.ExceptionMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext)">
             <summary>
             Invoke
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.MiddleWares.ExceptionMiddleware.HandleExceptionAsync(Microsoft.AspNetCore.Http.HttpContext,System.Exception)">
+        <member name="M:SonoBooking.Api.MiddleWares.ExceptionMiddleware.HandleExceptionAsync(Microsoft.AspNetCore.Http.HttpContext,System.Exception)">
             <summary>
             Handle
             </summary>
         </member>
-        <member name="T:SonoTracker.Api.MiddleWares.LanguageMiddleware">
+        <member name="T:SonoBooking.Api.MiddleWares.LanguageMiddleware">
             <summary>
             Language Middleware
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.MiddleWares.LanguageMiddleware.#ctor(Microsoft.AspNetCore.Http.RequestDelegate)">
+        <member name="M:SonoBooking.Api.MiddleWares.LanguageMiddleware.#ctor(Microsoft.AspNetCore.Http.RequestDelegate)">
             <summary>
             Constructor
             </summary>
             <param name="next"></param>
         </member>
-        <member name="M:SonoTracker.Api.MiddleWares.LanguageMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext)">
+        <member name="M:SonoBooking.Api.MiddleWares.LanguageMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext)">
             <summary>
             Invoke
             </summary>
             <param name="httpContext"></param>
             <returns></returns>
         </member>
-        <member name="T:SonoTracker.Api.MiddleWares.MiddlewareExtensions">
+        <member name="T:SonoBooking.Api.MiddleWares.MiddlewareExtensions">
             <summary>
             Register Middleware
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.MiddleWares.MiddlewareExtensions.ConfigureCustomMiddleware(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
+        <member name="M:SonoBooking.Api.MiddleWares.MiddlewareExtensions.ConfigureCustomMiddleware(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
             <summary>
             Configure
             </summary>
             <param name="app"></param>
         </member>
-        <member name="T:SonoTracker.Api.MiddleWares.Swagger.SwaggerBasicAuthMiddleware">
+        <member name="T:SonoBooking.Api.MiddleWares.Swagger.SwaggerBasicAuthMiddleware">
             <summary>
             Swagger Middleware
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.MiddleWares.Swagger.SwaggerBasicAuthMiddleware.#ctor(Microsoft.AspNetCore.Http.RequestDelegate,Microsoft.Extensions.Configuration.IConfiguration)">
+        <member name="M:SonoBooking.Api.MiddleWares.Swagger.SwaggerBasicAuthMiddleware.#ctor(Microsoft.AspNetCore.Http.RequestDelegate,Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>
             Constructor
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.MiddleWares.Swagger.SwaggerBasicAuthMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext)">
+        <member name="M:SonoBooking.Api.MiddleWares.Swagger.SwaggerBasicAuthMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext)">
             <summary>
             Invoke
             </summary>
             <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.MiddleWares.Swagger.SwaggerBasicAuthMiddleware.IsAuthorized(System.String,System.String)">
+        <member name="M:SonoBooking.Api.MiddleWares.Swagger.SwaggerBasicAuthMiddleware.IsAuthorized(System.String,System.String)">
              <summary>
             
              </summary>
@@ -383,63 +596,33 @@
              <param name="password"></param>
              <returns></returns>
         </member>
-        <member name="M:SonoTracker.Api.MiddleWares.Swagger.SwaggerBasicAuthMiddleware.IsLocalRequest(Microsoft.AspNetCore.Http.HttpContext)">
+        <member name="M:SonoBooking.Api.MiddleWares.Swagger.SwaggerBasicAuthMiddleware.IsLocalRequest(Microsoft.AspNetCore.Http.HttpContext)">
              <summary>
             
              </summary>
              <param name="context"></param>
              <returns></returns>
         </member>
-        <member name="T:SonoTracker.Api.Program">
+        <member name="T:SonoBooking.Api.Program">
             <summary>
             Start Point
             </summary>
         </member>
-        <member name="P:SonoTracker.Api.Program.Configuration">
+        <member name="P:SonoBooking.Api.Program.Configuration">
             <summary>
             Configuration Properties
             </summary>
         </member>
-        <member name="M:SonoTracker.Api.Program.Main(System.String[])">
+        <member name="M:SonoBooking.Api.Program.Main(System.String[])">
             <summary>
             Kick Off
             </summary>
             <param name="args"></param>
         </member>
-        <member name="M:SonoTracker.Api.Program.CreateHostBuilder(System.String[])">
+        <member name="M:SonoBooking.Api.Program.CreateHostBuilder(System.String[])">
             <summary>
             Web Host Builder
             </summary>
-        </member>
-        <member name="T:SonoTracker.Api.Startup">
-            <summary>
-            Start Up Class
-            </summary>
-        </member>
-        <member name="M:SonoTracker.Api.Startup.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
-            <summary>
-            Constructor
-            </summary>
-            <param name="configuration"></param>
-        </member>
-        <member name="P:SonoTracker.Api.Startup.Configuration">
-            <summary>
-            Public Configuration Property
-            </summary>
-        </member>
-        <member name="M:SonoTracker.Api.Startup.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
-            <summary>
-            Configure Dependencies
-            </summary>
-            <param name="services"></param>
-        </member>
-        <member name="M:SonoTracker.Api.Startup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IWebHostEnvironment,Asp.Versioning.ApiExplorer.IApiVersionDescriptionProvider)">
-            <summary>
-            Configure Pipeline
-            </summary>
-            <param name="app"></param>
-            <param name="env"></param>
-            <param name="provider"></param>
         </member>
         <member name="T:SonoBooking.Api.Seed.DatabaseSeed">
             <summary>
@@ -450,6 +633,41 @@
             <summary>
             Seed base role (SuperAdmin) and super user on startup.
             </summary>
+        </member>
+        <member name="M:SonoBooking.Api.Seed.DatabaseSeed.SeedLookupsAsync(Microsoft.Extensions.Hosting.IHost)">
+            <summary>
+            Seed lookup data from json files on startup.
+            </summary>
+        </member>
+        <member name="T:SonoBooking.Api.Startup">
+            <summary>
+            Start Up Class
+            </summary>
+        </member>
+        <member name="M:SonoBooking.Api.Startup.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="configuration"></param>
+        </member>
+        <member name="P:SonoBooking.Api.Startup.Configuration">
+            <summary>
+            Public Configuration Property
+            </summary>
+        </member>
+        <member name="M:SonoBooking.Api.Startup.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Configure Dependencies
+            </summary>
+            <param name="services"></param>
+        </member>
+        <member name="M:SonoBooking.Api.Startup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IWebHostEnvironment,Asp.Versioning.ApiExplorer.IApiVersionDescriptionProvider)">
+            <summary>
+            Configure Pipeline
+            </summary>
+            <param name="app"></param>
+            <param name="env"></param>
+            <param name="provider"></param>
         </member>
     </members>
 </doc>

@@ -1,6 +1,6 @@
-﻿using SonoTracker.Common.DTO.Lookup.Nationality;
+﻿
 
-namespace SonoTracker.Application.Mapping
+namespace SonoBooking.Application.Mapping
 {
     public partial class MappingService
     {
@@ -16,3 +16,4 @@ namespace SonoTracker.Application.Mapping
         }
     }
 }
+

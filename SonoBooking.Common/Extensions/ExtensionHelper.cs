@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace SonoTracker.Common.Extensions
+namespace SonoBooking.Common.Extensions
 {
     [ExcludeFromCodeCoverage]
     public static class ExtensionHelper
@@ -22,3 +22,4 @@ namespace SonoTracker.Common.Extensions
         }
     }
 }
+

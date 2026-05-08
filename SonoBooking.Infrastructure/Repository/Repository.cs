@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
@@ -7,10 +7,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
-using SonoTracker.Common.Extensions;
-using SonoTracker.Common.Infrastructure.Repository;
+using SonoBooking.Common.Extensions;
+using SonoBooking.Common.Infrastructure.Repository;
 
-namespace SonoTracker.Infrastructure.Repository
+namespace SonoBooking.Infrastructure.Repository
 {
     public class Repository<T> : IRepository<T> where T : class
     {
@@ -358,3 +358,4 @@ namespace SonoTracker.Infrastructure.Repository
         }
     }
 }
+

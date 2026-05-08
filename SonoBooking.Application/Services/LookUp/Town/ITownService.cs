@@ -1,13 +1,13 @@
-using SonoTracker.Application.Services.Base;
-using SonoTracker.Common.Core;
-using SonoTracker.Common.DTO.Base;
-using SonoTracker.Common.DTO.Lookup.Town;
-using SonoTracker.Common.DTO.Lookup.Town.Parameters;
+﻿using SonoBooking.Application.Services.Base;
+using SonoBooking.Common.Core;
+using SonoBooking.Common.DTO.Base;
+using SonoBooking.Common.DTO.Lookup.Town;
+using SonoBooking.Common.DTO.Lookup.Town.Parameters;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SonoTracker.Application.Services.Lookup.Town
+namespace SonoBooking.Application.Services.Lookup.Town
 {
     public interface ITownService : IBaseService<SonoBooking.Domain.Entities.Lookups.Town, AddTownDto, EditTownDto, TownDto, string, string>
     {
@@ -16,3 +16,4 @@ namespace SonoTracker.Application.Services.Lookup.Town
     Task<PagingResult> GetDropDownAsync(BaseParam<SearchCriteriaFilter> filter, CancellationToken cancellationToken = default);
     }
 }
+

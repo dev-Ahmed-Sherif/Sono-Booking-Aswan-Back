@@ -1,4 +1,4 @@
-namespace SonoTracker.Common.DTO.Identity.User
+﻿namespace SonoBooking.Common.DTO.Identity.User
 {
     public class UserPermissionDto
     {
@@ -6,3 +6,4 @@ namespace SonoTracker.Common.DTO.Identity.User
         public required string Value { get; set; }
     }
 }
+

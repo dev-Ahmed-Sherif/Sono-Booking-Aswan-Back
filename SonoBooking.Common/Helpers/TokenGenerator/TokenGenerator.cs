@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
-namespace SonoTracker.Common.Helpers.TokenGenerator
+namespace SonoBooking.Common.Helpers.TokenGenerator
 {
     public class TokenGenerator : ITokenGenerator
     {
@@ -98,3 +98,4 @@ namespace SonoTracker.Common.Helpers.TokenGenerator
         }
     }
 }
+

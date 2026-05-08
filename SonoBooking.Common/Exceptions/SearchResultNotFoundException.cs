@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace SonoTracker.Common.Exceptions
+namespace SonoBooking.Common.Exceptions
 {
     [ExcludeFromCodeCoverage]
     public class SearchResultNotFoundException : BaseException
@@ -11,3 +11,4 @@ namespace SonoTracker.Common.Exceptions
         }
     }
 }
+

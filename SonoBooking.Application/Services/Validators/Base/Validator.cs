@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace SonoTracker.Application.Services.Validators.Base
+namespace SonoBooking.Application.Services.Validators.Base
 {
     public class Validator<T> :  IValidator<T> where T : class
     {
@@ -10,3 +10,4 @@ namespace SonoTracker.Application.Services.Validators.Base
         }
     }
 }
+

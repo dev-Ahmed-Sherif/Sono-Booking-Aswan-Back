@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace SonoTracker.Common.Extensions
+namespace SonoBooking.Common.Extensions
 {
     [ExcludeFromCodeCoverage]
     public static class Permission
@@ -47,3 +47,4 @@ namespace SonoTracker.Common.Extensions
         }
     }
 }
+

@@ -1,4 +1,4 @@
-﻿namespace SonoTracker.Common.Constants
+﻿namespace SonoBooking.Common.Constants
 {
     public static class AppConstant
     {
@@ -6,3 +6,4 @@
         public const int MaximumRequestBodySize = 10 * 1024 * 1024;
     }
 }
+

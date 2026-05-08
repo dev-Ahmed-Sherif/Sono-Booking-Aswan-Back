@@ -5,7 +5,7 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.MSSqlServer;
 
-namespace SonoTracker.Common.Extensions
+namespace SonoBooking.Common.Extensions
 {
     
     //public static class BaseLoggerConfiguration
@@ -50,3 +50,4 @@ namespace SonoTracker.Common.Extensions
     //    }
     //}
 }
+

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace SonoTracker.Api.Controllers.V2.Base
+namespace SonoBooking.Api.Controllers.V2.Base
 {
     /// <inheritdoc />
     [ApiController]

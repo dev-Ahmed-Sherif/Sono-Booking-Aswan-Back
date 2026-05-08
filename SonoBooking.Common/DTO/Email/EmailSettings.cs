@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SonoTracker.Common.DTO.Email
+namespace SonoBooking.Common.DTO.Email
 {
     public class EmailSettings
     {
@@ -16,3 +16,4 @@ namespace SonoTracker.Common.DTO.Email
         public string Password { get; set; }
     }
 }
+

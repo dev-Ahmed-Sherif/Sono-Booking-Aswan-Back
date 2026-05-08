@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 
-namespace SonoTracker.Common.Helpers.HttpClient.UriHelper
+namespace SonoBooking.Common.Helpers.HttpClient.UriHelper
 {
     [ExcludeFromCodeCoverage]
     public static class UriHelper
@@ -70,3 +70,4 @@ namespace SonoTracker.Common.Helpers.HttpClient.UriHelper
         }
     }
 }
+

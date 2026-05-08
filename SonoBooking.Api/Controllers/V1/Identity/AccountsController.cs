@@ -1,17 +1,16 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SonoBooking.Domain.Entities.Identity;
-using SonoTracker.Api.Controllers.V1.Base;
-using SonoTracker.Application.Services.Identity.Account;
-using SonoTracker.Common.Core;
-using SonoTracker.Common.DTO.Base;
-using SonoTracker.Common.DTO.Identity.User;
+using SonoBooking.Api.Controllers.V1.Base;
 using System.Net;
-using System.Threading;
+using SonoBooking.Application.Services.Identity.Account;
+using SonoBooking.Common.DTO.Identity.User;
+using SonoBooking.Common.Core;
+using SonoBooking.Common.DTO.Base;
 
-namespace SonoTracker.Api.Controllers.V1.Identity
+namespace SonoBooking.Api.Controllers.V1.Identity
 {
     /// <summary>
     /// Controller for managing user accounts, including registration, login, and role updates.
@@ -220,3 +219,4 @@ namespace SonoTracker.Api.Controllers.V1.Identity
         }
     }
 }
+

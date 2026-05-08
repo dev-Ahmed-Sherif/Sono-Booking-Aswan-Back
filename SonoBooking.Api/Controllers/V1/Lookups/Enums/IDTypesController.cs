@@ -1,12 +1,11 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SonoTracker.Api.Controllers.V1.Base;
-using SonoTracker.Application.Services.Enums.IDTypes;
-using SonoTracker.Common.Core;
-using System.Threading;
+using SonoBooking.Api.Controllers.V1.Base;
+using SonoBooking.Application.Services.Enums.IDTypes;
+using SonoBooking.Common.Core;
 
-namespace SonoTracker.Api.Controllers.V1.Lookups.Enums
+namespace SonoBooking.Api.Controllers.V1.Lookups.Enums
 {
     /// <summary>
     /// Constructor
@@ -25,3 +24,4 @@ namespace SonoTracker.Api.Controllers.V1.Lookups.Enums
         public async Task<IFinalResult> GetAllAsync(CancellationToken cancellationToken = default) => await iDType.GetAllAsync(cancellationToken);
     }
 }
+

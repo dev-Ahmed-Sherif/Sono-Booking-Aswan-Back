@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace SonoTracker.Common.Helpers.MediaUploader
+namespace SonoBooking.Common.Helpers.MediaUploader
 {
     public interface IUploaderConfiguration
     {

@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace SonoTracker.Common.DTO.Integration.File
+namespace SonoBooking.Common.DTO.Integration.File
 {
     [ExcludeFromCodeCoverage]
     public class FileDto
@@ -15,3 +15,4 @@ namespace SonoTracker.Common.DTO.Integration.File
         public string ContentType { get; set; }
     }
 }
+

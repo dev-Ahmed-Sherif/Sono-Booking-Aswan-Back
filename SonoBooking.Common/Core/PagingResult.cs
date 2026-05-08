@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Net;
 
-namespace SonoTracker.Common.Core
+namespace SonoBooking.Common.Core
 {
     [ExcludeFromCodeCoverage]
     public class PagingResult

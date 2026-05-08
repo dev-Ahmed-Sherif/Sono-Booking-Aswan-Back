@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using StackExchange.Redis;
-using SonoTracker.Common.Configurations;
+using SonoBooking.Common.Configurations;
 
-namespace SonoTracker.Common.Caching.Redis
+namespace SonoBooking.Common.Caching.Redis
 {
     public static class RedisCacheHelper
     {
@@ -96,3 +96,4 @@ namespace SonoTracker.Common.Caching.Redis
         }
     }
 }
+

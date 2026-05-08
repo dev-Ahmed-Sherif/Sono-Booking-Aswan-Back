@@ -1,8 +1,8 @@
-using SonoTracker.Common.DTO.Base;
+﻿using SonoBooking.Common.DTO.Base;
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace SonoTracker.Common.DTO.Lookup.Town
+namespace SonoBooking.Common.DTO.Lookup.Town
 {
     [ExcludeFromCodeCoverage]
     public class EditTownDto : LookupDto<string>
@@ -19,3 +19,5 @@ namespace SonoTracker.Common.DTO.Lookup.Town
 
     }
 }
+
+

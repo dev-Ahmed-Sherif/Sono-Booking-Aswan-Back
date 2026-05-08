@@ -1,9 +1,8 @@
-using Serilog;
+﻿using Serilog;
 using Serilog.Events;
 using SonoBooking.Api.Seed;
-using SonoTracker.Common.Extensions;
 
-namespace SonoTracker.Api
+namespace SonoBooking.Api
 {
     /// <summary>
     /// Start Point
@@ -39,6 +38,7 @@ namespace SonoTracker.Api
                 var host = CreateHostBuilder(args).Build();
 
                 await DatabaseSeed.SeedIdentityAsync(host);
+                await DatabaseSeed.SeedLookupsAsync(host);
 
                 await host.RunAsync();
             }
@@ -63,3 +63,4 @@ namespace SonoTracker.Api
                 }).UseSerilog();
     }
 }
+

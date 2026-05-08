@@ -8,8 +8,6 @@
     <Compile Remove="Mapping\Profiles\Attachments\**" />
     <Compile Remove="Mapping\Profiles\Tracker\**" />
     <Compile Remove="Services\Business\**" />
-    <Compile Remove="Services\LookUp\**" />
-    <Compile Remove="Services\Tracker\**" />
     <EmbeddedResource Remove="Mapping\Profiles\Attachments\**" />
     <EmbeddedResource Remove="Services\Business\**" />
     <EmbeddedResource Remove="Services\Lookups\**" />
@@ -63,5 +61,10 @@
       <Generator>MSDataSetGenerator</Generator>
       <LastGenOutput>reportstr.Designer.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Mapping\Profiles\Housing\" />
+    <Folder Include="Services\Housing\" />
   </ItemGroup>
 </Project>

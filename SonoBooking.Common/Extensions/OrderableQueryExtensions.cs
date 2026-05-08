@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace SonoTracker.Common.Extensions
+namespace SonoBooking.Common.Extensions
 {
     [ExcludeFromCodeCoverage]
     public static class OrderableQueryExtensions
@@ -29,3 +29,4 @@ namespace SonoTracker.Common.Extensions
         }
     }
 }
+

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace SonoTracker.Common.Extensions
+namespace SonoBooking.Common.Extensions
 {
     [ExcludeFromCodeCoverage]
     public static class Utilities
@@ -48,3 +48,4 @@ namespace SonoTracker.Common.Extensions
         }
     }
 }
+

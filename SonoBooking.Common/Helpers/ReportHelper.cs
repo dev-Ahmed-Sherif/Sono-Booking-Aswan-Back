@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DeputyOffice.Common.Helpers
+namespace SonoBooking.Common.Helpers
 {
     public static class ReportHelper
     {
@@ -21,3 +21,4 @@ namespace DeputyOffice.Common.Helpers
         }
     }
 }
+

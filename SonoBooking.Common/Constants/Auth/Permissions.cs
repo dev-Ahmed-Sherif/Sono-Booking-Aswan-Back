@@ -1,4 +1,4 @@
-﻿namespace SonoTracker.Common.Constants.Auth
+﻿namespace SonoBooking.Common.Constants.Auth
 {
     public static class Permissions
     {
@@ -10,3 +10,4 @@
         public const int Print = 5;
     }
 }
+

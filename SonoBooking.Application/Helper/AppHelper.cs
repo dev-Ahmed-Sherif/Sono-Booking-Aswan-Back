@@ -1,7 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using SonoTracker.Common.Helpers.MediaUploader;
+﻿using SonoBooking.Common.Helpers.MediaUploader;
+using System.Diagnostics.CodeAnalysis;
 
-namespace SonoTracker.Application.Helper
+namespace SonoBooking.Application.Helper
 {
     [ExcludeFromCodeCoverage]
     public class AppHelper

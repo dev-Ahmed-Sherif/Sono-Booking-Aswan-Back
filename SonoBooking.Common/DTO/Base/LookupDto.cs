@@ -1,8 +1,8 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using SonoTracker.Common.Core;
+using SonoBooking.Common.Core;
 
-namespace SonoTracker.Common.DTO.Base
+namespace SonoBooking.Common.DTO.Base
 {
     [ExcludeFromCodeCoverage]
     public class LookupDto<T> : IEntityDto<T>
@@ -22,3 +22,5 @@ namespace SonoTracker.Common.DTO.Base
 
     }
 }
+
+

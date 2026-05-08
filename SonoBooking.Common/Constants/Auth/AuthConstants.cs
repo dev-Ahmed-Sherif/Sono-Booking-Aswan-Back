@@ -1,4 +1,4 @@
-﻿namespace SonoTracker.Common.Constants.Auth
+﻿namespace SonoBooking.Common.Constants.Auth
 {
     public static class AuthConstants
     {
@@ -13,3 +13,4 @@
         public const string GovId = nameof(GovId);
     }
 }
+

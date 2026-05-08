@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-namespace SonoTracker.Common.DTO.Identity.User
+namespace SonoBooking.Common.DTO.Identity.User
 {
     public class FilterUserDto
     {
@@ -9,3 +9,4 @@ namespace SonoTracker.Common.DTO.Identity.User
         public Guid? OrganizationId { get; set; }
     }
 }
+

@@ -1,6 +1,6 @@
-﻿using SonoTracker.Common.Core;
+﻿using SonoBooking.Common.Core;
 
-namespace SonoTracker.Common.DTO.Tracker.AccidentAttach
+namespace SonoBooking.Common.DTO.Tracker.AccidentAttach
 {
     public class EditAccidentAttachDto : IEntityDto<string>
     {
@@ -15,3 +15,5 @@ namespace SonoTracker.Common.DTO.Tracker.AccidentAttach
         public string AccidentId { get; set; }
     }
 }
+
+

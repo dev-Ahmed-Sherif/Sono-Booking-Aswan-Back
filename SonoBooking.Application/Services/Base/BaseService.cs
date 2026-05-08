@@ -1,17 +1,17 @@
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using SonoBooking.Domain.Entities.Base;
-using SonoTracker.Common.Constants.Auth;
-using SonoTracker.Common.Core;
-using SonoTracker.Common.DTO.Base;
-using SonoTracker.Common.DTO.Identity.User;
-using SonoTracker.Common.Infrastructure.UnitOfWork;
+using SonoBooking.Common.Constants.Auth;
+using SonoBooking.Common.Core;
+using SonoBooking.Common.DTO.Base;
+using SonoBooking.Common.DTO.Identity.User;
+using SonoBooking.Common.Infrastructure.UnitOfWork;
 using SonoTracker.Domain;
-using SonoTracker.Integration.CacheRepository;
+using SonoBooking.Integration.CacheRepository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,8 +20,9 @@ using System.Net;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using SonoBooking.Domain;
 
-namespace SonoTracker.Application.Services.Base
+namespace SonoBooking.Application.Services.Base
 {
     public class BaseService<T, TAddDto,TEditDto, TGetDto, TKey, TKeyDto>
         : IBaseService<T, TAddDto, TEditDto, TGetDto, TKey, TKeyDto>
@@ -316,3 +317,4 @@ namespace SonoTracker.Application.Services.Base
         }
     }
 }
+

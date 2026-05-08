@@ -1,8 +1,8 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using SonoTracker.Common.Extensions;
+using SonoBooking.Common.Extensions;
 
-namespace SonoTracker.Common.DTO.Base
+namespace SonoBooking.Common.DTO.Base
 {
     [ExcludeFromCodeCoverage]
     public class BaseParam<T>
@@ -13,3 +13,5 @@ namespace SonoTracker.Common.DTO.Base
         public IEnumerable<SortModel> OrderByValue { get; set; }
     }
 }
+
+

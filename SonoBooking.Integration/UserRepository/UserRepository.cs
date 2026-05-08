@@ -1,7 +1,7 @@
-﻿using SonoTracker.Common.Helpers.HttpClient;
-using SonoTracker.Common.Helpers.HttpClient.RestSharp;
+﻿using SonoBooking.Common.Helpers.HttpClient;
+using SonoBooking.Common.Helpers.HttpClient.RestSharp;
 
-namespace SonoTracker.Integration.UserRepository
+namespace SonoBooking.Integration.UserRepository
 {
     public class UserRepository : IUserRepository
     {
@@ -14,3 +14,4 @@ namespace SonoTracker.Integration.UserRepository
         }
     }
 }
+

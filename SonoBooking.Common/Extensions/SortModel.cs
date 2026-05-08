@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace SonoTracker.Common.Extensions
+namespace SonoBooking.Common.Extensions
 {
     [ExcludeFromCodeCoverage]
     public class SortModel
@@ -10,3 +10,4 @@ namespace SonoTracker.Common.Extensions
         public string PairAsSqlExpression => $"{ColId} {Sort}";
     }
 }
+

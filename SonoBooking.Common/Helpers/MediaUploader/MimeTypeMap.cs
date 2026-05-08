@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-namespace SonoTracker.Common.Helpers.MediaUploader
+namespace SonoBooking.Common.Helpers.MediaUploader
 {
     [ExcludeFromCodeCoverage]
     public static class MimeTypeMap

@@ -1,8 +1,8 @@
-
+﻿
 using System.Diagnostics.CodeAnalysis;
 
 
-namespace SonoTracker.Common.DTO.Base
+namespace SonoBooking.Common.DTO.Base
 {
     [ExcludeFromCodeCoverage]
     public class SearchCriteriaFilter
@@ -10,3 +10,4 @@ namespace SonoTracker.Common.DTO.Base
         public string SearchCriteria { get; set; }
     }
 }
+

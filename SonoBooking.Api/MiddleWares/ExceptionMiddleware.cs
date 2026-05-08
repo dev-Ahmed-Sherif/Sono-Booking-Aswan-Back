@@ -1,14 +1,14 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Serilog;
-using SonoTracker.Common.Core;
-using SonoTracker.Common.Exceptions;
+using SonoBooking.Common.Core;
+using SonoBooking.Common.Exceptions;
 using Task = System.Threading.Tasks.Task;
 
-namespace SonoTracker.Api.MiddleWares
+namespace SonoBooking.Api.MiddleWares
 {
     /// <summary>
     /// Exception Middleware
@@ -143,5 +143,6 @@ namespace SonoTracker.Api.MiddleWares
         }
     }
 }
+
 
 

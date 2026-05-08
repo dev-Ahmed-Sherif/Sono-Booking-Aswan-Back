@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SonoTracker.Common.DTO.Identity.Role
+namespace SonoBooking.Common.DTO.Identity.Role
 {
     public class FilterRoleDto
     {
@@ -13,3 +13,4 @@ namespace SonoTracker.Common.DTO.Identity.Role
         public string NameEn { get; set; }
     }
 }
+

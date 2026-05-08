@@ -1,6 +1,6 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace SonoTracker.Common.DTO.Identity.User
+namespace SonoBooking.Common.DTO.Identity.User
 {
     public record UserDataDto(string Id, 
                               string Name, 
@@ -10,3 +10,4 @@ namespace SonoTracker.Common.DTO.Identity.User
                               string FloatingUnitId,
                               string GovernorateId);
 }
+

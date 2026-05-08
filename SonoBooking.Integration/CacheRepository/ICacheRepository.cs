@@ -1,4 +1,4 @@
-﻿namespace SonoTracker.Integration.CacheRepository
+﻿namespace SonoBooking.Integration.CacheRepository
 {
     public interface ICacheRepository
     {
@@ -10,3 +10,4 @@
         //Task<EmployeeProfileDto> GetEmployeeAsync(string nationalId);
     }
 }
+

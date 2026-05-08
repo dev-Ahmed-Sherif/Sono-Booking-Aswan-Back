@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
-using SonoTracker.Common.Caching.Redis;
-using SonoTracker.Common.Helpers.HttpClient.RestSharp;
+using SonoBooking.Common.Caching.Redis;
+using SonoBooking.Common.Helpers.HttpClient.RestSharp;
 
-namespace SonoTracker.Integration.CacheRepository
+namespace SonoBooking.Integration.CacheRepository
 {
     public class CacheRepository : ICacheRepository
     {
@@ -20,3 +20,4 @@ namespace SonoTracker.Integration.CacheRepository
         //}
     }
 }
+

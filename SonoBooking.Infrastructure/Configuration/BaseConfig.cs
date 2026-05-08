@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SonoBooking.Domain.Entities.Base;
 using System.Diagnostics.CodeAnalysis;
 
-namespace SonoTracker.Infrastructure.Configuration
+namespace SonoBooking.Infrastructure.Configuration
 {
     [ExcludeFromCodeCoverage]
     public class BaseConfig<TEntity , TId> : IEntityTypeConfiguration<TEntity> where TEntity : BaseAudit<TId>
@@ -16,3 +16,4 @@ namespace SonoTracker.Infrastructure.Configuration
         }
     }
 }
+

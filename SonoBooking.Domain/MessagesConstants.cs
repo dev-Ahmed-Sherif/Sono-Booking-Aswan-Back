@@ -1,4 +1,4 @@
-﻿namespace SonoTracker.Domain
+﻿namespace SonoBooking.Domain
 {
     public static  class MessagesConstants
     {

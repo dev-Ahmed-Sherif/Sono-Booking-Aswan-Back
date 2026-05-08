@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SonoTracker.Common.Core;
+using SonoBooking.Common.Core;
 
-namespace SonoTracker.Common.DTO.Attachments.OrganizationAttachment
+namespace SonoBooking.Common.DTO.Attachments.OrganizationAttachment
 {
     public class OrganizationAttachmentDto : IEntityDto<string>
     {
@@ -28,3 +28,5 @@ namespace SonoTracker.Common.DTO.Attachments.OrganizationAttachment
         public Guid OrganizationId { get; set; }
     }
 }
+
+

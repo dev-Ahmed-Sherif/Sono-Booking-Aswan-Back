@@ -1,9 +1,9 @@
-using SonoBooking.Domain;
-using SonoTracker.Common.Core;
+﻿using SonoBooking.Domain;
+using SonoBooking.Common.Core;
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace SonoTracker.Common.DTO.Tracker.Accident
+namespace SonoBooking.Common.DTO.Tracker.Accident
 {
     [ExcludeFromCodeCoverage]
     public class EditAccidentDto : IEntityDto<string>
@@ -32,3 +32,5 @@ namespace SonoTracker.Common.DTO.Tracker.Accident
         public string ModifiedById { get; set; }
     }
 }
+
+

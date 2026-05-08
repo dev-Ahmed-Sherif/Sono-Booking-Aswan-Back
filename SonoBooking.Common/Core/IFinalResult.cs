@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace SonoTracker.Common.Core
+namespace SonoBooking.Common.Core
 {
     public interface IFinalResult
     {
@@ -11,3 +11,4 @@ namespace SonoTracker.Common.Core
         Exception Exception { get; set; }
     }
 }
+

@@ -1,7 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
-using SonoTracker.Common.Core;
+﻿using System.Diagnostics.CodeAnalysis;
+using SonoBooking.Common.Core;
 
-namespace SonoTracker.Common.DTO.Identity.Role
+namespace SonoBooking.Common.DTO.Identity.Role
 {
     [ExcludeFromCodeCoverage]
     public class RoleDto
@@ -15,3 +15,5 @@ namespace SonoTracker.Common.DTO.Identity.Role
         //public string Code { get; set; }
     }
 }
+
+

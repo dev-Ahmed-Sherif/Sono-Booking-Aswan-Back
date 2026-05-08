@@ -1,14 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using SonoBooking.Domain;
-using SonoTracker.Application.Services.Enums.Genders;
-using SonoTracker.Common.Core;
+using SonoBooking.Common.Core;
 
-namespace SonoTracker.Application.Services.Enums.Genders
+namespace SonoBooking.Application.Services.Enums.Genders
 {
     public class GenderService : IGenderService
     {
@@ -21,3 +20,4 @@ namespace SonoTracker.Application.Services.Enums.Genders
 
     }
 }
+

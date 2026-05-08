@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Text;
 
-namespace SonoTracker.Api.MiddleWares.Swagger
+namespace SonoBooking.Api.MiddleWares.Swagger
 {
     /// <summary>
     /// Swagger Middleware

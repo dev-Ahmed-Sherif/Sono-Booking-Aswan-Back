@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Server.HttpSys;
 
-namespace SonoTracker.Application.Helper
+namespace SonoBooking.Application.Helper
 {
     [ExcludeFromCodeCoverage]
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
@@ -75,3 +75,4 @@ namespace SonoTracker.Application.Helper
         }
     }
 }
+

@@ -1,4 +1,4 @@
-﻿namespace SonoTracker.Common.DTO.Tracker.AccidentAttach.Parameters
+﻿namespace SonoBooking.Common.DTO.Tracker.AccidentAttach.Parameters
 {
     public class AccidentAttachFilter
     {

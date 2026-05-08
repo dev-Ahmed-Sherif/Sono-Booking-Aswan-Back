@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using SonoTracker.Api.MiddleWares.Swagger;
+using SonoBooking.Api.MiddleWares.Swagger;
 
-namespace SonoTracker.Api.MiddleWares
+namespace SonoBooking.Api.MiddleWares
 {
     /// <summary>
     /// Register Middleware
@@ -21,3 +21,4 @@ namespace SonoTracker.Api.MiddleWares
         }
     }
 }
+

@@ -1,11 +1,11 @@
-using System.Linq;
+﻿using System.Linq;
 using System.Net;
 using Microsoft.AspNetCore.Identity;
-using SonoTracker.Common.Core;
-using SonoTracker.Common.DTO.Base;
-using SonoTracker.Common.DTO.Identity.Role;
-using SonoTracker.Domain;
-namespace SonoTracker.Application.Services.Identity.Role
+using SonoBooking.Common.Core;
+using SonoBooking.Common.DTO.Base;
+using SonoBooking.Common.DTO.Identity.Role;
+using SonoBooking.Domain;
+namespace SonoBooking.Application.Services.Identity.Role
 {
 
     public class RoleService(RoleManager<SonoBooking.Domain.Entities.Identity.Role> roleManager) : IRoleService
@@ -36,3 +36,4 @@ namespace SonoTracker.Application.Services.Identity.Role
         }
     }
 }
+

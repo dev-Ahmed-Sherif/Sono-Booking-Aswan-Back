@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-namespace SonoTracker.Common.DTO.Reports.OrganizaionCoField
+namespace SonoBooking.Common.DTO.Reports.OrganizaionCoField
 {
     public class OrganizaionCoFieldReportDto
     {
@@ -17,3 +17,4 @@ namespace SonoTracker.Common.DTO.Reports.OrganizaionCoField
         public int CheckOrgAndCitySelect { get; set; }
     }
 }
+

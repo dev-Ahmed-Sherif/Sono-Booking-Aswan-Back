@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using SonoTracker.Common.Constants;
-using SonoTracker.Common.Extensions;
+using SonoBooking.Common.Constants;
+using SonoBooking.Common.Extensions;
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SonoTracker.Common.Helpers.MediaUploader
+namespace SonoBooking.Common.Helpers.MediaUploader
 {
     public class UploaderConfiguration : IUploaderConfiguration
     {
@@ -126,3 +126,4 @@ namespace SonoTracker.Common.Helpers.MediaUploader
         }
     }
 }
+

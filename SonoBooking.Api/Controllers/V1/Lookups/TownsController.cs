@@ -1,15 +1,15 @@
-using System.Net;
+﻿using System.Net;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using SonoTracker.Api.Controllers.V1.Base;
-using SonoTracker.Application.Services.Lookup.Town;
-using SonoTracker.Common.Core;
-using SonoTracker.Common.DTO.Base;
-using SonoTracker.Common.DTO.Lookup.Town;
-using SonoTracker.Common.DTO.Lookup.Town.Parameters;
+using SonoBooking.Api.Controllers.V1.Base;
+using SonoBooking.Application.Services.Lookup.Town;
+using SonoBooking.Common.Core;
+using SonoBooking.Common.DTO.Lookup.Town.Parameters;
+using SonoBooking.Common.DTO.Base;
+using SonoBooking.Common.DTO.Lookup.Town;
 
-namespace SonoTracker.Api.Controllers.V1.Lookups
+namespace SonoBooking.Api.Controllers.V1.Lookups
 {
     /// <summary>
     /// EntityTypes Controller
@@ -172,3 +172,4 @@ namespace SonoTracker.Api.Controllers.V1.Lookups
         }
     }
 }
+

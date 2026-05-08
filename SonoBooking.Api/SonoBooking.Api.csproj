@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <Compile Remove="Controllers\V1\Tracker\**" />
-    <Compile Remove="Controllers\V1\Lookups\**" />
     <Compile Remove="Hubs\GeoHub.cs" />
     <Compile Remove="Controllers\V2\Lookups\**" />
     <Compile Remove="wwwroot\OrgRequirements\**" />

@@ -1,15 +1,14 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using SonoBooking.Common.Core;
 using SonoBooking.Domain;
-using SonoTracker.Application.Services.Enums.OrganizationTypes;
-using SonoTracker.Common.Core;
 
-namespace SonoTracker.Application.Services.Enums.IDTypes
+namespace SonoBooking.Application.Services.Enums.IDTypes
 {
     public class IDTypeService : IIDTypeService
     {
@@ -21,3 +20,4 @@ namespace SonoTracker.Application.Services.Enums.IDTypes
         }
     }
 }
+

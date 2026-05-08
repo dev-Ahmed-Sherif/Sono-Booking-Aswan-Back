@@ -1,11 +1,11 @@
-using LinqKit;
+﻿using LinqKit;
 using Microsoft.EntityFrameworkCore;
-using SonoTracker.Application.Services.Base;
-using SonoTracker.Common.Helpers;
-using SonoTracker.Common.Core;
-using SonoTracker.Common.DTO.Base;
-using SonoTracker.Common.DTO.Lookup.Town;
-using SonoTracker.Common.DTO.Lookup.Town.Parameters;
+using SonoBooking.Application.Services.Base;
+using SonoBooking.Common.Helpers;
+using SonoBooking.Common.Core;
+using SonoBooking.Common.DTO.Base;
+using SonoBooking.Common.DTO.Lookup.Town;
+using SonoBooking.Common.DTO.Lookup.Town.Parameters;
 using SonoTracker.Domain;
 using System;
 using System.Collections.Generic;
@@ -15,8 +15,9 @@ using System.Linq.Expressions;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using SonoBooking.Domain;
 
-namespace SonoTracker.Application.Services.Lookup.Town
+namespace SonoBooking.Application.Services.Lookup.Town
 {
     public class TownService(IServiceBaseParameter<SonoBooking.Domain.Entities.Lookups.Town> businessBaseParameter) : BaseService<SonoBooking.Domain.Entities.Lookups.Town, AddTownDto, EditTownDto, TownDto, string, string>(businessBaseParameter), ITownService
     {
@@ -237,3 +238,4 @@ namespace SonoTracker.Application.Services.Lookup.Town
         }
     }
 }
+

@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System;
-using SonoTracker.Common.DTO.ReportsDTOs;
+using SonoBooking.Common.DTO.Reports;
 
 namespace SonoBooking.Common.DTO.Reports.TouristMarina
 {
@@ -14,3 +14,5 @@ namespace SonoBooking.Common.DTO.Reports.TouristMarina
 
     }
 }
+
+

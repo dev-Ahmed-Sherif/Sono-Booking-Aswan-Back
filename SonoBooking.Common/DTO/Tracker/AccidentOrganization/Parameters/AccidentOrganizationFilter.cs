@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace SonoBooking.Common.DTO.Tracker.AccidentOrganization.Parameters
@@ -15,3 +15,4 @@ namespace SonoBooking.Common.DTO.Tracker.AccidentOrganization.Parameters
 
     }
 }
+

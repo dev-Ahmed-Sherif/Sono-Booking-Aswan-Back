@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SonoTracker.Common.Services
+namespace SonoBooking.Common.Services
 {
     public interface IClaimService
     {
@@ -8,3 +8,4 @@ namespace SonoTracker.Common.Services
         string Token { get; }
     }
 }
+

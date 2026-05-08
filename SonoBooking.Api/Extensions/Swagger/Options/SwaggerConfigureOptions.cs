@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace SonoTracker.Api.Extensions.Swagger.Options;
+namespace SonoBooking.Api.Extensions.Swagger.Options;
 
 /// <summary>
 ///   Configures the Swagger generation options.

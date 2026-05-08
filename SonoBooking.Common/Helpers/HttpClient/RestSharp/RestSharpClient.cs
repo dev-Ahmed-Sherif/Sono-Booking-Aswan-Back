@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 using RestSharp;
 using RestSharp.Authenticators;
 
-namespace SonoTracker.Common.Helpers.HttpClient.RestSharp
+namespace SonoBooking.Common.Helpers.HttpClient.RestSharp
 {
     public class RestSharpClient(IHttpContextAccessor httpContextAccessor, ILogger<RestSharpClient> logger)
         : IRestSharpClient
@@ -134,3 +134,4 @@ namespace SonoTracker.Common.Helpers.HttpClient.RestSharp
 
     }
 }
+

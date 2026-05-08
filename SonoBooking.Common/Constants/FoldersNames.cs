@@ -1,4 +1,4 @@
-﻿namespace SonoTracker.Common.Constants
+﻿namespace SonoBooking.Common.Constants
 {
     public static class FoldersName
     {
@@ -8,3 +8,4 @@
         public const string AttachUrl = nameof(AttachUrl);
     }
 }
+

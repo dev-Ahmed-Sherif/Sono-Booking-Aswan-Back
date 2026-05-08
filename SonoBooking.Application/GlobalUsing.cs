@@ -1,1 +1,1 @@
-﻿global using Entities = SonoTracker.Domain.Entities;
+﻿global using Entities = SonoBooking.Domain.Entities;

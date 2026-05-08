@@ -1,4 +1,4 @@
-namespace SonoTracker.Common.DTO.Identity.User
+﻿namespace SonoBooking.Common.DTO.Identity.User
 {
     public class LoginResponseDto
     {
@@ -7,3 +7,4 @@ namespace SonoTracker.Common.DTO.Identity.User
         public string RefreshToken { get; set; }
     }
 }
+

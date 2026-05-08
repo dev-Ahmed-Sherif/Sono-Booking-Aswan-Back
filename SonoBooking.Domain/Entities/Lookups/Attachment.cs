@@ -15,7 +15,7 @@ namespace SonoBooking.Domain.Entities.Lookups
             }
         }
         
-        [Required, MaxLength(250)]
+        [Required, MaxLength(70)]
         public required string FileName { get; set; }
         
         [MaxLength(50)]

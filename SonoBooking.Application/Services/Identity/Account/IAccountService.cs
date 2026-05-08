@@ -1,13 +1,13 @@
-using Microsoft.AspNetCore.Identity;
-using SonoTracker.Common.Core;
-using SonoTracker.Common.DTO.Base;
-using SonoTracker.Common.DTO.Identity.User;
+﻿using Microsoft.AspNetCore.Identity;
+using SonoBooking.Common.Core;
+using SonoBooking.Common.DTO.Base;
+using SonoBooking.Common.DTO.Identity.User;
 using SonoTracker.Domain.Entities.Identity;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SonoTracker.Application.Services.Identity.Account
+namespace SonoBooking.Application.Services.Identity.Account
 {
     public interface IAccountService
     {
@@ -22,3 +22,4 @@ namespace SonoTracker.Application.Services.Identity.Account
         Task<IFinalResult> DeleteUser(string userId, CancellationToken cancellationToken = default);
     }
 }
+

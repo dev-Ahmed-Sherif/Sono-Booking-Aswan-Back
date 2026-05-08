@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace SonoTracker.Common.DTO.Identity.User
+namespace SonoBooking.Common.DTO.Identity.User
 {
     public class RegisterDto
     {
@@ -16,3 +16,4 @@ namespace SonoTracker.Common.DTO.Identity.User
         public string GovernorateId { get; set; }
     }
 }
+

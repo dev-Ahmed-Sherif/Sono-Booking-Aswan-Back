@@ -1,12 +1,14 @@
-using FuzzySharp;
+﻿using FuzzySharp;
 using LinqKit;
-using SonoTracker.Application.Services.Base;
-using SonoTracker.Application.Services.Tracker.Governorates;
-using SonoTracker.Common.Core;
-using SonoTracker.Common.DTO.Base;
-using SonoTracker.Common.DTO.Lookup.City;
-using SonoTracker.Common.DTO.Lookup.City.Parameters;
-using SonoTracker.Common.DTO.Tracker.Governorate;
+using SonoBooking.Application.Services.Base;
+using SonoBooking.Application.Services.Lookup.City;
+using SonoBooking.Application.Services.LookUp.Governorate;
+using SonoBooking.Common.Core;
+using SonoBooking.Common.DTO.Base;
+using SonoBooking.Common.DTO.Lookup.City;
+using SonoBooking.Common.DTO.Lookup.City.Parameters;
+using SonoBooking.Common.DTO.Lookup.Governorate;
+using SonoBooking.Domain;
 using SonoTracker.Domain;
 using System;
 using System.Collections.Generic;
@@ -16,7 +18,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SonoTracker.Application.Services.Lookup.City
+namespace SonoBooking.Application.Services.LookUp.City
 {
     public class CityService(
         IServiceBaseParameter<Entities.Lookups.City> businessBaseParameter,
@@ -173,7 +175,7 @@ namespace SonoTracker.Application.Services.Lookup.City
                         message: MessagesConstants.Existed);
 
                 var entity = Mapper.Map<AddCityDto, Entities.Lookups.City>(model);
-                entity.GovernorateId = GetGovernorateIdFromClaims();
+                entity.GovernorateId = model.GovernateId;
 
                 IFinalResult governorateResult = await _governorateService.GetByIdAsync(model.GovernateId, cancellationToken);
                 if (governorateResult?.Data is not GovernorateDto governorateDto || string.IsNullOrWhiteSpace(governorateDto.Code))
@@ -202,7 +204,7 @@ namespace SonoTracker.Application.Services.Lookup.City
                 {
                     entity.Code = governorateCode + "01";
                 }
-
+                SetEntityCreatedBaseProperties(entity);
                 await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
 
                 int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
@@ -279,3 +281,4 @@ namespace SonoTracker.Application.Services.Lookup.City
         }
     }
 }
+

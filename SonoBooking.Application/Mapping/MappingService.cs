@@ -1,16 +1,31 @@
-using AutoMapper;
+﻿using AutoMapper;
 
-namespace SonoTracker.Application.Mapping
+namespace SonoBooking.Application.Mapping
 {
     public partial class MappingService : Profile
     {
         public MappingService()
         {
-            MapAccidentType();
+            MapAttachment();
+            MapApartmentType();
             MapCity();
+            MapGovernorate();
+            MapRelationship();
+            MapRequestType();
+            MapRoomType();
             MapTown();
-            MapUnitType();
-            MapNationality();
+            MapApproval();
+            MapApartment();
+            MapBed();
+            MapCompanion();
+            MapLeader();
+            MapPayment();
+            MapRequest();
+            MapRequestParticipant();
+            MapRequestUnit();
+            MapReservation();
+            MapRoom();
+            MapUnitImage();
         }
     }
 }

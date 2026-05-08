@@ -1,8 +1,8 @@
-using SonoTracker.Common.Core;
+﻿using SonoBooking.Common.Core;
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace SonoTracker.Common.DTO.Identity.User
+namespace SonoBooking.Common.DTO.Identity.User
 {
     public class UpdateUserDto : IEntityDto<string>
     {
@@ -25,3 +25,5 @@ namespace SonoTracker.Common.DTO.Identity.User
         public Guid? OrganizationId { get; set; }
     }
 }
+
+

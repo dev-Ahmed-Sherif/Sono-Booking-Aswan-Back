@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace SonoTracker.Common.DTO.Identity.User
+namespace SonoBooking.Common.DTO.Identity.User
 {
     public class UserDto
     {
@@ -20,3 +20,4 @@ namespace SonoTracker.Common.DTO.Identity.User
         public string ModifiedById { get; set; }
     }
 }
+

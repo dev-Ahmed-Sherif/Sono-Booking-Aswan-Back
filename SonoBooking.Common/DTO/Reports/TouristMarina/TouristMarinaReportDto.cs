@@ -1,7 +1,7 @@
-
+﻿
 using System;
 
-namespace SonoTracker.Common.DTO.Reports.TouristMarina
+namespace SonoBooking.Common.DTO.Reports.TouristMarina
 {
     public class TouristMarinaReportDto
     {
@@ -22,3 +22,4 @@ namespace SonoTracker.Common.DTO.Reports.TouristMarina
 
     }
 }
+

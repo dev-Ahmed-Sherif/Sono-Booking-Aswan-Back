@@ -1,8 +1,8 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Task = System.Threading.Tasks.Task;
 
-namespace SonoTracker.Api.MiddleWares
+namespace SonoBooking.Api.MiddleWares
 {
     /// <summary>
     /// Language Middleware
@@ -49,5 +49,6 @@ namespace SonoTracker.Api.MiddleWares
 
     }
 }
+
 
 

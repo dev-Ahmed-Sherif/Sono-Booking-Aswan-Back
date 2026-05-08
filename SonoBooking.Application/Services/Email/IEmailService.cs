@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SonoTracker.Application.Services.Email
+namespace SonoBooking.Application.Services.Email
 {
     public interface IEmailService
     {
@@ -12,3 +12,4 @@ namespace SonoTracker.Application.Services.Email
         Task SendEmailWithAttachmentAsync(string toEmail, string subject, string body, string attachmentPath);
     }
 }
+

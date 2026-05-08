@@ -2,14 +2,14 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using SonoTracker.Common.Core;
-using SonoTracker.Common.Helpers.HttpClient;
-using SonoTracker.Common.Helpers.HttpClient.RestSharp;
-using SonoTracker.Common.Helpers.MediaUploader;
-using SonoTracker.Common.Helpers.TokenGenerator;
-using SonoTracker.Common.Services;
+using SonoBooking.Common.Core;
+using SonoBooking.Common.Helpers.HttpClient;
+using SonoBooking.Common.Helpers.HttpClient.RestSharp;
+using SonoBooking.Common.Helpers.MediaUploader;
+using SonoBooking.Common.Helpers.TokenGenerator;
+using SonoBooking.Common.Services;
 
-namespace SonoTracker.Common.Extensions
+namespace SonoBooking.Common.Extensions
 {
     [ExcludeFromCodeCoverage]
     public static class ConfigureDependencyExtension
@@ -40,3 +40,4 @@ namespace SonoTracker.Common.Extensions
 
     }
 }
+

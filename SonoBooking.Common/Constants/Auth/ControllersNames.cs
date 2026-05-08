@@ -1,4 +1,4 @@
-﻿namespace SonoTracker.Common.Constants.Auth
+﻿namespace SonoBooking.Common.Constants.Auth
 {
     public static class Controller
     {
@@ -9,3 +9,4 @@
         public const string ClassRoom = "ClassRoom";
     }
 }
+

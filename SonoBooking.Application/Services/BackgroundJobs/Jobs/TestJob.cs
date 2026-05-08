@@ -5,9 +5,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using SonoTracker.Application.DependencyExtension;
+using SonoBooking.Application.DependencyExtension;
 
-namespace SonoTracker.Application.Services.BackgroundJobs.Jobs
+namespace SonoBooking.Application.Services.BackgroundJobs.Jobs
 {
     public class TestJob : IJob
     {
@@ -62,3 +62,4 @@ namespace SonoTracker.Application.Services.BackgroundJobs.Jobs
 
     }
 }
+

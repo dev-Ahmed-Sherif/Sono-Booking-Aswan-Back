@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SonoTracker.Common.DTO.ReportsDTOs
+namespace SonoBooking.Common.DTO.Reports
 {
     public class BaseReportSearch
     {
@@ -16,3 +16,4 @@ namespace SonoTracker.Common.DTO.ReportsDTOs
         public required string ReportType { get; set; }
     }
 }
+

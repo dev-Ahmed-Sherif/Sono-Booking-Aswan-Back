@@ -1,4 +1,4 @@
-﻿namespace SonoTracker.Application.Services.BackgroundJobs.Jobs
+﻿namespace SonoBooking.Application.Services.BackgroundJobs.Jobs
 {
 
     public class MyRegistry : FluentScheduler.Registry

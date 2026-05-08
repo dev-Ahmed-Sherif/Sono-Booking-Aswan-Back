@@ -1,4 +1,4 @@
-﻿namespace SonoTracker.Common.Constants.Auth
+﻿namespace SonoBooking.Common.Constants.Auth
 {
     public static class Policies
     {
@@ -9,3 +9,4 @@
         public const string GenericPolicy = "GenericPolicy";
     }
 }
+

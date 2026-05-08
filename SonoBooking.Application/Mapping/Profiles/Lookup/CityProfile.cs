@@ -1,7 +1,7 @@
-﻿using SonoBooking.Domain.Entities.Lookups;
-using SonoTracker.Common.DTO.Lookup.City;
+﻿using SonoBooking.Common.DTO.Lookup.City;
+using SonoBooking.Domain.Entities.Lookups;
 
-namespace SonoTracker.Application.Mapping
+namespace SonoBooking.Application.Mapping
 {
     public partial class MappingService
     {
@@ -17,3 +17,4 @@ namespace SonoTracker.Application.Mapping
         }
     }
 }
+

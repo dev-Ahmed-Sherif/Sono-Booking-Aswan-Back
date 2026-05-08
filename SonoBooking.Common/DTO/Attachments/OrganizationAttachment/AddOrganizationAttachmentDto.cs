@@ -1,6 +1,6 @@
-using SonoTracker.Common.Core;
+﻿using SonoBooking.Common.Core;
 
-namespace SonoTracker.Common.DTO.Attachments.OrganizationAttachment
+namespace SonoBooking.Common.DTO.Attachments.OrganizationAttachment
 {
     public class AddOrganizationAttachmentDto : IEntityDto<string>
     {
@@ -15,3 +15,5 @@ namespace SonoTracker.Common.DTO.Attachments.OrganizationAttachment
         public string OrganizationId { get; set; } = string.Empty;
     }
 }
+
+

@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace SonoTracker.Common.DTO.Integration.File
+namespace SonoBooking.Common.DTO.Integration.File
 {
     [ExcludeFromCodeCoverage]
     public class TokenDto
@@ -10,3 +10,4 @@ namespace SonoTracker.Common.DTO.Integration.File
         public string Token { get; set; }
     }
 }
+

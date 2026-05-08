@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using FuzzySharp;
 
-namespace SonoTracker.Common.Helpers
+namespace SonoBooking.Common.Helpers
 {
     public static class LookupDuplicateGuard
     {
@@ -58,3 +58,4 @@ namespace SonoTracker.Common.Helpers
         }
     }
 }
+

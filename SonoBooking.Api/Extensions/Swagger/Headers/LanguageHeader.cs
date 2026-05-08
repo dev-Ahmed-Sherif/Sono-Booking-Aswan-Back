@@ -1,7 +1,7 @@
 ﻿using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace SonoTracker.Api.Extensions.Swagger.Headers
+namespace SonoBooking.Api.Extensions.Swagger.Headers
 {
     /// <summary>
     /// Language Header
@@ -27,3 +27,4 @@ namespace SonoTracker.Api.Extensions.Swagger.Headers
         }
     }
 }
+

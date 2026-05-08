@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -15,23 +15,21 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using SonoBooking.Common.Constants.Auth;
+using SonoBooking.Common.Core;
+using SonoBooking.Common.DTO.Base;
+using SonoBooking.Common.DTO.Identity.User;
+using SonoBooking.Common.Infrastructure.UnitOfWork;
 using SonoBooking.Domain;
 using SonoBooking.Domain.Entities.Identity;
 using SonoBooking.Infrastructure.Context;
-using SonoTracker.Application.Services.Identity.Account;
-using SonoTracker.Common.Constants.Auth;
-using SonoTracker.Common.Core;
-using SonoTracker.Common.DTO.Base;
-using SonoTracker.Common.DTO.Identity.User;
-using SonoTracker.Common.Infrastructure.UnitOfWork;
-using SonoTracker.Domain;
 
 namespace SonoBooking.Application.Services.Identity.Account
 {
 
     public class AccountService(
                  UserManager<User> userManager,
-                 RoleManager<Role> roleManager,
+                 RoleManager<Entities.Identity.Role> roleManager,
                  SonoBookingDbContext context,
                  UserDataDto auditUser,
                  IConfiguration configuration,
@@ -77,7 +75,7 @@ namespace SonoBooking.Application.Services.Identity.Account
 
                 if (!string.IsNullOrWhiteSpace(request.RoleId))
                 {
-                    Role role = await roleManager.FindByIdAsync(request.RoleId);
+                    Entities.Identity.Role role = await roleManager.FindByIdAsync(request.RoleId);
 
                     IdentityResult res = await userManager.AddToRoleAsync(user, role.Name!);
 
@@ -91,7 +89,7 @@ namespace SonoBooking.Application.Services.Identity.Account
                 }
                 else
                 {
-                    Role role = await roleManager.FindByNameAsync(Roles.User);
+                    Entities.Identity.Role role = await roleManager.FindByNameAsync(Roles.User);
 
                     IdentityResult res = await userManager.AddToRoleAsync(user, role.Name!);
 
@@ -201,7 +199,7 @@ namespace SonoBooking.Application.Services.Identity.Account
                 }
             }
 
-            Role role = await roleManager.FindByIdAsync(updateUser.RoleId.ToString());
+            Entities.Identity.Role role = await roleManager.FindByIdAsync(updateUser.RoleId.ToString());
 
             if (role != null)
             {
@@ -336,7 +334,7 @@ namespace SonoBooking.Application.Services.Identity.Account
 
             for (int i = 0; i < userRole.Count; i++)
             {
-                Role roleName = await roleManager.FindByNameAsync(userRole[i]);
+                Entities.Identity.Role roleName = await roleManager.FindByNameAsync(userRole[i]);
                 perRoleClaim = await roleManager.GetClaimsAsync(roleName!);
             }
 
@@ -464,3 +462,4 @@ namespace SonoBooking.Application.Services.Identity.Account
         }
     }
 }
+

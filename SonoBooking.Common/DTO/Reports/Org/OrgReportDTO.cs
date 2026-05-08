@@ -1,4 +1,4 @@
-namespace SonoBooking.Common.DTO.Reports.Org
+﻿namespace SonoBooking.Common.DTO.Reports.Org
 {
     public class OrgReportDTO
     {
@@ -26,3 +26,4 @@ namespace SonoBooking.Common.DTO.Reports.Org
     }
    
 }
+

@@ -2,7 +2,7 @@
 using System.IO;
 using Microsoft.Extensions.Configuration;
 
-namespace SonoTracker.Common.Configurations
+namespace SonoBooking.Common.Configurations
 {
     [ExcludeFromCodeCoverage]
     public  static class AppSettingsConfigurations
@@ -17,3 +17,4 @@ namespace SonoTracker.Common.Configurations
         }
     }
 }
+

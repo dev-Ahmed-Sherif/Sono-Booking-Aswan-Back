@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using RestSharp;
-using SonoTracker.Common.Core;
-using SonoTracker.Common.DTO.Integration.File;
-using SonoTracker.Common.Helpers.HttpClient;
-using SonoTracker.Common.Helpers.HttpClient.RestSharp;
+using SonoBooking.Common.Core;
+using SonoBooking.Common.DTO.Integration.File;
+using SonoBooking.Common.Helpers.HttpClient;
+using SonoBooking.Common.Helpers.HttpClient.RestSharp;
 
-namespace SonoTracker.Integration.FileRepository
+namespace SonoBooking.Integration.FileRepository
 {
     public class FileRepository : IFileRepository
     {
@@ -37,3 +37,4 @@ namespace SonoTracker.Integration.FileRepository
         }
     }
 }
+

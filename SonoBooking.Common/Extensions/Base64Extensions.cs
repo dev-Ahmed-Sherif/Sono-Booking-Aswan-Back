@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using SonoTracker.Common.Helpers.MediaUploader;
+using SonoBooking.Common.Helpers.MediaUploader;
 
-namespace SonoTracker.Common.Extensions
+namespace SonoBooking.Common.Extensions
 {
     [ExcludeFromCodeCoverage]
     public static class Base64Extensions

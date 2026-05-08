@@ -1,4 +1,4 @@
-using Asp.Versioning;
+﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,30 +12,29 @@ using SonoBooking.Domain.Entities.Identity;
 using SonoBooking.Infrastructure.Context;
 using SonoBooking.Infrastructure.DataInitializer;
 using SonoBooking.Infrastructure.UnitOfWork;
-using SonoTracker.Api.Extensions.Swagger.Headers;
-using SonoTracker.Api.Extensions.Swagger.Options;
-using SonoTracker.Application.Helper;
-using SonoTracker.Application.Mapping;
-using SonoTracker.Application.Services.Base;
-using SonoTracker.Application.Services.Email;
-using SonoTracker.Application.Services.Identity.Account;
-using SonoTracker.Application.Services.Validators.Base;
-using SonoTracker.Common.Constants.Auth;
-using SonoTracker.Common.DTO.Email;
-using SonoTracker.Common.DTO.Identity.User;
-using SonoTracker.Common.Extensions;
-using SonoTracker.Common.Helpers.HttpClient.RestSharp;
-using SonoTracker.Common.Helpers.JsonHelper;
-using SonoTracker.Common.Infrastructure.UnitOfWork;
-using SonoTracker.Integration.CacheRepository;
-using SonoTracker.Integration.FileRepository;
-using SonoTracker.Integration.UserRepository;
+using SonoBooking.Api.Extensions.Swagger.Headers;
+using SonoBooking.Api.Extensions.Swagger.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
+using SonoBooking.Common.Extensions;
+using SonoBooking.Common.Helpers.JsonHelper;
+using SonoBooking.Common.Constants.Auth;
+using SonoBooking.Common.DTO.Identity.User;
+using SonoBooking.Common.DTO.Email;
+using SonoBooking.Application.Services.Email;
+using SonoBooking.Common.Helpers.HttpClient.RestSharp;
+using SonoBooking.Application.Mapping;
+using SonoBooking.Application.Services.Validators.Base;
+using SonoBooking.Integration.FileRepository;
+using SonoBooking.Integration.CacheRepository;
+using SonoBooking.Integration.UserRepository;
+using SonoBooking.Application.Helper;
+using SonoBooking.Application.Services.Base;
+using SonoBooking.Common.Infrastructure.UnitOfWork;
 
-namespace SonoTracker.Api.Extensions
+namespace SonoBooking.Api.Extensions
 {
     /// <summary>
     /// Dependency Extensions
@@ -428,3 +427,4 @@ namespace SonoTracker.Api.Extensions
         }
     }
 }
+

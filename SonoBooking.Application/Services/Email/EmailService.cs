@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SonoTracker.Application.Services.Email
+namespace SonoBooking.Application.Services.Email
 {
     // Services/EmailService.cs
     using MailKit.Net.Smtp;
@@ -12,7 +12,7 @@ namespace SonoTracker.Application.Services.Email
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
     using MimeKit;
-    using SonoTracker.Common.DTO.Email;
+    using SonoBooking.Common.DTO.Email;
 
     public class EmailService(IOptions<EmailSettings> emailSettings, ILogger<EmailService> logger) : IEmailService
     {
@@ -85,3 +85,4 @@ namespace SonoTracker.Application.Services.Email
         }
     }
 }
+

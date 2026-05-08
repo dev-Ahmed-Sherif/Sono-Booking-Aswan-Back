@@ -1,8 +1,8 @@
-using SonoTracker.Common.DTO.Base;
+﻿using SonoBooking.Common.DTO.Base;
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace SonoTracker.Common.DTO.Lookup.Town
+namespace SonoBooking.Common.DTO.Lookup.Town
 {
     public class AddTownDto : LookupDto<string>
     {
@@ -10,3 +10,5 @@ namespace SonoTracker.Common.DTO.Lookup.Town
         public required string CityId { get; set; }
     }
 }
+
+

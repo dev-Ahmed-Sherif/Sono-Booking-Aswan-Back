@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SonoBooking.Domain;
 using SonoBooking.Domain.Entities.Identity;
+using SonoBooking.Infrastructure.Context;
+using SonoBooking.Infrastructure.DataInitializer;
 
 namespace SonoBooking.Api.Seed
 {
@@ -115,6 +118,67 @@ namespace SonoBooking.Api.Seed
             catch (Exception ex)
             {
                 Log.Warning(ex, "Identity seed (role/user) skipped or failed");
+            }
+        }
+
+        /// <summary>
+        /// Seed lookup data from json files on startup.
+        /// </summary>
+        public static async Task SeedLookupsAsync(IHost host)
+        {
+            try
+            {
+                await using var scope = host.Services.CreateAsyncScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<SonoBookingDbContext>();
+                var dataInitializer = scope.ServiceProvider.GetRequiredService<IDataInitializer>();
+
+                if (!await dbContext.Set<Domain.Entities.Lookups.Governorate>().AnyAsync())
+                {
+                    var governorates = dataInitializer.SeedGovernoratesAsync();
+                    await dbContext.Set<Domain.Entities.Lookups.Governorate>().AddRangeAsync(governorates);
+                }
+
+                if (!await dbContext.Set<Domain.Entities.Lookups.City>().AnyAsync())
+                {
+                    var cities = dataInitializer.SeedCitiesAsync();
+                    await dbContext.Set<Domain.Entities.Lookups.City>().AddRangeAsync(cities);
+                }
+
+                if (!await dbContext.Relationships.AnyAsync())
+                {
+                    var relationships = dataInitializer.SeedRelationshipsAsync();
+                    await dbContext.Relationships.AddRangeAsync(relationships);
+                }
+
+                if (!await dbContext.Set<Domain.Entities.Lookups.ApartmentType>().AnyAsync())
+                {
+                    var apartmentTypes = dataInitializer.SeedApartmentTypesAsync();
+                    await dbContext.Set<Domain.Entities.Lookups.ApartmentType>().AddRangeAsync(apartmentTypes);
+                }
+
+                if (!await dbContext.Set<Domain.Entities.Lookups.RoomType>().AnyAsync())
+                {
+                    var roomTypes = dataInitializer.SeedRoomTypesAsync();
+                    await dbContext.Set<Domain.Entities.Lookups.RoomType>().AddRangeAsync(roomTypes);
+                }
+
+                if (!await dbContext.Set<Domain.Entities.Lookups.RequestType>().AnyAsync())
+                {
+                    var requestTypes = dataInitializer.SeedRequestTypesAsync();
+                    await dbContext.Set<Domain.Entities.Lookups.RequestType>().AddRangeAsync(requestTypes);
+                }
+
+                if (!await dbContext.Roles.AnyAsync())
+                {
+                    var roles = dataInitializer.SeedRolesAsync();
+                    await dbContext.Roles.AddRangeAsync(roles);
+                }
+
+                await dbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Lookup seed skipped or failed");
             }
         }
     }

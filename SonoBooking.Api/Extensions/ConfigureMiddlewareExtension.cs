@@ -2,13 +2,14 @@
 using FluentScheduler;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.SwaggerUI;
-using SonoTracker.Application.Services.BackgroundJobs.Jobs;
 using SonoTracker.Domain;
 using Serilog;
 using SonoBooking.Infrastructure.Context;
+using SonoBooking.Domain;
+using SonoBooking.Application.Services.BackgroundJobs.Jobs;
 #pragma warning disable CS1591
 
-namespace SonoTracker.Api.Extensions
+namespace SonoBooking.Api.Extensions
 {
     /// <summary>
     /// Pipeline Extensions
@@ -107,3 +108,4 @@ namespace SonoTracker.Api.Extensions
         }
     }
 }
+

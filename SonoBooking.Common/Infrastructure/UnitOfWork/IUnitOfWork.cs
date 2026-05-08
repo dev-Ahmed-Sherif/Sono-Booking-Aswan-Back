@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using SonoTracker.Common.Infrastructure.Repository;
+using SonoBooking.Common.Infrastructure.Repository;
 
-namespace SonoTracker.Common.Infrastructure.UnitOfWork
+namespace SonoBooking.Common.Infrastructure.UnitOfWork
 {
     public interface IUnitOfWork<T> : IDisposable where T : class
     {
@@ -41,3 +41,4 @@ namespace SonoTracker.Common.Infrastructure.UnitOfWork
         void Rollback();
     }
 }
+

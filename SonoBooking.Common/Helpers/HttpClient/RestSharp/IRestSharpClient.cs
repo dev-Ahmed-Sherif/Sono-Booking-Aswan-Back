@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using RestSharp;
 
-namespace SonoTracker.Common.Helpers.HttpClient.RestSharp
+namespace SonoBooking.Common.Helpers.HttpClient.RestSharp
 {
     public interface IRestSharpClient
     {

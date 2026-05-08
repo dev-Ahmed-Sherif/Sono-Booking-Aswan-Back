@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
-namespace SonoTracker.Api.Controllers.V1.Base
+namespace SonoBooking.Api.Controllers.V1.Base
 {
     /// <inheritdoc />
     /// <remarks>

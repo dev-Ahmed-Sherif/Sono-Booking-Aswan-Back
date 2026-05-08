@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace SonoTracker.Common.Core
+namespace SonoBooking.Common.Core
 {
     public interface IResponseResult : IFinalResult
     {
@@ -10,3 +10,4 @@ namespace SonoTracker.Common.Core
             string message = null);
     }
 }
+

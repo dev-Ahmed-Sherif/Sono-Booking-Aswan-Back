@@ -1,9 +1,10 @@
-using Asp.Versioning.ApiExplorer;
-using SonoTracker.Api.Extensions;
-using SonoTracker.Api.MiddleWares;
-using SonoTracker.Application.DependencyExtension;
+﻿using Asp.Versioning.ApiExplorer;
+using SonoBooking.Api.Extensions;
+using SonoBooking.Api.MiddleWares;
+using SonoBooking.Application.DependencyExtension;
 
-namespace SonoTracker.Api
+
+namespace SonoBooking.Api
 {
     /// <summary>
     /// Start Up Class

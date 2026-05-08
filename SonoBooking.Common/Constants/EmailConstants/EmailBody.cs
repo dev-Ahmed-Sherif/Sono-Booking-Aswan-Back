@@ -1,4 +1,4 @@
-﻿namespace SonoTracker.Common.Constants.EmailConstants
+﻿namespace SonoBooking.Common.Constants.EmailConstants
 {
     public static class EmailBody
     {
@@ -12,3 +12,4 @@
         }
     }
 }
+

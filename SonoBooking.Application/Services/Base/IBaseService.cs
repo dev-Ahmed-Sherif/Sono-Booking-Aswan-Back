@@ -1,11 +1,12 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using SonoTracker.Common.Core;
+using SonoBooking.Common.Core;
+using SonoBooking.Common.DTO.Base;
 
-namespace SonoTracker.Application.Services.Base
+namespace SonoBooking.Application.Services.Base
 {
     public interface IBaseService<T, TAddDto, TEditDto, TGetDto, TKey , TKeyDto>
         where T : class

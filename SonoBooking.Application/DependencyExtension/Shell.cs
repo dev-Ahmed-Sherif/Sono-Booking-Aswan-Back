@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace SonoTracker.Application.DependencyExtension
+namespace SonoBooking.Application.DependencyExtension
 {
     [ExcludeFromCodeCoverage]
     public class Shell : IDisposable
@@ -53,3 +53,4 @@ namespace SonoTracker.Application.DependencyExtension
         }
     }
 }
+
