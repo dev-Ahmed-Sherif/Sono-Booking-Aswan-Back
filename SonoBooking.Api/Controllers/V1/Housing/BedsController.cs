@@ -3,10 +3,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SonoBooking.Api.Controllers.V1.Base;
 using SonoBooking.Application.Services.Housing.Beds;
+using SonoBooking.Application.Services.Housing.UnitImages;
+using SonoBooking.Application.Services.LookUp.Attachments;
 using SonoBooking.Common.Core;
 using SonoBooking.Common.DTO.Base;
 using SonoBooking.Common.DTO.Housing.Bed;
 using SonoBooking.Common.DTO.Housing.Bed.Parameters;
+using SonoBooking.Domain.Entities.Housing;
+using System.Linq.Expressions;
 using System.Net;
 using System.Threading;
 
@@ -15,7 +19,10 @@ namespace SonoBooking.Api.Controllers.V1.Housing
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class BedsController(IBedService bedService) : BaseController
+    public class BedsController(
+                 IBedService bedService,
+                 IUnitImageService unitImageService,
+                 IAttachmentService attachmentService) : BaseController
     {
         [HttpGet("get/{id}")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
@@ -27,9 +34,15 @@ namespace SonoBooking.Api.Controllers.V1.Housing
 
         [HttpGet("getAll")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> GetAllAsync(
+            [FromHeader(Name = "RoomId")] string roomId = null,
+            CancellationToken cancellationToken = default)
         {
-            IFinalResult res = await bedService.GetAllAsync(cancellationToken: cancellationToken);
+            Expression<Func<Bed, bool>> predicate = string.IsNullOrWhiteSpace(roomId)
+                ? null
+                : b => b.RoomId == roomId;
+
+            IFinalResult res = await bedService.GetAllAsync(predicate: predicate, cancellationToken: cancellationToken);
             return Ok(res);
         }
 
@@ -45,7 +58,7 @@ namespace SonoBooking.Api.Controllers.V1.Housing
         [ProducesResponseType<IFinalResult>(StatusCodes.Status201Created)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<IFinalResult>> AddAsync([FromBody] AddBedDto dto, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> AddAsync([FromForm] AddBedDto dto, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await bedService.AddAsync(dto, cancellationToken);
 
@@ -59,7 +72,7 @@ namespace SonoBooking.Api.Controllers.V1.Housing
         [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromBody] AddBedDto model, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromForm] AddBedDto model, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await bedService.UpdateAsync(model, cancellationToken);
 
@@ -91,6 +104,25 @@ namespace SonoBooking.Api.Controllers.V1.Housing
             if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
 
             return Accepted(res);
+        }
+
+        /// <summary>
+        /// Deletes a range of attachments by their IDs.
+        /// </summary>
+        /// <param name="ids">A collection of attachment IDs to delete.</param>
+        /// <returns>An <see cref="IFinalResult"/> indicating the result of the operation.</returns>
+        [HttpDelete("deleteRange/attachments")]
+        public async Task<ActionResult<IFinalResult>> DeleteRangeAsync([FromBody] IEnumerable<string> ids, CancellationToken cancellationToken = default)
+        {
+            // Call the service to delete the attachments
+            // and return the result
+            IFinalResult resultUnitImageService = await unitImageService.DeleteRangeWithAttachIdRangeAsync(ids, cancellationToken);
+            IFinalResult resultAttach = await attachmentService.DeleteRangeAsync(ids, cancellationToken);
+            if (resultAttach.Status == HttpStatusCode.BadRequest && resultUnitImageService.Status == HttpStatusCode.BadRequest)
+            {
+                return BadRequest(resultAttach);
+            }
+            return Ok(resultAttach);
         }
     }
 }

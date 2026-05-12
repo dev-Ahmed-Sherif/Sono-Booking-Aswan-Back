@@ -7,7 +7,11 @@ namespace SonoBooking.Application.Mapping
     {
         public void MapApartment()
         {
-            CreateMap<Apartment, ApartmentDto>().ReverseMap();
+            CreateMap<Apartment, ApartmentDto>()
+                .ForMember(des => des.City,src => src.MapFrom(s => s.City.NameAr))
+                .ForMember(des => des.Governorate,src => src.MapFrom(s => s.Governorate.NameAr))
+                .ForMember(des => des.ApartmentType,src => src.MapFrom(s => s.ApartmentType.NameAr))
+                .ReverseMap();
 
             CreateMap<Apartment, EditApartmentDto>().ReverseMap();
 

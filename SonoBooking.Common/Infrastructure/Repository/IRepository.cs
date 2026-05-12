@@ -58,8 +58,12 @@ namespace SonoBooking.Common.Infrastructure.Repository
         /// <param name="include"></param>
         /// <param name="disableTracking"></param>
         /// <returns></returns>
-        Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate = null,
-            IEnumerable<SortModel> orderByCriteria = null, Func<IQueryable<T>, IIncludableQueryable<T, object>> include = null, bool disableTracking = true, CancellationToken cancellationToken = default);
+        Task<IEnumerable<T>> FindAsync(
+            Expression<Func<T, bool>> predicate = null,
+            IEnumerable<SortModel> orderByCriteria = null, 
+            Func<IQueryable<T>, 
+            IIncludableQueryable<T, object>> include = null, 
+            bool disableTracking = true, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Find Paged
@@ -264,7 +268,7 @@ namespace SonoBooking.Common.Infrastructure.Repository
         /// Remove Range
         /// </summary>
         /// <param name="entities"></param>
-        void RemoveRange(IEnumerable<T> entities);
+        void RemoveRange(IEnumerable<T> entities, CancellationToken cancellationToken = default);
 
         Task<T> GetLast(CancellationToken cancellationToken = default);
         //Task<(int Count, IEnumerable<RoleTable> Result)> FindPagedAsync(Expression<Func<RoleTable, bool>> predicate, int pageNumber, int pageSize, IEnumerable<SortModel> orderByValue);

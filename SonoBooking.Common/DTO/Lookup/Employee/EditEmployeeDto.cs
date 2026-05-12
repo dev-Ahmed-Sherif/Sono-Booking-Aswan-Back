@@ -1,20 +1,18 @@
 using SonoBooking.Common.Core;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
-namespace SonoBooking.Common.DTO.Housing.UnitImage
+namespace SonoBooking.Common.DTO.Lookup.Employee
 {
     [ExcludeFromCodeCoverage]
-    public class UnitImageDto : IEntityDto<string>
+    public class EditEmployeeDto : IEntityDto<string>
     {
         public string Id { get; set; }
-        public string Name { get; set; }
-        public string Url { get; set; }
-        public string ApartmentId { get; set; }
-        public string RoomId { get; set; }
-        public string BedId { get; set; }
-        public string AttachmentId { get; set; }
-        public bool IsPrimary { get; set; }
+
+        [Required, MaxLength(20)]
+        public string NationalId { get; set; }
+
         public DateTime CreatedAt { get; set; }
         public string CreatedById { get; set; }
         public string CreatedBy { get; set; }

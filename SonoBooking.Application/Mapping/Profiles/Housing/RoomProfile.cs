@@ -7,7 +7,9 @@ namespace SonoBooking.Application.Mapping
     {
         public void MapRoom()
         {
-            CreateMap<Room, RoomDto>().ReverseMap();
+            CreateMap<Room, RoomDto>()
+                .ForMember(dest => dest.RoomType, opt => opt.MapFrom(src => src.RoomType.NameAr))
+                .ReverseMap();
 
             CreateMap<Room, EditRoomDto>().ReverseMap();
 

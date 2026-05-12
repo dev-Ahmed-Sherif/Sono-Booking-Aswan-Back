@@ -6,7 +6,7 @@ using SonoBooking.Domain.Entities.Lookups;
 
 namespace SonoBooking.Domain.Entities.Housing;
 
-public class UnitImage : BaseAudit<string>
+public class UnitImage : BaseEntity<string>
 {
     public UnitImage()
     {

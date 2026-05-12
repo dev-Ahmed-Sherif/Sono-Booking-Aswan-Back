@@ -9,6 +9,7 @@ namespace SonoBooking.Application.Mapping
             MapAttachment();
             MapApartmentType();
             MapCity();
+            MapEmployee();
             MapGovernorate();
             MapRelationship();
             MapRequestType();

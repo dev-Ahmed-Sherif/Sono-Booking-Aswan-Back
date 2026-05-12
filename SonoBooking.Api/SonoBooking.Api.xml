@@ -11,6 +11,29 @@
             (e.g. client disconnect). It is bound to <see cref="P:Microsoft.AspNetCore.Http.HttpContext.RequestAborted"/> by default.
             </remarks>
         </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Housing.ApartmentsController.DeleteRangeAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">
+            <summary>
+            Deletes a range of attachments by their IDs.
+            </summary>
+            <param name="ids">A collection of attachment IDs to delete.</param>
+            <param name="cancellationToken">A collection of attachment IDs to delete.</param>
+            <returns>An <see cref="T:SonoBooking.Common.Core.IFinalResult"/> indicating the result of the operation.</returns>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Housing.BedsController.DeleteRangeAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">
+            <summary>
+            Deletes a range of attachments by their IDs.
+            </summary>
+            <param name="ids">A collection of attachment IDs to delete.</param>
+            <returns>An <see cref="T:SonoBooking.Common.Core.IFinalResult"/> indicating the result of the operation.</returns>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Housing.RoomsController.DeleteRangeAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">
+            <summary>
+            Deletes a range of attachments by their IDs.
+            </summary>
+            <param name="ids">A collection of attachment IDs to delete.</param>
+            <param name="cancellationToken">A cancellation token.</param>
+            <returns>An <see cref="T:SonoBooking.Common.Core.IFinalResult"/> indicating the result of the operation.</returns>
+        </member>
         <member name="T:SonoBooking.Api.Controllers.V1.Identity.AccountsController">
             <summary>
             Controller for managing user accounts, including registration, login, and role updates.
@@ -248,6 +271,28 @@
             <param name="id">PK</param>
             <param name="cancellationToken"></param>
             <returns></returns>
+        </member>
+        <member name="T:SonoBooking.Api.Controllers.V1.Lookups.EmployeesController">
+            <summary>
+            Controller for managing employee lookups.
+            Provides endpoints to retrieve, list, page, add, update and delete employees.
+            </summary>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.EmployeesController.#ctor(SonoBooking.Application.Services.LookUp.Employees.IEmployeeService)">
+            <summary>
+            Controller for managing employee lookups.
+            Provides endpoints to retrieve, list, page, add, update and delete employees.
+            </summary>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.EmployeesController.GetAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Retrieves an employee by its identifier.
+            </summary>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Lookups.EmployeesController.GetAllAsync(System.Threading.CancellationToken)">
+            <summary>
+            Retrieves all employees.
+            </summary>
         </member>
         <member name="T:SonoBooking.Api.Controllers.V1.Lookups.Enums.GendersController">
             <summary>

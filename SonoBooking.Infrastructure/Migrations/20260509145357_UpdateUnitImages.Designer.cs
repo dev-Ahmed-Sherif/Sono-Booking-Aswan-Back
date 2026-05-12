@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SonoBooking.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using SonoBooking.Infrastructure.Context;
 namespace SonoBooking.Infrastructure.Migrations
 {
     [DbContext(typeof(SonoBookingDbContext))]
-    partial class SonoBookingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260509145357_UpdateUnitImages")]
+    partial class UpdateUnitImages
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -800,92 +803,6 @@ namespace SonoBooking.Infrastructure.Migrations
                     b.ToTable("Companions", (string)null);
                 });
 
-            modelBuilder.Entity("SonoBooking.Domain.Entities.Housing.Extension", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime?>("ApprovedAt")
-                        .HasColumnType("datetime");
-
-                    b.Property<string>("ApprovedById")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasMaxLength(70)
-                        .HasColumnType("nvarchar(70)");
-
-                    b.Property<string>("CreatedById")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateOnly>("EndDate")
-                        .HasColumnType("date");
-
-                    b.Property<int>("ExtensionAllocationType")
-                        .HasColumnType("int");
-
-                    b.Property<string>("IpAddress")
-                        .HasMaxLength(28)
-                        .HasColumnType("nvarchar(28)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("ModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ModifiedBy")
-                        .IsRequired()
-                        .HasMaxLength(70)
-                        .HasColumnType("nvarchar(70)");
-
-                    b.Property<string>("ModifiedById")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("RejectionReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("ReservationId")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasDefaultValue("Pending");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ApprovedById");
-
-                    b.HasIndex(new[] { "ReservationId" }, "IDX_Extensions_ReservationId");
-
-                    b.HasIndex(new[] { "Status" }, "IDX_Extensions_Status");
-
-                    b.HasIndex(new[] { "UserId" }, "IDX_Extensions_UserId");
-
-                    b.ToTable("Extensions", "booking");
-                });
-
             modelBuilder.Entity("SonoBooking.Domain.Entities.Housing.Leader", b =>
                 {
                     b.Property<string>("Id")
@@ -1087,9 +1004,6 @@ namespace SonoBooking.Infrastructure.Migrations
                     b.Property<string>("RejectionReason")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("RequestAllocationType")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("RequestDate")
                         .ValueGeneratedOnAdd()
@@ -1894,61 +1808,6 @@ namespace SonoBooking.Infrastructure.Migrations
                     b.ToTable("City");
                 });
 
-            modelBuilder.Entity("SonoBooking.Domain.Entities.Lookups.Employee", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime")
-                        .HasDefaultValueSql("(getdate())");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasMaxLength(70)
-                        .HasColumnType("nvarchar(70)");
-
-                    b.Property<string>("CreatedById")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("IpAddress")
-                        .HasMaxLength(28)
-                        .HasColumnType("nvarchar(28)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("ModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ModifiedBy")
-                        .IsRequired()
-                        .HasMaxLength(70)
-                        .HasColumnType("nvarchar(70)");
-
-                    b.Property<string>("ModifiedById")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("NationalId")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.HasKey("Id")
-                        .HasName("PK_Employees");
-
-                    b.HasIndex(new[] { "NationalId" }, "UX_Employees_NationalId")
-                        .IsUnique();
-
-                    b.ToTable("Employees", (string)null);
-                });
-
             modelBuilder.Entity("SonoBooking.Domain.Entities.Lookups.Governorate", b =>
                 {
                     b.Property<string>("Id")
@@ -2472,33 +2331,6 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasConstraintName("FK_Companions_Users");
 
                     b.Navigation("Relationship");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("SonoBooking.Domain.Entities.Housing.Extension", b =>
-                {
-                    b.HasOne("SonoBooking.Domain.Entities.Identity.User", "ApprovedBy")
-                        .WithMany()
-                        .HasForeignKey("ApprovedById")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .HasConstraintName("FK_Extensions_ApprovedBy");
-
-                    b.HasOne("SonoBooking.Domain.Entities.Housing.Reservation", "Reservation")
-                        .WithMany()
-                        .HasForeignKey("ReservationId")
-                        .IsRequired()
-                        .HasConstraintName("FK_Extensions_Reservation");
-
-                    b.HasOne("SonoBooking.Domain.Entities.Identity.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .IsRequired()
-                        .HasConstraintName("FK_Extensions_User");
-
-                    b.Navigation("ApprovedBy");
-
-                    b.Navigation("Reservation");
 
                     b.Navigation("User");
                 });

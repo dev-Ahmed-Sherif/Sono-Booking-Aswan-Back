@@ -99,8 +99,8 @@ namespace SonoBooking.Domain
     {
         [Values("Fixed", "ثابت", "FIXED")]
         Fixed = 1,
-        [Values("Movable", "متحرك", "MOVABLE")]
-        Movable = 2
+        [Values("Flexible", "مرن", "FLEXIBLE")]
+        Flexible = 2
     }
 
     public enum Case

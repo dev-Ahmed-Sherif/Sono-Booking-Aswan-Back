@@ -19,6 +19,10 @@ public partial class SonoBookingDbContext(
 
     public virtual DbSet<Companion> Companions { get; set; }
 
+    public virtual DbSet<Employee> Employees { get; set; }
+
+    public virtual DbSet<Extension> Extensions { get; set; }
+
     public virtual DbSet<Leader> Leaders { get; set; }
 
     public virtual DbSet<Message> Messages { get; set; }
@@ -283,6 +287,25 @@ public partial class SonoBookingDbContext(
                 .IsRequired();
         });
 
+        modelBuilder.Entity<Employee>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_Employees");
+
+            entity.ToTable("Employees");
+
+            entity.HasIndex(e => e.NationalId, "UX_Employees_NationalId").IsUnique();
+
+            entity.Property(e => e.Id)
+                .IsRequired()
+                .HasMaxLength(50);
+            entity.Property(e => e.NationalId)
+                .IsRequired()
+                .HasMaxLength(20);
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+        });
+
         modelBuilder.Entity<Leader>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Leaders__3214EC070064AA06");
@@ -334,6 +357,44 @@ public partial class SonoBookingDbContext(
             entity.HasOne(d => d.Reservation).WithMany(p => p.Payments)
                 .HasForeignKey(d => d.ReservationId)
                 .HasConstraintName("FK_Payments_Reservation");
+        });
+
+        modelBuilder.Entity<Extension>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.ToTable("Extensions", "booking");
+
+            entity.HasIndex(e => e.ReservationId, "IDX_Extensions_ReservationId");
+
+            entity.HasIndex(e => e.UserId, "IDX_Extensions_UserId");
+
+            entity.HasIndex(e => e.Status, "IDX_Extensions_Status");
+
+            entity.Property(e => e.ApprovedAt).HasColumnType("datetime");
+
+            entity.Property(e => e.RejectionReason).HasMaxLength(500);
+
+            entity.Property(e => e.Status)
+                .IsRequired()
+                .HasConversion<string>()
+                .HasMaxLength(20)
+                .HasDefaultValue(Status.Pending);
+
+            entity.HasOne(d => d.Reservation).WithMany()
+                .HasForeignKey(d => d.ReservationId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Extensions_Reservation");
+
+            entity.HasOne(d => d.User).WithMany()
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Extensions_User");
+
+            entity.HasOne(d => d.ApprovedBy).WithMany()
+                .HasForeignKey(d => d.ApprovedById)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName("FK_Extensions_ApprovedBy");
         });
 
         modelBuilder.Entity<Request>(entity =>

@@ -1,6 +1,8 @@
 using SonoBooking.Common.Core;
+using SonoBooking.Common.DTO.Housing.UnitImage;
 using SonoBooking.Domain;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace SonoBooking.Common.DTO.Housing.Bed
@@ -9,13 +11,12 @@ namespace SonoBooking.Common.DTO.Housing.Bed
     public class BedDto : IEntityDto<string>
     {
         public string Id { get; set; }
-        public string Code { get; set; }
         public string BedNumber { get; set; }
         public string Description { get; set; }
         public string Dimensions { get; set; }
         public decimal Price { get; set; }
         public UnitStatus Status { get; set; }
-        public string RoomId { get; set; }
+        public virtual ICollection<UnitImageDto> Images { get; set; } = [];
         public DateTime CreatedAt { get; set; }
         public string CreatedById { get; set; }
         public string CreatedBy { get; set; }

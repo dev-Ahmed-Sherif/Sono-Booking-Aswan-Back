@@ -338,7 +338,7 @@ namespace SonoBooking.Infrastructure.Repository
             
         }
 
-        public void RemoveRange(IEnumerable<T> entities)
+        public void RemoveRange(IEnumerable<T> entities, CancellationToken cancellationToken = default)
         {
             DbSet.RemoveRange(entities);
         }

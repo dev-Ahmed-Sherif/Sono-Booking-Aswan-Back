@@ -9,25 +9,15 @@ using SonoBooking.Domain.Entities.Lookups;
 
 namespace SonoBooking.Domain.Entities.Housing;
 
-public class Request : BaseAudit<string>
+public class Extension : BaseAudit<string>
 {
-    public Request()
+    public Extension()
     {
         if (string.IsNullOrEmpty(Id))
         {
             Id = Guid.CreateVersion7().ToString();
         }
     }
-
-
-    [Required, MaxLength(30)]
-    public required string RequestNumber { get; set; }
-
-    [Required]
-    public required DateTime RequestDate { get; set; }
-
-    [Required]
-    public required DateOnly StartDate { get; set; }
 
     [Required]
     public required DateOnly EndDate { get; set; }
@@ -36,15 +26,15 @@ public class Request : BaseAudit<string>
     public required Status Status { get; set; } = Status.Pending;
     
     [Required]
-    public required AllocationType RequestAllocationType { get; set; }
+    public required AllocationType ExtensionAllocationType { get; set; }
 
     [MaxLength(500)]
     public string? RejectionReason { get; set; }
 
     [Required, MaxLength(50)]
-    [ForeignKey(nameof(RequestType))]
-    public required string RequestTypeId { get; set; }
-    public virtual RequestType? RequestType { get; set; }
+    [ForeignKey(nameof(Reservation))]
+    public required string ReservationId { get; set; }
+    public virtual Reservation? Reservation { get; set; }
 
     [Required, MaxLength(50)]
     [ForeignKey(nameof(User))]
@@ -57,11 +47,4 @@ public class Request : BaseAudit<string>
     public virtual User? ApprovedBy { get; set; }
 
     public DateTime? ApprovedAt { get; set; }
-
-    public virtual ICollection<RequestParticipant> RequestParticipants { get; set; } = [];
-
-    public virtual ICollection<RequestUnit> RequestUnits { get; set; } = [];
-
-    public virtual ICollection<Reservation> Reservations { get; set; } = [];
-    public virtual ICollection<Approval> Approvals { get; set; } = [];
 }
