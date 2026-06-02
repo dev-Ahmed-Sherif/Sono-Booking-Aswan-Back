@@ -8,7 +8,7 @@ using SonoBooking.Domain.Entities.Identity;
 
 namespace SonoBooking.Domain.Entities.Housing;
 
-public class RequestParticipant : BaseAudit<string>
+public class RequestParticipant : BaseEntity<string>
 {
     public RequestParticipant()
     {

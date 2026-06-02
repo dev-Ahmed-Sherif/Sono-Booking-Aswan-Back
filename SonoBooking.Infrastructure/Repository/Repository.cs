@@ -300,7 +300,7 @@ namespace SonoBooking.Infrastructure.Repository
 
         public async Task UpdateAsync(object id, T newEntity, CancellationToken cancellationToken = default)
         {
-            var originalEntity = await DbSet.FindAsync(new[] { id }, cancellationToken);
+            var originalEntity = await DbSet.FindAsync([id], cancellationToken);
             if (originalEntity != null)
             {
                 DbContext.Entry(originalEntity).CurrentValues.SetValues(newEntity);

@@ -14,7 +14,6 @@ namespace SonoBooking.Api.Controllers.V1.Lookups
 {
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize]
     public class RequestTypesController(IRequestTypeService requestTypeService) : BaseController
     {
         [HttpGet("get/{id}")]

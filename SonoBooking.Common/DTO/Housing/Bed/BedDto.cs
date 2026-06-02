@@ -16,6 +16,7 @@ namespace SonoBooking.Common.DTO.Housing.Bed
         public string Dimensions { get; set; }
         public decimal Price { get; set; }
         public UnitStatus Status { get; set; }
+        public string RoomId { get; set; }
         public virtual ICollection<UnitImageDto> Images { get; set; } = [];
         public DateTime CreatedAt { get; set; }
         public string CreatedById { get; set; }

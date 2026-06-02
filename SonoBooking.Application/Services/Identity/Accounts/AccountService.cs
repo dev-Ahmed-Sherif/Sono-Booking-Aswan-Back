@@ -1,4 +1,21 @@
-﻿using System;
+﻿using AutoMapper;
+using LinqKit;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using SonoBooking.Common.Constants.Auth;
+using SonoBooking.Common.Core;
+using SonoBooking.Common.DTO.Base;
+using SonoBooking.Common.DTO.Identity.User;
+using SonoBooking.Common.Helpers.MediaUploader;
+using SonoBooking.Common.Infrastructure.UnitOfWork;
+using SonoBooking.Domain;
+using SonoBooking.Domain.Entities.Identity;
+using SonoBooking.Infrastructure.Context;
+using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -9,48 +26,58 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using AutoMapper;
-using LinqKit;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using SonoBooking.Common.Constants.Auth;
-using SonoBooking.Common.Core;
-using SonoBooking.Common.DTO.Base;
-using SonoBooking.Common.DTO.Identity.User;
-using SonoBooking.Common.Infrastructure.UnitOfWork;
-using SonoBooking.Domain;
-using SonoBooking.Domain.Entities.Identity;
-using SonoBooking.Infrastructure.Context;
 
-namespace SonoBooking.Application.Services.Identity.Account
+namespace SonoBooking.Application.Services.Identity.Accounts
 {
 
     public class AccountService(
                  UserManager<User> userManager,
-                 RoleManager<Entities.Identity.Role> roleManager,
+                 RoleManager<Role> roleManager,
                  SonoBookingDbContext context,
                  UserDataDto auditUser,
                  IConfiguration configuration,
                  IUnitOfWork<User> UnitOfWork,
-                 IMapper Mapper) : IAccountService
+                 IMapper Mapper,
+                 IWebHostEnvironment hostingEnvironment,
+                 IHttpContextAccessor httpContextAccessor) : IAccountService
     {
+        private readonly UploaderConfiguration _uploaderConfiguration = new(hostingEnvironment, httpContextAccessor);
         public async Task<IFinalResult> RegisterAsync(RegisterDto request, CancellationToken cancellationToken = default)
         {
             ResponseResult responseResult = new();
 
             User checkUser = await userManager.FindByEmailAsync(request.Email);
-            
+
             if (checkUser == null)
             {
+                string documentNumber = request.NationalId.Trim();
+                bool documentExists = await userManager.Users.AnyAsync(
+                    u => u.DocumentNumber == documentNumber && !u.IsDeleted,
+                    cancellationToken);
+
+                if (documentExists)
+                    return responseResult.PostResult(result: null, status: HttpStatusCode.Conflict, exception: null,
+                        message: MessagesConstants.Existed);
+
+                if (request.DocumentImage == null)
+                    return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                        message: "Document image is required.");
+
+                string documentUpload = await _uploaderConfiguration.UploadFile(request.DocumentImage, "Attach/Users", cancellationToken);
+                if (UploadResponse(documentUpload) is { } uploadErr)
+                    return uploadErr;
+
                 User user = new()
                 {
                     Email = request.Email,
                     UserName = request.Email,
                     FullName = request.Username,
-                    Gender = Gender.Male,
-                    BirthDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                    DocumentNumber = documentNumber,
+                    DocumentType = request.DocumentType,
+                    Gender = request.Gender,
+                    BirthDate = request.BirthDate,
+                    PhoneNumber = request.Phone,
+                    DocumentImageUrl = documentUpload,
                     CreatedBy = auditUser.Name != "" ? auditUser.Name : request.Username,
                     CreatedById = auditUser.Id != "" ? auditUser.Id : "",
                     CreatedAt = DateTime.UtcNow,
@@ -75,35 +102,35 @@ namespace SonoBooking.Application.Services.Identity.Account
 
                 if (!string.IsNullOrWhiteSpace(request.RoleId))
                 {
-                    Entities.Identity.Role role = await roleManager.FindByIdAsync(request.RoleId);
+                    Role role = await roleManager.FindByIdAsync(request.RoleId);
 
                     IdentityResult res = await userManager.AddToRoleAsync(user, role.Name!);
 
-                    if (!result.Succeeded)
+                    if (!res.Succeeded)
                         return responseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
                                                          message: MessagesConstants.AddError + "User : " +
                                                          string.Join(", ", result.Errors.Select(e => e.Description)));
 
-                    return responseResult.PostResult(result: true, status: HttpStatusCode.Created, exception: null,
+                    return responseResult.PostResult(result: user.Id, status: HttpStatusCode.Created, exception: null,
                                                      message: MessagesConstants.AddSuccess);
                 }
                 else
                 {
-                    Entities.Identity.Role role = await roleManager.FindByNameAsync(Roles.User);
+                    Role role = await roleManager.FindByNameAsync(RoleNames.User);
 
                     IdentityResult res = await userManager.AddToRoleAsync(user, role.Name!);
 
-                    if (!result.Succeeded)
-                        return responseResult.PostResult(user, status: HttpStatusCode.BadRequest, exception: null,
+                    if (!res.Succeeded)
+                        return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
                                                          message: MessagesConstants.AddError + "User : " +
                                                          string.Join(", ", result.Errors.Select(e => e.Description)));
 
-                    return  responseResult.PostResult(result: true, status: HttpStatusCode.Created, exception:null,
-                                                      message: MessagesConstants.AddSuccess); 
+                    return responseResult.PostResult(result: user.Id, status: HttpStatusCode.Created, exception: null,
+                                                      message: MessagesConstants.AddSuccess);
                 }
             }
 
-            return responseResult.PostResult(result: null,status: HttpStatusCode.Conflict, exception: null,
+            return responseResult.PostResult(result: null, status: HttpStatusCode.Conflict, exception: null,
                                              message: MessagesConstants.Existed);
         }
         public async Task<IFinalResult> LoginAsync(LoginRequestDto request, CancellationToken cancellationToken = default)
@@ -166,6 +193,10 @@ namespace SonoBooking.Application.Services.Identity.Account
 
             User user = await userManager.FindByIdAsync(updateUser.Id);
 
+            if (user is null)
+                return responseResult.PostResult(result: null, status: HttpStatusCode.NotFound, exception: null,
+                    message: MessagesConstants.NotFound);
+
             user.Email = updateUser.Email;
             user.UserName = updateUser.Email;
             user.FullName = updateUser.UserName;
@@ -175,7 +206,7 @@ namespace SonoBooking.Application.Services.Identity.Account
 
             if (updateUser.NewPassword != "" && updateUser.NewPassword is not null)
             {
-                if (auditUser.Role == Roles.SuperAdmin)
+                if (auditUser.Role == RoleNames.SuperAdmin)
                 {
                     IdentityResult resRemoveOldPassword = await userManager.RemovePasswordAsync(user);
 
@@ -199,7 +230,17 @@ namespace SonoBooking.Application.Services.Identity.Account
                 }
             }
 
-            Entities.Identity.Role role = await roleManager.FindByIdAsync(updateUser.RoleId.ToString());
+            if (updateUser.DocumentImage != null)
+            {
+                string documentUpload = await _uploaderConfiguration.UploadFile(updateUser.DocumentImage, "Attach/Users", cancellationToken);
+                if (UploadResponse(documentUpload) is { } uploadErr)
+                    return uploadErr;
+
+                _uploaderConfiguration.DeleteFile(user.DocumentImageUrl);
+                user.DocumentImageUrl = documentUpload;
+            }
+
+            Role role = await roleManager.FindByIdAsync(updateUser.RoleId.ToString());
 
             if (role != null)
             {
@@ -210,16 +251,20 @@ namespace SonoBooking.Application.Services.Identity.Account
                     await userManager.RemoveFromRolesAsync(user, userRole);
                 }
 
-                await userManager.AddToRoleAsync(user, role.Name);
+                IdentityResult addRoleRes = await userManager.AddToRoleAsync(user, role.Name);
 
-                IdentityResult res = await userManager.UpdateAsync(user);
-
-                if (!res.Succeeded)
-
+                if (!addRoleRes.Succeeded)
                     return responseResult.PostResult(user, status: HttpStatusCode.BadRequest,
                                 message: "Failed to Update User : " +
-                                string.Join(", ", res.Errors.Select(e => e.Description)));
+                                string.Join(", ", addRoleRes.Errors.Select(e => e.Description)));
             }
+
+            IdentityResult res = await userManager.UpdateAsync(user);
+
+            if (!res.Succeeded)
+                return responseResult.PostResult(user, status: HttpStatusCode.BadRequest,
+                            message: "Failed to Update User : " +
+                            string.Join(", ", res.Errors.Select(e => e.Description)));
 
             return responseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null,
                                              message: MessagesConstants.UpdateSuccess);
@@ -230,14 +275,26 @@ namespace SonoBooking.Application.Services.Identity.Account
 
             User user = await userManager.FindByIdAsync(Id);
 
+            if (user is null)
+                return responseResult.PostResult(result: null, status: HttpStatusCode.NotFound, exception: null,
+                    message: MessagesConstants.NotFound);
+
             UserDto userDto = new()
             {
                 Id = user.Id,
                 Email = user.Email,
                 UserName = user.FullName,
                 Role = (await userManager.GetRolesAsync(user)).FirstOrDefault() ?? "",
-                FloatingUnitId = "",
-                OrganizationId = "",
+                BirthDate = user.BirthDate ?? default,
+                Phone = user.PhoneNumber,
+                Gender = user.Gender ?? default,
+                DocumentType = user.DocumentType ?? default,
+                DocumentNumber = user.DocumentNumber,
+                DocumentImageUrl = user.DocumentImageUrl,
+                CreatedAt = user.CreatedAt,
+                CreatedBy = user.CreatedBy,
+                ModifiedAt = user.ModifiedAt,
+                ModifiedBy = user.ModifiedBy
             };
 
             userDto.RoleId = roleManager.Roles.Where(r => r.Name == userDto.Role)
@@ -265,7 +322,11 @@ namespace SonoBooking.Application.Services.Identity.Account
                     UserName = u.FullName,
                     Role = roles.FirstOrDefault() ?? "",
                     RoleId = "",
-                    OrganizationId = "",
+                    BirthDate = (DateOnly)u.BirthDate,
+                    Gender = (Gender)u.Gender,
+                    DocumentType = (IDType)u.DocumentType,
+                    DocumentNumber = u.DocumentNumber,
+                    DocumentImageUrl = u.DocumentImageUrl,
                     CreatedAt = u.CreatedAt,
                     CreatedBy = u.CreatedBy,
                     ModifiedAt = u.ModifiedAt,
@@ -283,7 +344,7 @@ namespace SonoBooking.Application.Services.Identity.Account
                                                       .Select(r => r.Id).FirstOrDefault() ?? "";
             }
 
-            return responseResult.PostResult(result: users, status: HttpStatusCode.OK, exception: null, 
+            return responseResult.PostResult(result: users, status: HttpStatusCode.OK, exception: null,
                                              message: MessagesConstants.Success);
         }
         public async Task<PagingResult> GetAllPagedAsync(BaseParam<FilterUserDto> filter, CancellationToken cancellationToken = default)
@@ -416,11 +477,11 @@ namespace SonoBooking.Application.Services.Identity.Account
         private async Task<string> CreateToken(User user, IEnumerable<Claim> claimDB, CancellationToken cancellationToken = default)
         {
             IList<string> userRoles = await userManager.GetRolesAsync(user);
-            
+
             IEnumerable<Claim> roles = userRoles.Select(o => new Claim(ClaimTypes.Role, o));
-          
-            var role = userRoles.FirstOrDefault() ?? Roles.User; // Default to User role if no roles assigned
-            
+
+            var role = userRoles.FirstOrDefault() ?? RoleNames.User; // Default to User role if no roles assigned
+
             IEnumerable<Claim> claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier,user.Id.ToString()),
@@ -459,6 +520,23 @@ namespace SonoBooking.Application.Services.Identity.Account
 
 
             return predicate;
+        }
+
+        private IFinalResult UploadResponse(string res)
+        {
+            if (res == "Size")
+            {
+                const string message = "File Size Larger than 5 Mega Bytes";
+                return new ResponseResult().PostResult(result: null, status: HttpStatusCode.BadRequest, message: message);
+            }
+
+            if (res == "Type")
+            {
+                const string message = "File type not allowed.";
+                return new ResponseResult().PostResult(result: null, status: HttpStatusCode.BadRequest, message: message);
+            }
+
+            return null;
         }
     }
 }

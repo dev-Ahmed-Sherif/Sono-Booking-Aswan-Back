@@ -1,4 +1,4 @@
-﻿namespace SonoBooking.Common.DTO.Identity.Role
+﻿namespace SonoBooking.Common.DTO.Identity.Roles
 {
     public class AddRoleDto
     {

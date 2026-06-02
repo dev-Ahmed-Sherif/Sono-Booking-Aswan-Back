@@ -53,7 +53,7 @@ namespace SonoBooking.Application.Services.Base
         /// <returns>True when the current role is SuperAdmin; otherwise false.</returns>
         protected bool IsSuperAdmin()
         {
-            return string.Equals(_user.Role, Roles.SuperAdmin, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(_user.Role, RoleNames.SuperAdmin, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

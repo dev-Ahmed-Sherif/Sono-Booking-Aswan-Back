@@ -13,6 +13,7 @@ namespace SonoBooking.Application.Mapping
 
             CreateMap<AddCompanionDto, Companion>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.DocumentImageUrl, opt => opt.Ignore())
                 .ReverseMap();
         }
     }

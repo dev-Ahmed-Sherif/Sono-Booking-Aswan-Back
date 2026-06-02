@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SonoBooking.Common.DTO.Identity.Role
+namespace SonoBooking.Common.DTO.Identity.Roles
 {
     public class FilterRoleDto
     {

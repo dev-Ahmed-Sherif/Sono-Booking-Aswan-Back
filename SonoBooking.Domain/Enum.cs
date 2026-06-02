@@ -64,14 +64,14 @@ namespace SonoBooking.Domain
     {
         [Values("Reserved", "محجوز", "RESERVED")]
         Reserved = 1,
-        [Values("CheckedIn", "تأكيد وصول", "CHECKEDIN")]
-        CheckedIn = 2,
+        //[Values("CheckedIn", "تأكيد وصول", "CHECKEDIN")]
+        //CheckedIn = 2,
         [Values("Completed", "تم اكتمال الاقامة", "COMPLETED")]
-        Completed = 3,
-         [Values("Canceled", "ملغى", "CANCELED")]
-        Canceled = 4,
+        Completed = 2,
+        [Values("Canceled", "ملغى", "CANCELED")]
+        Canceled = 3,
         [Values("NoShow", "لم يظهر", "NOSHOW")]
-        NoShow = 5
+        NoShow = 4
     }
 
     public enum PaymentStatus

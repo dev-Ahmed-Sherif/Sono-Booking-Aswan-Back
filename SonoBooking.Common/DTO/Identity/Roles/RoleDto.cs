@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using SonoBooking.Common.Core;
 
-namespace SonoBooking.Common.DTO.Identity.Role
+namespace SonoBooking.Common.DTO.Identity.Roles
 {
     [ExcludeFromCodeCoverage]
     public class RoleDto

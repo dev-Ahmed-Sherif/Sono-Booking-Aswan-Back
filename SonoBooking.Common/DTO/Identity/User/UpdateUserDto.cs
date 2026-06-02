@@ -1,4 +1,5 @@
-﻿using SonoBooking.Common.Core;
+﻿using Microsoft.AspNetCore.Http;
+using SonoBooking.Common.Core;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -21,6 +22,9 @@ namespace SonoBooking.Common.DTO.Identity.User
         public string ConfirmPassword { get; set; }
         
         public Guid RoleId { get; set; }
+
+        /// <summary>Optional identity document image; when set, replaces the stored document file (same flow as MaintenanceService upload).</summary>
+        public IFormFile DocumentImage { get; set; }
         
         public Guid? OrganizationId { get; set; }
     }

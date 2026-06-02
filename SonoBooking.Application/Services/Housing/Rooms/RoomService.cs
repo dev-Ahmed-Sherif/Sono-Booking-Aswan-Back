@@ -161,6 +161,9 @@ namespace SonoBooking.Application.Services.Housing.Rooms
 
                 Room entity = Mapper.Map(model, entityToUpdate);
 
+                if (IsSuperAdmin())
+                    entity.IsDeleted = false;
+
                 if (model.Images != null)
                 {
                     foreach (var formFile in model.Images)

@@ -6,7 +6,7 @@ using SonoBooking.Domain.Entities.Base;
 
 namespace SonoBooking.Domain.Entities.Housing;
 
-public class RequestUnit : BaseAudit<string>
+public class RequestUnit : BaseEntity<string>
 {
     public RequestUnit()
     {
@@ -21,7 +21,7 @@ public class RequestUnit : BaseAudit<string>
     public required string RequestId { get; set; }
     public virtual Request? Request { get; set; }
 
-    [Required, MaxLength(50)]
+    [MaxLength(50)]
     [ForeignKey(nameof(Apartment))]
     public string? ApartmentId { get; set; }
     public virtual Apartment? Apartment { get; set; }

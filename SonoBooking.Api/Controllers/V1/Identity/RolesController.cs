@@ -5,9 +5,9 @@ using SonoBooking.Domain.Entities.Identity;
 using SonoBooking.Api.Controllers.V1.Base;
 using System.Net;
 using SonoBooking.Common.Core;
-using SonoBooking.Common.DTO.Identity.Role;
-using SonoBooking.Application.Services.Identity.Role;
 using SonoBooking.Common.DTO.Base;
+using SonoBooking.Application.Services.Identity.Roles;
+using SonoBooking.Common.DTO.Identity.Roles;
 
 namespace SonoBooking.Api.Controllers.V1.Identity
 {

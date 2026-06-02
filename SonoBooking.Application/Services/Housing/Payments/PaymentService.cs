@@ -6,6 +6,7 @@ using SonoBooking.Common.DTO.Housing.Payment;
 using SonoBooking.Common.DTO.Housing.Payment.Parameters;
 using SonoBooking.Domain;
 using SonoBooking.Domain.Entities.Housing;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading;
@@ -31,6 +32,36 @@ namespace SonoBooking.Application.Services.Housing.Payments
 
             IEnumerable<PaymentDto> data = Mapper.Map<IEnumerable<Payment>, IEnumerable<PaymentDto>>(Result ?? []);
             return new PagingResult(pageNumber, limit, Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
+        }
+
+        public override async Task<IFinalResult> AddAsync(AddPaymentDto model, CancellationToken cancellationToken = default)
+        {
+            if (!string.IsNullOrWhiteSpace(model.ReservationId)
+                && await UnitOfWork.Repository.Any(
+                    p => p.ReservationId == model.ReservationId.Trim() && !p.IsDeleted,
+                    cancellationToken))
+            {
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.Conflict, exception: null,
+                    message: MessagesConstants.Existed);
+            }
+
+            return await base.AddAsync(model, cancellationToken);
+        }
+
+        public override async Task<IFinalResult> UpdateAsync(AddPaymentDto model, CancellationToken cancellationToken = default)
+        {
+            if (!string.IsNullOrWhiteSpace(model.ReservationId)
+                && await UnitOfWork.Repository.Any(
+                    p => p.ReservationId == model.ReservationId.Trim()
+                        && !p.IsDeleted
+                        && p.Id != model.Id,
+                    cancellationToken))
+            {
+                return ResponseResult.PostResult(result: false, status: HttpStatusCode.Conflict, exception: null,
+                    message: MessagesConstants.Existed);
+            }
+
+            return await base.UpdateAsync(model, cancellationToken);
         }
     }
 }

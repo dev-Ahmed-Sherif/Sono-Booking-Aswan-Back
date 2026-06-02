@@ -62,6 +62,6 @@ public class Request : BaseAudit<string>
 
     public virtual ICollection<RequestUnit> RequestUnits { get; set; } = [];
 
-    public virtual ICollection<Reservation> Reservations { get; set; } = [];
-    public virtual ICollection<Approval> Approvals { get; set; } = [];
+    public virtual Reservation Reservation { get; set; }
+    public virtual Approval Approval { get; set; }
 }

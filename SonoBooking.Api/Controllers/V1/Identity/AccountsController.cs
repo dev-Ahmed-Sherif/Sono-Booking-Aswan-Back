@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 using SonoBooking.Domain.Entities.Identity;
 using SonoBooking.Api.Controllers.V1.Base;
 using System.Net;
-using SonoBooking.Application.Services.Identity.Account;
 using SonoBooking.Common.DTO.Identity.User;
 using SonoBooking.Common.Core;
 using SonoBooking.Common.DTO.Base;
+using SonoBooking.Application.Services.Identity.Accounts;
 
 namespace SonoBooking.Api.Controllers.V1.Identity
 {
@@ -39,7 +39,7 @@ namespace SonoBooking.Api.Controllers.V1.Identity
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<IFinalResult>> RegisterAsync([FromBody] RegisterDto user, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> RegisterAsync([FromForm] RegisterDto user, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await accountService.RegisterAsync(user, cancellationToken);
 
@@ -189,7 +189,7 @@ namespace SonoBooking.Api.Controllers.V1.Identity
         [HttpPut("updateUserPersonalData"), Authorize]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IFinalResult>> UpdateUserPersonalData([FromBody] UpdateUserDto changeUserPersonalDataDto, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> UpdateUserPersonalData([FromForm] UpdateUserDto changeUserPersonalDataDto, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await accountService.UpdateUser(changeUserPersonalDataDto, cancellationToken);
 

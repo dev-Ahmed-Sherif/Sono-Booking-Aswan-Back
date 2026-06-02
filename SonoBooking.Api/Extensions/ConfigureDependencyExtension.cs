@@ -7,7 +7,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NetCore.AutoRegisterDi;
 using Newtonsoft.Json.Converters;
-using SonoBooking.Application.Services.Identity.Account;
 using SonoBooking.Domain.Entities.Identity;
 using SonoBooking.Infrastructure.Context;
 using SonoBooking.Infrastructure.DataInitializer;
@@ -33,6 +32,7 @@ using SonoBooking.Integration.UserRepository;
 using SonoBooking.Application.Helper;
 using SonoBooking.Application.Services.Base;
 using SonoBooking.Common.Infrastructure.UnitOfWork;
+using SonoBooking.Application.Services.Identity.Accounts;
 
 namespace SonoBooking.Api.Extensions
 {

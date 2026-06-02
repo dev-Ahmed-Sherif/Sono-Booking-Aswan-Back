@@ -26,6 +26,11 @@
             <param name="ids">A collection of attachment IDs to delete.</param>
             <returns>An <see cref="T:SonoBooking.Common.Core.IFinalResult"/> indicating the result of the operation.</returns>
         </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Housing.CompanionsController.TryApplyRegistrationUserId(SonoBooking.Common.DTO.Housing.Companion.AddCompanionDto,System.String,Microsoft.AspNetCore.Mvc.ActionResult{SonoBooking.Common.Core.IFinalResult}@)">
+            <summary>
+            During registration there is no JWT; the client sends the new account id in the UserId header.
+            </summary>
+        </member>
         <member name="M:SonoBooking.Api.Controllers.V1.Housing.RoomsController.DeleteRangeAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">
             <summary>
             Deletes a range of attachments by their IDs.
@@ -44,7 +49,7 @@
             <param name="accountService">Service for handling account-related operations.</param>
             <param name="userData">Data of the currently logged-in user.</param>
         </member>
-        <member name="M:SonoBooking.Api.Controllers.V1.Identity.AccountsController.#ctor(SonoBooking.Application.Services.Identity.Account.IAccountService,SonoBooking.Common.DTO.Identity.User.UserDataDto)">
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.AccountsController.#ctor(SonoBooking.Application.Services.Identity.Accounts.IAccountService,SonoBooking.Common.DTO.Identity.User.UserDataDto)">
             <summary>
             Controller for managing user accounts, including registration, login, and role updates.
             </summary>
@@ -145,7 +150,7 @@
             Controller for managing roles in the application.
             </summary>
         </member>
-        <member name="M:SonoBooking.Api.Controllers.V1.Identity.RolesController.#ctor(Microsoft.AspNetCore.Identity.RoleManager{SonoBooking.Domain.Entities.Identity.Role},SonoBooking.Application.Services.Identity.Role.IRoleService)">
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.RolesController.#ctor(Microsoft.AspNetCore.Identity.RoleManager{SonoBooking.Domain.Entities.Identity.Role},SonoBooking.Application.Services.Identity.Roles.IRoleService)">
             <summary>
             Controller for managing roles in the application.
             </summary>
@@ -157,7 +162,7 @@
             <param name="cancellationToken"></param>
             <returns>A list of roles.</returns>
         </member>
-        <member name="M:SonoBooking.Api.Controllers.V1.Identity.RolesController.GetPagedRolesAsync(SonoBooking.Common.DTO.Base.BaseParam{SonoBooking.Common.DTO.Identity.Role.FilterRoleDto},System.Threading.CancellationToken)">
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.RolesController.GetPagedRolesAsync(SonoBooking.Common.DTO.Base.BaseParam{SonoBooking.Common.DTO.Identity.Roles.FilterRoleDto},System.Threading.CancellationToken)">
             <summary>
             Retrieves a paginated list of users in the application.
             </summary>
@@ -176,7 +181,7 @@
             <param name="cancellationToken"></param>
             <returns>The role with the specified ID, or a not found result if the role does not exist.</returns>
         </member>
-        <member name="M:SonoBooking.Api.Controllers.V1.Identity.RolesController.CreateRoleAsync(SonoBooking.Common.DTO.Identity.Role.AddRoleDto,System.Threading.CancellationToken)">
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.RolesController.CreateRoleAsync(SonoBooking.Common.DTO.Identity.Roles.AddRoleDto,System.Threading.CancellationToken)">
             <summary>
             Creates a new role in the application.
             </summary>

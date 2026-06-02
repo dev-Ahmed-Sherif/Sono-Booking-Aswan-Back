@@ -27,7 +27,9 @@ namespace SonoBooking.Api.Controllers.V1.Housing
 
         [HttpGet("getAll")]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IFinalResult>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> GetAllAsync(
+            [FromHeader(Name = "UserId")] string userId = null,
+            CancellationToken cancellationToken = default)
         {
             IFinalResult res = await requestService.GetAllAsync(cancellationToken: cancellationToken);
             return Ok(res);

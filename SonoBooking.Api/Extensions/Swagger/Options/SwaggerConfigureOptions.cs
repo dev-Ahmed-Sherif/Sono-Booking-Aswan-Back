@@ -39,9 +39,9 @@ public class SwaggerConfigureOptions : IConfigureOptions<SwaggerGenOptions>
     {
         var info = new OpenApiInfo()
         {
-            Title = "SonoTracker Web API",
+            Title = "Sono Booking Web API",
             Version = description.ApiVersion.ToString(),
-            Description = "Starter SonoTracker For Web API",
+            Description = "Starter Sono Booking For Web API",
             //Contact = new OpenApiContact { Name = "Mahmoud Alaskalany", Email = "mahmoud.ragab@dhofar.gov.om" },
             //License = new OpenApiLicense { Name = "MIT", Url = new Uri("https://opensource.org/licenses/MIT") }
         };

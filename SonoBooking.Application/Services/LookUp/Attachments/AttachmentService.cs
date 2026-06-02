@@ -9,7 +9,6 @@ using SonoBooking.Common.DTO.Lookup.Attachment.Parameters;
 using SonoBooking.Common.Helpers.MediaUploader;
 using SonoBooking.Domain;
 using SonoBooking.Domain.Entities.Lookups;
-using SonoTracker.Domain;
 using System;
 using System.Collections.Generic;
 using System.IO;

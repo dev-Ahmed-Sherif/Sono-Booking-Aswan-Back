@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using SonoBooking.Common.Core;
 using SonoBooking.Domain;
 using System;
@@ -9,13 +10,12 @@ namespace SonoBooking.Common.DTO.Housing.Companion
     public class AddCompanionDto : IEntityDto<string>
     {
         public string Id { get; set; }
-        public string Code { get; set; }
         public string FullName { get; set; }
         public Gender Gender { get; set; }
         public DateOnly BirthDate { get; set; }
-        public string DocumentImageUrl { get; set; }
         public string DocumentNumber { get; set; }
         public IDType DocumentType { get; set; }
+        public IFormFile DocumentImage { get; set; }
         public string UserId { get; set; }
         public string RelationshipId { get; set; }
     }

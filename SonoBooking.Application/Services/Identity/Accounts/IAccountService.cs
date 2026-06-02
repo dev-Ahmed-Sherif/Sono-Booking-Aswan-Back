@@ -2,12 +2,12 @@
 using SonoBooking.Common.Core;
 using SonoBooking.Common.DTO.Base;
 using SonoBooking.Common.DTO.Identity.User;
-using SonoTracker.Domain.Entities.Identity;
+using SonoBooking.Domain.Entities.Identity;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SonoBooking.Application.Services.Identity.Account
+namespace SonoBooking.Application.Services.Identity.Accounts
 {
     public interface IAccountService
     {

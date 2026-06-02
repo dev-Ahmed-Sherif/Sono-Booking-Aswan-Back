@@ -30,13 +30,13 @@ namespace SonoBooking.Domain.Entities.Identity
 
         public DateOnly? BirthDate { get; set; }
 
-        [MaxLength(140)]
-        public string? DocumentImageUrl { get; set; }
-
         [MaxLength(20)]
         public string? DocumentNumber { get; set; }
 
         public IDType? DocumentType { get; set; }
+
+        [MaxLength(140)]
+        public string? DocumentImageUrl { get; set; }
 
         public bool IsLogedIn { get; set; }
 
@@ -64,6 +64,5 @@ namespace SonoBooking.Domain.Entities.Identity
 
         public virtual HashSet<Companion> Companions { get; set; } = [];
         public virtual HashSet<Request> Requests { get; set; } = [];
-        public virtual HashSet<Reservation> Reservations { get; set; } = [];
     }
 }

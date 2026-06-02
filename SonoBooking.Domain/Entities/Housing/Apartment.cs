@@ -64,8 +64,6 @@ public class Apartment : BaseAudit<string>
 
     public virtual ICollection<RequestUnit> RequestUnits { get; set; } = [];
 
-    public virtual ICollection<Reservation> Reservations { get; set; } = [];
-
     public virtual ICollection<Room> Rooms { get; set; } = [];
 
     public virtual ICollection<UnitImage> UnitImages { get; set; } = [];

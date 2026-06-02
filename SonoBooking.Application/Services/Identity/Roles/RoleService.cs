@@ -3,12 +3,14 @@ using System.Net;
 using Microsoft.AspNetCore.Identity;
 using SonoBooking.Common.Core;
 using SonoBooking.Common.DTO.Base;
-using SonoBooking.Common.DTO.Identity.Role;
+using SonoBooking.Common.DTO.Identity.Roles;
 using SonoBooking.Domain;
-namespace SonoBooking.Application.Services.Identity.Role
+using SonoBooking.Domain.Entities.Identity;
+
+namespace SonoBooking.Application.Services.Identity.Roles
 {
 
-    public class RoleService(RoleManager<SonoBooking.Domain.Entities.Identity.Role> roleManager) : IRoleService
+    public class RoleService(RoleManager<Role> roleManager) : IRoleService
     {
         public PagingResult GetAllPagedAsync(BaseParam<FilterRoleDto> filter)
         {

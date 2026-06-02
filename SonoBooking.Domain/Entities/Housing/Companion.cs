@@ -9,7 +9,7 @@ using SonoBooking.Domain.Entities.Lookups;
 
 namespace SonoBooking.Domain.Entities.Housing;
 
-public class Companion : BaseAudit<string>
+public class Companion : BaseEntity<string>
 {
     public Companion()
     {

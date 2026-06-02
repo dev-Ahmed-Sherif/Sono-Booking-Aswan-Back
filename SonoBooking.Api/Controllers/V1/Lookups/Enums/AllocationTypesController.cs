@@ -10,7 +10,6 @@ namespace SonoBooking.Api.Controllers.V1.Lookups.Enums
 {
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    [Authorize]
     public class AllocationTypesController(IAllocationTypeService allocationTypeService) : BaseController
     {
         [HttpGet("getAll")]

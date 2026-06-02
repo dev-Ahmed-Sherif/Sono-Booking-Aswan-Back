@@ -719,19 +719,6 @@ namespace SonoBooking.Infrastructure.Migrations
                     b.Property<DateOnly>("BirthDate")
                         .HasColumnType("date");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasMaxLength(70)
-                        .HasColumnType("nvarchar(70)");
-
-                    b.Property<string>("CreatedById")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<string>("DocumentImageUrl")
                         .IsRequired()
                         .HasMaxLength(140)
@@ -757,25 +744,8 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<string>("IpAddress")
-                        .HasMaxLength(28)
-                        .HasColumnType("nvarchar(28)");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
-
-                    b.Property<DateTime>("ModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ModifiedBy")
-                        .IsRequired()
-                        .HasMaxLength(70)
-                        .HasColumnType("nvarchar(70)");
-
-                    b.Property<string>("ModifiedById")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("RelationshipId")
                         .IsRequired()
@@ -1025,9 +995,10 @@ namespace SonoBooking.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("PK__Payments__3214EC0797960E75");
 
-                    b.HasIndex(new[] { "ReservationId" }, "IDX_Payments_ReservationId");
-
                     b.HasIndex(new[] { "PaymentStatus" }, "IDX_Payments_Status");
+
+                    b.HasIndex(new[] { "ReservationId" }, "UX_Payments_ReservationId")
+                        .IsUnique();
 
                     b.ToTable("Payments", "booking");
                 });
@@ -1149,38 +1120,8 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasMaxLength(70)
-                        .HasColumnType("nvarchar(70)");
-
-                    b.Property<string>("CreatedById")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("IpAddress")
-                        .HasMaxLength(28)
-                        .HasColumnType("nvarchar(28)");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
-
-                    b.Property<DateTime>("ModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ModifiedBy")
-                        .IsRequired()
-                        .HasMaxLength(70)
-                        .HasColumnType("nvarchar(70)");
-
-                    b.Property<string>("ModifiedById")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("RequestId")
                         .IsRequired()
@@ -1204,7 +1145,6 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("ApartmentId")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -1212,38 +1152,8 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasMaxLength(70)
-                        .HasColumnType("nvarchar(70)");
-
-                    b.Property<string>("CreatedById")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("IpAddress")
-                        .HasMaxLength(28)
-                        .HasColumnType("nvarchar(28)");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
-
-                    b.Property<DateTime>("ModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ModifiedBy")
-                        .IsRequired()
-                        .HasMaxLength(70)
-                        .HasColumnType("nvarchar(70)");
-
-                    b.Property<string>("ModifiedById")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("RequestId")
                         .IsRequired()
@@ -1277,13 +1187,10 @@ namespace SonoBooking.Infrastructure.Migrations
                     b.Property<DateTime?>("ActualCheckOutDate")
                         .HasColumnType("datetime");
 
-                    b.Property<string>("ApartmentId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("BedId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<string>("CancelationReason")
+                        .IsRequired()
+                        .HasMaxLength(700)
+                        .HasColumnType("nvarchar(700)");
 
                     b.Property<DateTime?>("CheckInDate")
                         .HasColumnType("datetime");
@@ -1331,10 +1238,6 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("RoomId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<DateOnly>("StartDate")
                         .HasColumnType("date");
 
@@ -1348,30 +1251,17 @@ namespace SonoBooking.Infrastructure.Migrations
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(10, 2)");
 
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("decimal(10, 2)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.HasKey("Id")
                         .HasName("PK__Reservat__3214EC07909291A0");
 
-                    b.HasIndex("ApartmentId");
-
-                    b.HasIndex("BedId");
-
-                    b.HasIndex("RoomId");
+                    b.HasIndex("RequestId")
+                        .IsUnique();
 
                     b.HasIndex(new[] { "StartDate", "EndDate" }, "IDX_Reservations_Dates");
 
                     b.HasIndex(new[] { "RequestId" }, "IDX_Reservations_RequestId");
 
                     b.HasIndex(new[] { "Status" }, "IDX_Reservations_Status");
-
-                    b.HasIndex(new[] { "UserId" }, "IDX_Reservations_UserId");
 
                     b.ToTable("Reservations", "booking");
                 });
@@ -2434,8 +2324,8 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasConstraintName("FK_Approvals_Leader");
 
                     b.HasOne("SonoBooking.Domain.Entities.Housing.Request", "Request")
-                        .WithMany("Approvals")
-                        .HasForeignKey("RequestId")
+                        .WithOne("Approval")
+                        .HasForeignKey("SonoBooking.Domain.Entities.Housing.Approval", "RequestId")
                         .IsRequired()
                         .HasConstraintName("FK_Approvals_Request");
 
@@ -2506,8 +2396,8 @@ namespace SonoBooking.Infrastructure.Migrations
             modelBuilder.Entity("SonoBooking.Domain.Entities.Housing.Payment", b =>
                 {
                     b.HasOne("SonoBooking.Domain.Entities.Housing.Reservation", "Reservation")
-                        .WithMany("Payments")
-                        .HasForeignKey("ReservationId")
+                        .WithOne("Payment")
+                        .HasForeignKey("SonoBooking.Domain.Entities.Housing.Payment", "ReservationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("FK_Payments_Reservation");
@@ -2569,8 +2459,6 @@ namespace SonoBooking.Infrastructure.Migrations
                     b.HasOne("SonoBooking.Domain.Entities.Housing.Apartment", "Apartment")
                         .WithMany("RequestUnits")
                         .HasForeignKey("ApartmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("FK_RequestUnits_Apartment");
 
                     b.HasOne("SonoBooking.Domain.Entities.Housing.Bed", "Bed")
@@ -2601,42 +2489,13 @@ namespace SonoBooking.Infrastructure.Migrations
 
             modelBuilder.Entity("SonoBooking.Domain.Entities.Housing.Reservation", b =>
                 {
-                    b.HasOne("SonoBooking.Domain.Entities.Housing.Apartment", "Apartment")
-                        .WithMany("Reservations")
-                        .HasForeignKey("ApartmentId")
-                        .HasConstraintName("FK_Reservations_Apartment");
-
-                    b.HasOne("SonoBooking.Domain.Entities.Housing.Bed", "Bed")
-                        .WithMany("Reservations")
-                        .HasForeignKey("BedId")
-                        .HasConstraintName("FK_Reservations_Bed");
-
                     b.HasOne("SonoBooking.Domain.Entities.Housing.Request", "Request")
-                        .WithMany("Reservations")
-                        .HasForeignKey("RequestId")
+                        .WithOne("Reservation")
+                        .HasForeignKey("SonoBooking.Domain.Entities.Housing.Reservation", "RequestId")
                         .IsRequired()
                         .HasConstraintName("FK_Reservations_Request");
 
-                    b.HasOne("SonoBooking.Domain.Entities.Housing.Room", "Room")
-                        .WithMany("Reservations")
-                        .HasForeignKey("RoomId")
-                        .HasConstraintName("FK_Reservations_Room");
-
-                    b.HasOne("SonoBooking.Domain.Entities.Identity.User", "User")
-                        .WithMany("Reservations")
-                        .HasForeignKey("UserId")
-                        .IsRequired()
-                        .HasConstraintName("FK_Reservations_User");
-
-                    b.Navigation("Apartment");
-
-                    b.Navigation("Bed");
-
                     b.Navigation("Request");
-
-                    b.Navigation("Room");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SonoBooking.Domain.Entities.Housing.Room", b =>
@@ -2733,8 +2592,6 @@ namespace SonoBooking.Infrastructure.Migrations
                 {
                     b.Navigation("RequestUnits");
 
-                    b.Navigation("Reservations");
-
                     b.Navigation("Rooms");
 
                     b.Navigation("UnitImages");
@@ -2743,8 +2600,6 @@ namespace SonoBooking.Infrastructure.Migrations
             modelBuilder.Entity("SonoBooking.Domain.Entities.Housing.Bed", b =>
                 {
                     b.Navigation("RequestUnits");
-
-                    b.Navigation("Reservations");
 
                     b.Navigation("UnitImages");
                 });
@@ -2763,18 +2618,20 @@ namespace SonoBooking.Infrastructure.Migrations
 
             modelBuilder.Entity("SonoBooking.Domain.Entities.Housing.Request", b =>
                 {
-                    b.Navigation("Approvals");
+                    b.Navigation("Approval")
+                        .IsRequired();
 
                     b.Navigation("RequestParticipants");
 
                     b.Navigation("RequestUnits");
 
-                    b.Navigation("Reservations");
+                    b.Navigation("Reservation")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("SonoBooking.Domain.Entities.Housing.Reservation", b =>
                 {
-                    b.Navigation("Payments");
+                    b.Navigation("Payment");
                 });
 
             modelBuilder.Entity("SonoBooking.Domain.Entities.Housing.Room", b =>
@@ -2782,8 +2639,6 @@ namespace SonoBooking.Infrastructure.Migrations
                     b.Navigation("Beds");
 
                     b.Navigation("RequestUnits");
-
-                    b.Navigation("Reservations");
 
                     b.Navigation("UnitImages");
                 });
@@ -2799,8 +2654,6 @@ namespace SonoBooking.Infrastructure.Migrations
                     b.Navigation("RefreshTokens");
 
                     b.Navigation("Requests");
-
-                    b.Navigation("Reservations");
                 });
 
             modelBuilder.Entity("SonoBooking.Domain.Entities.Lookups.City", b =>

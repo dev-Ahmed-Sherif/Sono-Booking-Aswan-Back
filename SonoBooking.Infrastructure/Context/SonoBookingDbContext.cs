@@ -13,6 +13,8 @@ public partial class SonoBookingDbContext(
 {
     public virtual DbSet<Apartment> Apartments { get; set; }
 
+    public virtual DbSet<Attachment> Attachments { get; set; }
+
     public virtual DbSet<Approval> Approvals { get; set; }
 
     public virtual DbSet<Bed> Beds { get; set; }
@@ -190,8 +192,8 @@ public partial class SonoBookingDbContext(
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Approvals_Leader");
 
-            entity.HasOne(d => d.Request).WithMany(p => p.Approvals)
-                .HasForeignKey(d => d.RequestId)
+            entity.HasOne(d => d.Request).WithOne(p => p.Approval)
+                .HasForeignKey<Approval>(d => d.RequestId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Approvals_Request");
         });
@@ -334,7 +336,7 @@ public partial class SonoBookingDbContext(
 
             entity.ToTable("Payments", "booking");
 
-            entity.HasIndex(e => e.ReservationId, "IDX_Payments_ReservationId");
+            entity.HasIndex(e => e.ReservationId, "UX_Payments_ReservationId").IsUnique();
 
             entity.HasIndex(e => e.PaymentStatus, "IDX_Payments_Status");
 
@@ -354,8 +356,10 @@ public partial class SonoBookingDbContext(
                 .HasDefaultValue(PaymentStatus.Pending);
             entity.Property(e => e.TransactionReference).HasMaxLength(100);
 
-            entity.HasOne(d => d.Reservation).WithMany(p => p.Payments)
-                .HasForeignKey(d => d.ReservationId)
+            entity.HasOne(d => d.Reservation)
+                .WithOne(p => p.Payment)
+                .HasForeignKey<Payment>(d => d.ReservationId)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_Payments_Reservation");
         });
 
@@ -374,6 +378,12 @@ public partial class SonoBookingDbContext(
             entity.Property(e => e.ApprovedAt).HasColumnType("datetime");
 
             entity.Property(e => e.RejectionReason).HasMaxLength(500);
+
+            entity.Property(e => e.EndDate)
+                .HasColumnType("date");
+
+            entity.Property(e => e.ExtensionAllocationType)
+                .HasColumnType("int");
 
             entity.Property(e => e.Status)
                 .IsRequired()
@@ -416,6 +426,15 @@ public partial class SonoBookingDbContext(
             entity.Property(e => e.RequestNumber)
                 .IsRequired()
                 .HasMaxLength(30);
+
+            entity.Property(e => e.StartDate)
+                .HasColumnType("date");
+
+            entity.Property(e => e.EndDate)
+                .HasColumnType("date");
+
+            entity.Property(e => e.RequestAllocationType)
+                .HasColumnType("int");
 
             entity.Property(e => e.RequestTypeId)
                 .IsRequired()
@@ -495,8 +514,6 @@ public partial class SonoBookingDbContext(
 
             entity.HasIndex(e => e.Status, "IDX_Reservations_Status");
 
-            entity.HasIndex(e => e.UserId, "IDX_Reservations_UserId");
-
             entity.Property(e => e.ActualCheckOutDate).HasColumnType("datetime");
             entity.Property(e => e.CheckInDate).HasColumnType("datetime");
             entity.Property(e => e.CreatedAt)
@@ -508,29 +525,12 @@ public partial class SonoBookingDbContext(
                 .HasMaxLength(20)
                 .HasDefaultValue(ReservationStatus.Reserved);
             entity.Property(e => e.TotalAmount).HasColumnType("decimal(10, 2)");
-            entity.Property(e => e.UnitPrice).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.CancelationReason).HasMaxLength(700);
 
-            entity.HasOne(d => d.Apartment).WithMany(p => p.Reservations)
-                .HasForeignKey(d => d.ApartmentId)
-                .HasConstraintName("FK_Reservations_Apartment");
-
-            entity.HasOne(d => d.Bed).WithMany(p => p.Reservations)
-                .HasForeignKey(d => d.BedId)
-                .HasConstraintName("FK_Reservations_Bed");
-
-            entity.HasOne(d => d.Request).WithMany(p => p.Reservations)
-                .HasForeignKey(d => d.RequestId)
+            entity.HasOne(d => d.Request).WithOne(p => p.Reservation)
+                .HasForeignKey<Reservation>(d => d.RequestId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Reservations_Request");
-
-            entity.HasOne(d => d.Room).WithMany(p => p.Reservations)
-                .HasForeignKey(d => d.RoomId)
-                .HasConstraintName("FK_Reservations_Room");
-
-            entity.HasOne(d => d.User).WithMany(p => p.Reservations)
-                .HasForeignKey(d => d.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Reservations_User");
         });
 
         modelBuilder.Entity<Room>(entity =>

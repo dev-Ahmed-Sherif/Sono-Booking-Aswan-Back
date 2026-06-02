@@ -2,6 +2,7 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SonoBooking.Api.Controllers.V1.Base;
+using SonoBooking.Application.Services.Housing.Availability;
 using SonoBooking.Application.Services.Housing.Beds;
 using SonoBooking.Application.Services.Housing.UnitImages;
 using SonoBooking.Application.Services.LookUp.Attachments;
@@ -9,7 +10,9 @@ using SonoBooking.Common.Core;
 using SonoBooking.Common.DTO.Base;
 using SonoBooking.Common.DTO.Housing.Bed;
 using SonoBooking.Common.DTO.Housing.Bed.Parameters;
+using SonoBooking.Domain;
 using SonoBooking.Domain.Entities.Housing;
+using System;
 using System.Linq.Expressions;
 using System.Net;
 using System.Threading;
@@ -21,6 +24,7 @@ namespace SonoBooking.Api.Controllers.V1.Housing
     [Authorize]
     public class BedsController(
                  IBedService bedService,
+                 IUnitOccupancyService unitOccupancyService,
                  IUnitImageService unitImageService,
                  IAttachmentService attachmentService) : BaseController
     {
@@ -33,16 +37,52 @@ namespace SonoBooking.Api.Controllers.V1.Housing
         }
 
         [HttpGet("getAll")]
+        [AllowAnonymous]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         public async Task<ActionResult<IFinalResult>> GetAllAsync(
             [FromHeader(Name = "RoomId")] string roomId = null,
+            [FromHeader(Name = "Status")] string status = null,
+            [FromHeader(Name = "StartDate")] string startDate = null,
+            [FromHeader(Name = "Nights")] int? nights = null,
             CancellationToken cancellationToken = default)
         {
-            Expression<Func<Bed, bool>> predicate = string.IsNullOrWhiteSpace(roomId)
-                ? null
-                : b => b.RoomId == roomId;
+            var isAnonymous = !(User?.Identity?.IsAuthenticated ?? false);
+            var requestedStatus = (status ?? string.Empty).Trim();
+            var isAvailableRequested =
+                string.Equals(requestedStatus, "متاح", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(requestedStatus, "Available", StringComparison.OrdinalIgnoreCase);
+
+            if (isAnonymous && !isAvailableRequested)
+                return Unauthorized();
+
+            Expression<Func<Bed, bool>> predicate;
+
+            if (string.IsNullOrWhiteSpace(roomId))
+            {
+                predicate = isAnonymous || isAvailableRequested
+                    ? b => b.Status == UnitStatus.Available
+                    : null;
+            }
+            else
+            {
+                predicate = isAnonymous || isAvailableRequested
+                    ? b => b.RoomId == roomId && b.Status == UnitStatus.Available
+                    : b => b.RoomId == roomId;
+            }
 
             IFinalResult res = await bedService.GetAllAsync(predicate: predicate, cancellationToken: cancellationToken);
+
+            if (AvailabilityInquiryFilter.TryParseInquiryStart(startDate, out var inquiryStart) &&
+                res?.Data is IEnumerable<BedDto> beds)
+            {
+                var filtered = await AvailabilityInquiryFilter.FilterBedsAsync(
+                    beds,
+                    unitOccupancyService,
+                    inquiryStart,
+                    cancellationToken);
+                res.Data = filtered;
+            }
+
             return Ok(res);
         }
 

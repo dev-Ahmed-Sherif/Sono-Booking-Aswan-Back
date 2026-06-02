@@ -10,6 +10,7 @@ namespace SonoBooking.Application.Mapping
             MapApartmentType();
             MapCity();
             MapEmployee();
+            MapExtension();
             MapGovernorate();
             MapRelationship();
             MapRequestType();

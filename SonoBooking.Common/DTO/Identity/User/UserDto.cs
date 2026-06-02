@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SonoBooking.Domain;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace SonoBooking.Common.DTO.Identity.User
@@ -8,10 +9,14 @@ namespace SonoBooking.Common.DTO.Identity.User
         public string Id { get; set; }
         public string Email { get; set; }
         public string UserName { get; set; }
+        public string Phone { get; set; }
+        public Gender Gender { get; set; }
+        public DateOnly BirthDate { get; set; }
+        public string DocumentNumber { get; set; }
+        public IDType DocumentType { get; set; }
+        public string DocumentImageUrl { get; set; }
         public string RoleId { get; set; }
         public string Role { get; set; }
-        public string OrganizationId { get; set; }
-        public string FloatingUnitId { get; set; }
         public DateTime CreatedAt { get; set; }
         public string CreatedBy { get; set; }
         public string CreatedById { get; set; }

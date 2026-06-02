@@ -37,6 +37,5 @@ public class Bed : BaseAudit<string>
     public virtual Room? Room { get; set; }
 
     public virtual ICollection<RequestUnit> RequestUnits { get; set; } = [];
-    public virtual ICollection<Reservation> Reservations { get; set; } = [];
     public virtual ICollection<UnitImage> UnitImages { get; set; } = [];
 }
