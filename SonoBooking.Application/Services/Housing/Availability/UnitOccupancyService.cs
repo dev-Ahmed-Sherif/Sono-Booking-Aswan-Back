@@ -106,4 +106,13 @@ public class UnitOccupancyService(SonoBookingDbContext dbContext) : IUnitOccupan
             .Where(r => !r.IsDeleted && r.ApartmentId != null && r.ApartmentId != "")
             .ToDictionaryAsync(r => r.Id, r => r.ApartmentId, StringComparer.OrdinalIgnoreCase, cancellationToken);
     }
+
+    public async Task<IReadOnlyDictionary<string, Gender>> GetApartmentGendersAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Apartments
+            .AsNoTracking()
+            .Where(a => !a.IsDeleted)
+            .ToDictionaryAsync(a => a.Id, a => a.Gender, StringComparer.OrdinalIgnoreCase, cancellationToken);
+    }
 }

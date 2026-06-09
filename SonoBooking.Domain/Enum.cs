@@ -71,7 +71,10 @@ namespace SonoBooking.Domain
         [Values("Canceled", "ملغى", "CANCELED")]
         Canceled = 3,
         [Values("NoShow", "لم يظهر", "NOSHOW")]
-        NoShow = 4
+        NoShow = 4,
+        /// <summary>Legacy rows stored request-style status text on reservations.</summary>
+        [Values("Approved", "مقبول", "APPROVED")]
+        Approved = 5
     }
 
     public enum PaymentStatus

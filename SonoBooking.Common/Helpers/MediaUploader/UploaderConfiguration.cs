@@ -85,7 +85,7 @@ namespace SonoBooking.Common.Helpers.MediaUploader
 
             if (file.Length > 5 * 1024 * 1024) return "Size";
 
-            string[] allowedFileExtensions = [".jpeg", ".png", ".pdf", ".webp", ".jpg", ".xls" , ".xlsx" , ".docx" , ".doc"];
+            string[] allowedFileExtensions = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".svg", ".ico", ".tif", ".tiff", ".avif", ".heic", ".heif"];
 
             // Generate a unique file name to avoid naming conflicts
             string fileExtension = Path.GetExtension(file.FileName);

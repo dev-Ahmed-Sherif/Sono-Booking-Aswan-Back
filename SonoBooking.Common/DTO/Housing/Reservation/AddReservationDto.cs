@@ -16,5 +16,6 @@ namespace SonoBooking.Common.DTO.Housing.Reservation
         public ReservationStatus Status { get; set; }
         public decimal TotalAmount { get; set; }
         public string RequestId { get; set; }
+        public string CancelationReason { get; set; }
     }
 }

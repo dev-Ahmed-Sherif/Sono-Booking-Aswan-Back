@@ -45,7 +45,20 @@ namespace SonoBooking.Application.Services.Housing.Payments
                     message: MessagesConstants.Existed);
             }
 
-            return await base.AddAsync(model, cancellationToken);
+            Payment entity = Mapper.Map<AddPaymentDto, Payment>(model);
+
+            SetEntityCreatedBaseProperties(entity);
+
+            await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
+
+            int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+            if (affectedRows <= 0)
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                    message: MessagesConstants.AddError);
+
+            return ResponseResult.PostResult(result: entity.Id, status: HttpStatusCode.Created, exception: null,
+                message: MessagesConstants.AddSuccess);
         }
 
         public override async Task<IFinalResult> UpdateAsync(AddPaymentDto model, CancellationToken cancellationToken = default)

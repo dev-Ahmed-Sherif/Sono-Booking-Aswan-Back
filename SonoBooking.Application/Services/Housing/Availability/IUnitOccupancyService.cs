@@ -1,3 +1,4 @@
+using SonoBooking.Domain;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -10,6 +11,9 @@ public interface IUnitOccupancyService
     Task<UnitBlockingEndIndex> BuildBlockingEndIndexAsync(CancellationToken cancellationToken = default);
 
     Task<IReadOnlyDictionary<string, string>> GetRoomApartmentIdsAsync(
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyDictionary<string, Gender>> GetApartmentGendersAsync(
         CancellationToken cancellationToken = default);
 
     /// <summary>

@@ -90,10 +90,10 @@ namespace SonoBooking.Application.Services.Housing.Beds
         {
             try
             {
-                int nextNumber = await UnitOfWork.Repository.Count(
-                    b => b.RoomId == model.RoomId, cancellationToken) + 1;
+                //int nextNumber = await UnitOfWork.Repository.Count(
+                //    b => b.RoomId == model.RoomId, cancellationToken) + 1;
 
-                model.BedNumber = $"B{nextNumber:D2}";
+                //model.BedNumber = $"B{nextNumber:D2}";
 
                 Bed entity = Mapper.Map<Bed>(model);
 

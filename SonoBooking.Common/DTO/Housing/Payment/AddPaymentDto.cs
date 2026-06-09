@@ -9,7 +9,6 @@ namespace SonoBooking.Common.DTO.Housing.Payment
     public class AddPaymentDto : IEntityDto<string>
     {
         public string Id { get; set; }
-        public string Code { get; set; }
         public decimal Amount { get; set; }
         public PaymentMethod PaymentMethod { get; set; }
         public PaymentStatus PaymentStatus { get; set; }

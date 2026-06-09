@@ -77,7 +77,6 @@ namespace SonoBooking.Api.Controllers.V1.Identity
         /// <returns>An IActionResult indicating the result of the logout operation.</returns>
         
         [HttpPost("logout"), Authorize]
-        //[HttpGet("logout"), Authorize]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<IFinalResult>> Logout(Guid id, CancellationToken cancellationToken = default)
@@ -154,7 +153,8 @@ namespace SonoBooking.Api.Controllers.V1.Identity
         /// </summary>
         /// <returns>A list of users.</returns>
         
-        [HttpGet("getAllUsers"), Authorize]
+        [HttpGet("getAllUsers")]
+        //[HttpGet("getAllUsers"), Authorize]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
         public async Task<ActionResult<IFinalResult>> GetAllUsersAsync(CancellationToken cancellationToken = default)
         {

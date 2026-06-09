@@ -96,3 +96,9 @@
 /SonoBooking.Infrastructure/bin/Debug/net9.0
 /SonoBooking.Integration/bin/Debug/net9.0
 /SonoBooking.Api/wwwroot
+/SonoBooking.Api/bin/Release/net9.0
+/SonoBooking.Application/bin/Release/net9.0
+/SonoBooking.Common/bin/Release/net9.0
+/SonoBooking.Domain/bin/Release/net9.0
+/SonoBooking.Infrastructure/bin/Release/net9.0
+/SonoBooking.Integration/bin/Release/net9.0

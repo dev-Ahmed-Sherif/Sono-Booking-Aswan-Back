@@ -44,6 +44,7 @@ namespace SonoBooking.Api.Controllers.V1.Housing
             [FromHeader(Name = "Status")] string status = null,
             [FromHeader(Name = "StartDate")] string startDate = null,
             [FromHeader(Name = "Nights")] int? nights = null,
+            [FromHeader(Name = "Gender")] string gender = null,
             CancellationToken cancellationToken = default)
         {
             var isAnonymous = !(User?.Identity?.IsAuthenticated ?? false);
@@ -72,14 +73,27 @@ namespace SonoBooking.Api.Controllers.V1.Housing
 
             IFinalResult res = await bedService.GetAllAsync(predicate: predicate, cancellationToken: cancellationToken);
 
-            if (AvailabilityInquiryFilter.TryParseInquiryStart(startDate, out var inquiryStart) &&
-                res?.Data is IEnumerable<BedDto> beds)
+            if (res?.Data is IEnumerable<BedDto> beds)
             {
-                var filtered = await AvailabilityInquiryFilter.FilterBedsAsync(
-                    beds,
-                    unitOccupancyService,
-                    inquiryStart,
-                    cancellationToken);
+                var filtered = beds;
+                if (AvailabilityInquiryFilter.TryParseInquiryStart(startDate, out var inquiryStart))
+                {
+                    filtered = await AvailabilityInquiryFilter.FilterBedsAsync(
+                        filtered,
+                        unitOccupancyService,
+                        inquiryStart,
+                        cancellationToken);
+                }
+
+                if (AvailabilityInquiryFilter.TryParseGenders(gender, out var genders))
+                {
+                    filtered = await AvailabilityInquiryFilter.FilterBedsByGenderAsync(
+                        filtered,
+                        unitOccupancyService,
+                        genders,
+                        cancellationToken);
+                }
+
                 res.Data = filtered;
             }
 

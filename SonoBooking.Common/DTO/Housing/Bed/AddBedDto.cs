@@ -11,8 +11,8 @@ namespace SonoBooking.Common.DTO.Housing.Bed
     public class AddBedDto : IEntityDto<string>
     {
         public string Id { get; set; }
-        [MaxLength(20)]
-        public string BedNumber { get; set; }
+        [Required, MaxLength(20)]
+        public required string BedNumber { get; set; }
         [Required, MaxLength(500)]
         public required string Description { get; set; }
         [Required, MaxLength(100)]

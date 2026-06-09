@@ -94,10 +94,10 @@ namespace SonoBooking.Application.Services.Housing.Apartments
         {
             try
             {
-                int nextNumber = await UnitOfWork.Repository.Count(
-                    cancellationToken: cancellationToken) + 1;
+                //int nextNumber = await UnitOfWork.Repository.Count(
+                //    cancellationToken: cancellationToken) + 1;
 
-                model.ApartmentNumber = $"A{nextNumber:D2}";
+                //model.ApartmentNumber = $"A{nextNumber:D2}";
 
                 Apartment entity = Mapper.Map<Apartment>(model);
 

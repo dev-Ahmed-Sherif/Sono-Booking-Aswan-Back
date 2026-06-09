@@ -12,8 +12,8 @@ namespace SonoBooking.Common.DTO.Housing.Apartment
     public class AddApartmentDto : IEntityDto<string>
     {
         public string Id { get; set; }
-        [MaxLength(20)]
-        public string ApartmentNumber { get; set; }
+        [Required, MaxLength(20)]
+        public required string ApartmentNumber { get; set; }
         [Required, MaxLength(500)]
         public required string Description { get; set; }
         [Required]
