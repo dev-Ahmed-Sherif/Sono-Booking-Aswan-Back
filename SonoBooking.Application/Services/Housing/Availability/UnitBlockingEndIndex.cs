@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace SonoBooking.Application.Services.Housing.Availability;
 
 /// <summary>
-/// Latest blocking end date (from requests/extensions) per housing unit id.
+/// Latest blocking end date (reservation ActualCheckOutDate, date only) per housing unit id.
 /// </summary>
 public sealed class UnitBlockingEndIndex
 {

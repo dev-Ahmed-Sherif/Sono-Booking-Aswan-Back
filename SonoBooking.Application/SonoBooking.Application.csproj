@@ -16,8 +16,6 @@
     <None Remove="Services\Lookups\**" />
   </ItemGroup>
 	<ItemGroup>
-		<None Remove="ReportsFiles\BeneficiaryOrgReport.rdlc" />
-		<None Remove="ReportsFiles\CompaniesOperatingFloatingUnits.rdlc" />
 		<None Remove="ReportsFiles\CompaniesOwningFloatingUnits.rdlc" />
 	</ItemGroup>
 	<!--
@@ -28,10 +26,10 @@
 	</ItemGroup>
 	-->
   <ItemGroup>
-    <Content Include="ReportsFiles\BeneficiaryOrgReport.rdlc">
+    <Content Include="ReportsFiles\ReservationRequestReport.rdlc">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="ReportsFiles\CompaniesOperatingFloatingUnits.rdlc">
+    <Content Include="ReportsFiles\ReservationDetailsReport.rdlc">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="ReportsFiles\TouristMarinasReport.rdlc">

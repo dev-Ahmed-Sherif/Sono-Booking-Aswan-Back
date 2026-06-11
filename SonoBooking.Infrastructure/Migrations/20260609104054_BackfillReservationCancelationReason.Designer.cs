@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SonoBooking.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using SonoBooking.Infrastructure.Context;
 namespace SonoBooking.Infrastructure.Migrations
 {
     [DbContext(typeof(SonoBookingDbContext))]
-    partial class SonoBookingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260609104054_BackfillReservationCancelationReason")]
+    partial class BackfillReservationCancelationReason
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1062,9 +1065,6 @@ namespace SonoBooking.Infrastructure.Migrations
                     b.Property<int>("RequestAllocationType")
                         .HasColumnType("int");
 
-                    b.Property<int>("RequestCatagory")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("RequestDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
@@ -1077,10 +1077,6 @@ namespace SonoBooking.Infrastructure.Migrations
 
                     b.Property<string>("RequestTypeId")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ReservationId")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -1107,8 +1103,6 @@ namespace SonoBooking.Infrastructure.Migrations
                     b.HasIndex("LeaderId");
 
                     b.HasIndex("RequestTypeId");
-
-                    b.HasIndex(new[] { "ReservationId" }, "IDX_Requests_ReservationId");
 
                     b.HasIndex("UserId");
 
@@ -2429,12 +2423,6 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasForeignKey("RequestTypeId")
                         .IsRequired();
 
-                    b.HasOne("SonoBooking.Domain.Entities.Housing.Reservation", "Reservation")
-                        .WithMany()
-                        .HasForeignKey("ReservationId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .HasConstraintName("FK_Requests_Reservation");
-
                     b.HasOne("SonoBooking.Domain.Entities.Identity.User", "User")
                         .WithMany("Requests")
                         .HasForeignKey("UserId")
@@ -2443,8 +2431,6 @@ namespace SonoBooking.Infrastructure.Migrations
                     b.Navigation("ApprovedBy");
 
                     b.Navigation("RequestType");
-
-                    b.Navigation("Reservation");
 
                     b.Navigation("User");
                 });
@@ -2506,8 +2492,8 @@ namespace SonoBooking.Infrastructure.Migrations
             modelBuilder.Entity("SonoBooking.Domain.Entities.Housing.Reservation", b =>
                 {
                     b.HasOne("SonoBooking.Domain.Entities.Housing.Request", "Request")
-                        .WithMany()
-                        .HasForeignKey("RequestId")
+                        .WithOne("Reservation")
+                        .HasForeignKey("SonoBooking.Domain.Entities.Housing.Reservation", "RequestId")
                         .IsRequired()
                         .HasConstraintName("FK_Reservations_Request");
 

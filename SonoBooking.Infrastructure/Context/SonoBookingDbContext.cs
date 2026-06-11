@@ -436,6 +436,15 @@ public partial class SonoBookingDbContext(
             entity.Property(e => e.RequestAllocationType)
                 .HasColumnType("int");
 
+            entity.Property(e => e.RequestCatagory)
+                .IsRequired()
+                .HasColumnType("int");
+
+            entity.Property(e => e.ReservationId)
+                .HasMaxLength(50);
+
+            entity.HasIndex(e => e.ReservationId, "IDX_Requests_ReservationId");
+
             entity.Property(e => e.RequestTypeId)
                 .IsRequired()
                 .HasMaxLength(50);
@@ -457,6 +466,11 @@ public partial class SonoBookingDbContext(
             entity.HasOne(d => d.RequestType).WithMany()
                 .HasForeignKey(d => d.RequestTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasOne(d => d.Reservation).WithMany()
+                .HasForeignKey(d => d.ReservationId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName("FK_Requests_Reservation");
         });
 
         modelBuilder.Entity<RequestParticipant>(entity =>
@@ -525,10 +539,12 @@ public partial class SonoBookingDbContext(
                 .HasMaxLength(20)
                 .HasDefaultValue(ReservationStatus.Reserved);
             entity.Property(e => e.TotalAmount).HasColumnType("decimal(10, 2)");
-            entity.Property(e => e.CancelationReason).HasMaxLength(700);
+            entity.Property(e => e.CancelationReason)
+                .HasMaxLength(700)
+                .IsRequired(false);
 
-            entity.HasOne(d => d.Request).WithOne(p => p.Reservation)
-                .HasForeignKey<Reservation>(d => d.RequestId)
+            entity.HasOne(d => d.Request).WithMany()
+                .HasForeignKey(d => d.RequestId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Reservations_Request");
         });

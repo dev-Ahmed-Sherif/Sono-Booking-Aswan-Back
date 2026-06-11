@@ -33,7 +33,7 @@ public class Reservation : BaseAudit<string>
     [Required]
     public required decimal TotalAmount { get; set; }
     [MaxLength(700)]
-    public string CancelationReason { get; set; }
+    public string? CancelationReason { get; set; }
 
     [Required, MaxLength(50)]
     [ForeignKey(nameof(Request))]

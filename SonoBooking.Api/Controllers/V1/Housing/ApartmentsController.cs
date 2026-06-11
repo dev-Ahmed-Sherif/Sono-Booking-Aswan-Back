@@ -56,9 +56,10 @@ namespace SonoBooking.Api.Controllers.V1.Housing
             if (isAnonymous && !isAvailableRequested)
                 return Unauthorized();
 
+            var hasInquiryStart = AvailabilityInquiryFilter.TryParseInquiryStart(startDate, out _);
             Expression<Func<Apartment, bool>> predicate =
                 isAnonymous || isAvailableRequested
-                    ? a => a.Status == UnitStatus.Available
+                    ? AvailabilityCatalogStatus.ApartmentMatchesInquiry(hasInquiryStart)
                     : null;
 
             IFinalResult res = await apartmentService.GetAllAsync(predicate: predicate, cancellationToken: cancellationToken);

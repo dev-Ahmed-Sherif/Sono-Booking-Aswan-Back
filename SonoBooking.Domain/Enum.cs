@@ -72,9 +72,8 @@ namespace SonoBooking.Domain
         Canceled = 3,
         [Values("NoShow", "لم يظهر", "NOSHOW")]
         NoShow = 4,
-        /// <summary>Legacy rows stored request-style status text on reservations.</summary>
-        [Values("Approved", "مقبول", "APPROVED")]
-        Approved = 5
+        [Values("Checkout", "مقبول", "CHECKOUT")]
+        Checkout = 5
     }
 
     public enum PaymentStatus
@@ -104,6 +103,14 @@ namespace SonoBooking.Domain
         Fixed = 1,
         [Values("Flexible", "مرن", "FLEXIBLE")]
         Flexible = 2
+    }
+
+    public enum RequestCatagory
+    {
+        [Values("NewStay", "طلب إقامة جديد", "NEW_STAY")]
+        NewStay = 1,
+        [Values("Extension", "طلب تمديد", "EXTENSION")]
+        Extension = 2
     }
 
     public enum Case

@@ -38,8 +38,16 @@ public class Request : BaseAudit<string>
     [Required]
     public required AllocationType RequestAllocationType { get; set; }
 
+    [Required]
+    public required RequestCatagory RequestCatagory { get; set; }
+
     [MaxLength(500)]
     public string? RejectionReason { get; set; }
+
+    [MaxLength(50)]
+    [ForeignKey(nameof(Reservation))]
+    public string? ReservationId { get; set; }
+    public virtual Reservation? Reservation { get; set; }
 
     [Required, MaxLength(50)]
     [ForeignKey(nameof(RequestType))]
@@ -62,6 +70,5 @@ public class Request : BaseAudit<string>
 
     public virtual ICollection<RequestUnit> RequestUnits { get; set; } = [];
 
-    public virtual Reservation Reservation { get; set; }
     public virtual Approval Approval { get; set; }
 }

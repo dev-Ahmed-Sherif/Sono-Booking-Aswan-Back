@@ -15,6 +15,8 @@ namespace SonoBooking.Common.DTO.Housing.Request
         public DateOnly StartDate { get; set; }
         public DateOnly EndDate { get; set; }
         public Status Status { get; set; }
+        public RequestCatagory RequestCatagory { get; set; }
+        public string? ReservationId { get; set; }
         public string? RejectionReason { get; set; }
         public string RequestTypeId { get; set; }
         public string UserId { get; set; }

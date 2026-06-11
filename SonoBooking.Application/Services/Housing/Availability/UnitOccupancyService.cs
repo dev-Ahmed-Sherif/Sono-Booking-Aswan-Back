@@ -11,48 +11,43 @@ namespace SonoBooking.Application.Services.Housing.Availability;
 
 public class UnitOccupancyService(SonoBookingDbContext dbContext) : IUnitOccupancyService
 {
+    /// <summary>
+    /// Inquiry start is 12:00:01 on the selected day; blocking ends at 12:00 on ActualCheckOutDate.
+    /// Checkout 21-06-2026 → bookable from 21-06-2026 12:00:01 (same calendar day).
+    /// </summary>
     public bool IsUnitFreeOnInquiryStart(DateOnly inquiryStart, DateOnly? blockingEnd) =>
-        !blockingEnd.HasValue || inquiryStart > blockingEnd.Value;
+        !blockingEnd.HasValue ||
+        inquiryStart.ToDateTime(new TimeOnly(12, 0, 1)) >
+        blockingEnd.Value.ToDateTime(new TimeOnly(12, 0, 0));
 
     public async Task<UnitBlockingEndIndex> BuildBlockingEndIndexAsync(
         CancellationToken cancellationToken = default)
     {
         var index = new UnitBlockingEndIndex();
 
-        var requestEnds = await dbContext.Requests
+        var reservationCheckouts = await dbContext.Reservations
             .AsNoTracking()
             .Where(r => !r.IsDeleted
-                && r.Status != Status.Canceled
-                && r.Status != Status.NeedCompelete)
-            .Select(r => new { r.Id, r.EndDate })
+                && r.Status != ReservationStatus.Canceled
+                && r.Status != ReservationStatus.NoShow)
+            .Select(r => new { r.RequestId, r.ActualCheckOutDate, r.EndDate })
             .ToListAsync(cancellationToken);
 
-        var requestEndById = requestEnds.ToDictionary(
-            r => r.Id,
-            r => r.EndDate,
-            StringComparer.OrdinalIgnoreCase);
-
-        var extensionEnds = await (
-            from extension in dbContext.Extensions.AsNoTracking()
-            join reservation in dbContext.Reservations.AsNoTracking()
-                on extension.ReservationId equals reservation.Id
-            where !extension.IsDeleted
-                && extension.Status != Status.Canceled
-                && extension.Status != Status.NeedCompelete
-            select new { reservation.RequestId, extension.EndDate }
-        ).ToListAsync(cancellationToken);
-
-        foreach (var row in extensionEnds)
+        var requestEndById = new Dictionary<string, DateOnly>(StringComparer.OrdinalIgnoreCase);
+        foreach (var row in reservationCheckouts)
         {
             if (string.IsNullOrWhiteSpace(row.RequestId)) continue;
+            var endYmd = row.ActualCheckOutDate is not null
+                ? DateOnly.FromDateTime(row.ActualCheckOutDate.Value.Date)
+                : row.EndDate;
             var key = row.RequestId.Trim();
             if (requestEndById.TryGetValue(key, out var current))
             {
-                if (row.EndDate > current) requestEndById[key] = row.EndDate;
+                if (endYmd > current) requestEndById[key] = endYmd;
             }
             else
             {
-                requestEndById[key] = row.EndDate;
+                requestEndById[key] = endYmd;
             }
         }
 

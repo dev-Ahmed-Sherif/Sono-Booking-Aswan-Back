@@ -56,20 +56,12 @@ namespace SonoBooking.Api.Controllers.V1.Housing
             if (isAnonymous && !isAvailableRequested)
                 return Unauthorized();
 
+            var hasInquiryStart = AvailabilityInquiryFilter.TryParseInquiryStart(startDate, out _);
             Expression<Func<Bed, bool>> predicate;
 
-            if (string.IsNullOrWhiteSpace(roomId))
-            {
-                predicate = isAnonymous || isAvailableRequested
-                    ? b => b.Status == UnitStatus.Available
-                    : null;
-            }
-            else
-            {
-                predicate = isAnonymous || isAvailableRequested
-                    ? b => b.RoomId == roomId && b.Status == UnitStatus.Available
-                    : b => b.RoomId == roomId;
-            }
+            predicate = isAnonymous || isAvailableRequested
+                ? AvailabilityCatalogStatus.BedMatchesInquiry(hasInquiryStart, roomId)
+                : string.IsNullOrWhiteSpace(roomId) ? null : b => b.RoomId == roomId;
 
             IFinalResult res = await bedService.GetAllAsync(predicate: predicate, cancellationToken: cancellationToken);
 

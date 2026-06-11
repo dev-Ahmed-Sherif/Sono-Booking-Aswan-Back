@@ -23,6 +23,9 @@ namespace SonoBooking.Common.DTO.Housing.Request
         public required string RequestTypeId { get; set; }
         [Required]
         public required AllocationType RequestAllocationType { get; set; }
+        [Required]
+        public required RequestCatagory RequestCatagory { get; set; }
+        public string? ReservationId { get; set; }
         public Status? Status { get; set; }
         public string RejectionReason { get; set; }
         public string ApprovedById { get; set; }
