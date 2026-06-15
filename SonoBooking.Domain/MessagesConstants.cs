@@ -24,6 +24,8 @@
 
         public const string ErrorMigratingDatabase = "ERROR_RUNNING_DATABASE_MIGRATION";
         public const string Existed = "Duplicated";
+        public const string NationalIdExisted = "NATIONAL_ID_EXISTED";
+        public const string EmailExisted = "EMAIL_EXISTED";
 
     }
 }

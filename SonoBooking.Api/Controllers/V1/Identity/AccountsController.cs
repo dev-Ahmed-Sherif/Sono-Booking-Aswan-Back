@@ -51,6 +51,24 @@ namespace SonoBooking.Api.Controllers.V1.Identity
         }
 
         /// <summary>
+        /// Checks whether a national ID / document number is already registered.
+        /// </summary>
+        /// <param name="nationalId">The national ID or document number to check.</param>
+        [HttpGet("check-national-id/{nationalId}")]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<IFinalResult>> CheckNationalIdExistsAsync(
+            string nationalId,
+            CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await accountService.CheckNationalIdExistsAsync(nationalId, cancellationToken);
+
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+
+            return Ok(res);
+        }
+
+        /// <summary>
         /// Authenticates a user and generates an access token and refresh token.
         /// </summary>
         /// <param name="user">The login request containing the user's email and password.</param>
@@ -68,6 +86,27 @@ namespace SonoBooking.Api.Controllers.V1.Identity
 
             if (res.Status == HttpStatusCode.Unauthorized)  return Unauthorized(res);
             
+            return Ok(res);
+        }
+
+        /// <summary>
+        /// Resets the password for a user identified by email or username and emails the new password.
+        /// </summary>
+        /// <param name="request">The identifier (email or username) of the account.</param>
+        /// <returns>A generic success message regardless of whether the account exists.</returns>
+        [HttpPost("forgotPassword")]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status200OK)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType<IFinalResult>(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<IFinalResult>> ForgotPasswordAsync(
+            [FromBody] ForgotPasswordRequestDto request,
+            CancellationToken cancellationToken = default)
+        {
+            IFinalResult res = await accountService.ForgotPasswordAsync(request, cancellationToken);
+
+            if (res.Status == HttpStatusCode.BadRequest) return BadRequest(res);
+            if (res.Status == HttpStatusCode.InternalServerError) return StatusCode(StatusCodes.Status500InternalServerError, res);
+
             return Ok(res);
         }
 

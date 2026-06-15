@@ -91,6 +91,12 @@
             or a conflict response if the registration fails.
             </returns>
         </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.AccountsController.CheckNationalIdExistsAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Checks whether a national ID / document number is already registered.
+            </summary>
+            <param name="nationalId">The national ID or document number to check.</param>
+        </member>
         <member name="M:SonoBooking.Api.Controllers.V1.Identity.AccountsController.LoginAsync(SonoBooking.Common.DTO.Identity.User.LoginRequestDto,System.Threading.CancellationToken)">
             <summary>
             Authenticates a user and generates an access token and refresh token.
@@ -100,6 +106,13 @@
             An <see cref="T:SonoBooking.Common.Core.IFinalResult"/> containing a <see cref="T:SonoBooking.Common.Core.IFinalResult"/> if the login is successful, 
             or an unauthorized response if the login fails.
             </returns>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Identity.AccountsController.ForgotPasswordAsync(SonoBooking.Common.DTO.Identity.User.ForgotPasswordRequestDto,System.Threading.CancellationToken)">
+            <summary>
+            Resets the password for a user identified by email or username and emails the new password.
+            </summary>
+            <param name="request">The identifier (email or username) of the account.</param>
+            <returns>A generic success message regardless of whether the account exists.</returns>
         </member>
         <member name="M:SonoBooking.Api.Controllers.V1.Identity.AccountsController.Logout(System.Guid,System.Threading.CancellationToken)">
             <summary>

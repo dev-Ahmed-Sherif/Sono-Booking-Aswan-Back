@@ -12,7 +12,9 @@ namespace SonoBooking.Application.Services.Identity.Accounts
     public interface IAccountService
     {
         Task<IFinalResult> RegisterAsync(RegisterDto request, CancellationToken cancellationToken = default);
+        Task<IFinalResult> CheckNationalIdExistsAsync(string nationalId, CancellationToken cancellationToken = default);
         Task<IFinalResult> LoginAsync(LoginRequestDto request, CancellationToken cancellationToken = default);
+        Task<IFinalResult> ForgotPasswordAsync(ForgotPasswordRequestDto request, CancellationToken cancellationToken = default);
         Task<IFinalResult> LogoutAsync(string id, CancellationToken cancellationToken = default);
         Task<LoginResponseDto> RefreshTokensAsync(RefreshTokenRequestDto request, CancellationToken cancellationToken = default);
         Task<IFinalResult> GetUserByIdAsync(string userId, CancellationToken cancellationToken = default);

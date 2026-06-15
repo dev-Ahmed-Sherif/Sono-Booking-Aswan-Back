@@ -10,6 +10,7 @@ using SonoBooking.Common.Constants.Auth;
 using SonoBooking.Common.Core;
 using SonoBooking.Common.DTO.Base;
 using SonoBooking.Common.DTO.Identity.User;
+using SonoBooking.Application.Services.Email;
 using SonoBooking.Common.Helpers.MediaUploader;
 using SonoBooking.Common.Infrastructure.UnitOfWork;
 using SonoBooking.Domain;
@@ -39,99 +40,121 @@ namespace SonoBooking.Application.Services.Identity.Accounts
                  IUnitOfWork<User> UnitOfWork,
                  IMapper Mapper,
                  IWebHostEnvironment hostingEnvironment,
-                 IHttpContextAccessor httpContextAccessor) : IAccountService
+                 IHttpContextAccessor httpContextAccessor,
+                 IEmailService emailService) : IAccountService
     {
         private readonly UploaderConfiguration _uploaderConfiguration = new(hostingEnvironment, httpContextAccessor);
+        public async Task<IFinalResult> CheckNationalIdExistsAsync(string nationalId, CancellationToken cancellationToken = default)
+        {
+            ResponseResult responseResult = new();
+
+            if (string.IsNullOrWhiteSpace(nationalId))
+                return responseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                    message: "رقم الهوية مطلوب.");
+
+            bool exists = await NationalIdExistsAsync(nationalId.Trim(), cancellationToken);
+
+            return responseResult.PostResult(
+                result: exists,
+                status: HttpStatusCode.OK,
+                exception: null,
+                message: exists ? MessagesConstants.NationalIdExisted : MessagesConstants.Success);
+        }
+
         public async Task<IFinalResult> RegisterAsync(RegisterDto request, CancellationToken cancellationToken = default)
         {
             ResponseResult responseResult = new();
 
+            if (string.IsNullOrWhiteSpace(request.NationalId))
+                return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                    message: "رقم الهوية مطلوب.");
+
+            string documentNumber = request.NationalId.Trim();
+
+            if (await NationalIdExistsAsync(documentNumber, cancellationToken))
+                return responseResult.PostResult(result: null, status: HttpStatusCode.Conflict, exception: null,
+                    message: MessagesConstants.NationalIdExisted);
+
             User checkUser = await userManager.FindByEmailAsync(request.Email);
 
-            if (checkUser == null)
+            if (checkUser != null)
+                return responseResult.PostResult(result: null, status: HttpStatusCode.Conflict, exception: null,
+                    message: MessagesConstants.EmailExisted);
+
+            if (request.DocumentImage == null)
+                return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                    message: "Document image is required.");
+
+            string documentUpload = await _uploaderConfiguration.UploadFile(request.DocumentImage, "Attach/Users", cancellationToken);
+            if (UploadResponse(documentUpload) is { } uploadErr)
+                return uploadErr;
+
+            User user = new()
             {
-                string documentNumber = request.NationalId.Trim();
-                bool documentExists = await userManager.Users.AnyAsync(
-                    u => u.DocumentNumber == documentNumber && !u.IsDeleted,
-                    cancellationToken);
+                Email = request.Email,
+                UserName = request.Email,
+                FullName = request.Username,
+                DocumentNumber = documentNumber,
+                DocumentType = request.DocumentType,
+                Gender = request.Gender,
+                BirthDate = request.BirthDate,
+                PhoneNumber = request.Phone,
+                DocumentImageUrl = documentUpload,
+                CreatedBy = auditUser.Name != "" ? auditUser.Name : request.Username,
+                CreatedById = auditUser.Id != "" ? auditUser.Id : "",
+                CreatedAt = DateTime.UtcNow,
+                ModifiedBy = auditUser.Name != "" ? auditUser.Name : request.Username,
+                ModifiedById = auditUser.Id != "" ? auditUser.Id : "",
+                ModifiedAt = DateTime.UtcNow,
+            };
 
-                if (documentExists)
-                    return responseResult.PostResult(result: null, status: HttpStatusCode.Conflict, exception: null,
-                        message: MessagesConstants.Existed);
+            IdentityResult result = await userManager.CreateAsync(user, request.Password);
 
-                if (request.DocumentImage == null)
-                    return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
-                        message: "Document image is required.");
+            if (!result.Succeeded)
+                return responseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                                                 message: MessagesConstants.AddError + "User : " +
+                                                 string.Join(", ", result.Errors.Select(e => e.Description)));
 
-                string documentUpload = await _uploaderConfiguration.UploadFile(request.DocumentImage, "Attach/Users", cancellationToken);
-                if (UploadResponse(documentUpload) is { } uploadErr)
-                    return uploadErr;
+            user.CreatedById = auditUser.Name != "" ? auditUser.Name : user.FullName;
+            user.CreatedAt = DateTime.UtcNow;
+            user.ModifiedById = auditUser.Name != "" ? auditUser.Name : user.FullName;
+            user.ModifiedAt = DateTime.UtcNow;
 
-                User user = new()
-                {
-                    Email = request.Email,
-                    UserName = request.Email,
-                    FullName = request.Username,
-                    DocumentNumber = documentNumber,
-                    DocumentType = request.DocumentType,
-                    Gender = request.Gender,
-                    BirthDate = request.BirthDate,
-                    PhoneNumber = request.Phone,
-                    DocumentImageUrl = documentUpload,
-                    CreatedBy = auditUser.Name != "" ? auditUser.Name : request.Username,
-                    CreatedById = auditUser.Id != "" ? auditUser.Id : "",
-                    CreatedAt = DateTime.UtcNow,
-                    ModifiedBy = auditUser.Name != "" ? auditUser.Name : request.Username,
-                    ModifiedById = auditUser.Id != "" ? auditUser.Id : "",
-                    ModifiedAt = DateTime.UtcNow,
-                };
+            await userManager.UpdateAsync(user);
 
-                IdentityResult result = await userManager.CreateAsync(user, request.Password);
+            if (!string.IsNullOrWhiteSpace(request.RoleId))
+            {
+                Role role = await roleManager.FindByIdAsync(request.RoleId);
 
-                if (!result.Succeeded)
+                IdentityResult res = await userManager.AddToRoleAsync(user, role.Name!);
+
+                if (!res.Succeeded)
                     return responseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
                                                      message: MessagesConstants.AddError + "User : " +
                                                      string.Join(", ", result.Errors.Select(e => e.Description)));
 
-                user.CreatedById = auditUser.Name != "" ? auditUser.Name : user.FullName;
-                user.CreatedAt = DateTime.UtcNow;
-                user.ModifiedById = auditUser.Name != "" ? auditUser.Name : user.FullName;
-                user.ModifiedAt = DateTime.UtcNow;
-
-                await userManager.UpdateAsync(user);
-
-                if (!string.IsNullOrWhiteSpace(request.RoleId))
-                {
-                    Role role = await roleManager.FindByIdAsync(request.RoleId);
-
-                    IdentityResult res = await userManager.AddToRoleAsync(user, role.Name!);
-
-                    if (!res.Succeeded)
-                        return responseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
-                                                         message: MessagesConstants.AddError + "User : " +
-                                                         string.Join(", ", result.Errors.Select(e => e.Description)));
-
-                    return responseResult.PostResult(result: user.Id, status: HttpStatusCode.Created, exception: null,
-                                                     message: MessagesConstants.AddSuccess);
-                }
-                else
-                {
-                    Role role = await roleManager.FindByNameAsync(RoleNames.User);
-
-                    IdentityResult res = await userManager.AddToRoleAsync(user, role.Name!);
-
-                    if (!res.Succeeded)
-                        return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
-                                                         message: MessagesConstants.AddError + "User : " +
-                                                         string.Join(", ", result.Errors.Select(e => e.Description)));
-
-                    return responseResult.PostResult(result: user.Id, status: HttpStatusCode.Created, exception: null,
-                                                      message: MessagesConstants.AddSuccess);
-                }
+                return responseResult.PostResult(result: user.Id, status: HttpStatusCode.Created, exception: null,
+                                                 message: MessagesConstants.AddSuccess);
             }
 
-            return responseResult.PostResult(result: null, status: HttpStatusCode.Conflict, exception: null,
-                                             message: MessagesConstants.Existed);
+            Role defaultRole = await roleManager.FindByNameAsync(RoleNames.User);
+
+            IdentityResult defaultRoleResult = await userManager.AddToRoleAsync(user, defaultRole.Name!);
+
+            if (!defaultRoleResult.Succeeded)
+                return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                                                 message: MessagesConstants.AddError + "User : " +
+                                                 string.Join(", ", defaultRoleResult.Errors.Select(e => e.Description)));
+
+            return responseResult.PostResult(result: user.Id, status: HttpStatusCode.Created, exception: null,
+                                              message: MessagesConstants.AddSuccess);
+        }
+
+        private async Task<bool> NationalIdExistsAsync(string documentNumber, CancellationToken cancellationToken = default)
+        {
+            return await userManager.Users.AnyAsync(
+                u => u.DocumentNumber == documentNumber && !u.IsDeleted,
+                cancellationToken);
         }
         public async Task<IFinalResult> LoginAsync(LoginRequestDto request, CancellationToken cancellationToken = default)
         {
@@ -156,6 +179,80 @@ namespace SonoBooking.Application.Services.Identity.Accounts
 
             return responseResult.PostResult(result: response, status: HttpStatusCode.OK, exception: null,
                                              message: HttpStatusCode.OK.ToString());
+        }
+        public async Task<IFinalResult> ForgotPasswordAsync(ForgotPasswordRequestDto request, CancellationToken cancellationToken = default)
+        {
+            ResponseResult responseResult = new();
+            const string successMessage = "إذا كان الحساب موجوداً، ستصلك كلمة المرور الجديدة على بريدك الإلكتروني.";
+
+            if (string.IsNullOrWhiteSpace(request.Identifier))
+                return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                    message: "يجب إدخال البريد الإلكتروني أو اسم المستخدم.");
+
+            string identifier = request.Identifier.Trim();
+
+            User? user = await userManager.FindByEmailAsync(identifier)
+                ?? await userManager.FindByNameAsync(identifier);
+
+            if (user is null)
+            {
+                user = await userManager.Users
+                    .FirstOrDefaultAsync(u => !u.IsDeleted && u.FullName == identifier, cancellationToken);
+            }
+
+            if (user is null || user.IsDeleted || string.IsNullOrWhiteSpace(user.Email))
+            {
+                return responseResult.PostResult(result: true, status: HttpStatusCode.OK, exception: null,
+                    message: successMessage);
+            }
+
+            string newPassword = GenerateTemporaryPassword();
+
+            IdentityResult removeResult = await userManager.RemovePasswordAsync(user);
+            if (!removeResult.Succeeded)
+                return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                    message: MessagesConstants.UpdateError);
+
+            IdentityResult addResult = await userManager.AddPasswordAsync(user, newPassword);
+            if (!addResult.Succeeded)
+                return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                    message: string.Join(", ", addResult.Errors.Select(e => e.Description)));
+
+            List<RefreshToken> oldTokens = await context.RefreshTokens
+                .Where(t => t.UserId == user.Id)
+                .ToListAsync(cancellationToken);
+
+            if (oldTokens.Count > 0)
+            {
+                context.RefreshTokens.RemoveRange(oldTokens);
+                await context.SaveChangesAsync(cancellationToken);
+            }
+
+            user.IsLogedIn = false;
+            user.ModifiedAt = DateTime.UtcNow;
+            await userManager.UpdateAsync(user);
+
+            try
+            {
+                string subject = "إعادة تعيين كلمة المرور - نظام حجز الإسكان";
+                string body = $"""
+                    <div dir="rtl" style="font-family: Arial, sans-serif;">
+                    <h2>مرحباً {user.FullName}</h2>
+                    <p>تم إعادة تعيين كلمة المرور الخاصة بحسابك في نظام حجز الإسكان بمحافظة أسوان.</p>
+                    <p><strong>كلمة المرور الجديدة:</strong> {newPassword}</p>
+                    <p>يُرجى تسجيل الدخول وتغيير كلمة المرور في أقرب وقت ممكن.</p>
+                    </div>
+                    """;
+                await emailService.SendEmailAsync(user.Email, subject, body);
+            }
+            catch
+            {
+                return responseResult.PostResult(result: null, status: HttpStatusCode.InternalServerError, exception: null,
+                    message: "تعذر إرسال البريد الإلكتروني. يُرجى المحاولة لاحقاً.");
+            }
+
+            return responseResult.PostResult(result: true, status: HttpStatusCode.OK, exception: null,
+                message: successMessage);
         }
         public async Task<IFinalResult> LogoutAsync(string id, CancellationToken cancellationToken = default)
         {
@@ -473,6 +570,17 @@ namespace SonoBooking.Application.Services.Identity.Accounts
             using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
+        }
+        private static string GenerateTemporaryPassword(int length = 8)
+        {
+            const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            byte[] randomBytes = new byte[length];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomBytes);
+            char[] password = new char[length];
+            for (int i = 0; i < length; i++)
+                password[i] = chars[randomBytes[i] % chars.Length];
+            return new string(password);
         }
         private async Task<string> CreateToken(User user, IEnumerable<Claim> claimDB, CancellationToken cancellationToken = default)
         {
