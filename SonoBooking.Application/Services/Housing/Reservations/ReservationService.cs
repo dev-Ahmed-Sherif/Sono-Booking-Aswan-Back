@@ -1,9 +1,12 @@
+using LinqKit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Reporting.NETCore;
 using SonoBooking.Application.Services.Base;
 using SonoBooking.Common.Core;
 using SonoBooking.Common.DTO.Base;
 using SonoBooking.Common.DTO.Housing.Reservation;
 using SonoBooking.Common.DTO.Housing.Reservation.Parameters;
+using SonoBooking.Common.DTO.Reports.Reservations;
 using SonoBooking.Domain;
 using SonoBooking.Domain.Entities.Housing;
 using System;
@@ -11,6 +14,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
+using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -74,6 +79,75 @@ namespace SonoBooking.Application.Services.Housing.Reservations
 
             IEnumerable<ReservationDto> data = Mapper.Map<IEnumerable<Reservation>, IEnumerable<ReservationDto>>(Result ?? []);
             return new PagingResult(pageNumber, limit, Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
+        }
+
+        public async Task<IFinalResult> GetAllReportAsync(FilterReservationReportDto filter, CancellationToken cancellationToken = default)
+        {
+            IEnumerable<Reservation> query = await UnitOfWork.Repository.FindAsync(
+                predicate: PredicateBuilderReportFunction(filter),
+                include: src => src
+                    .Include(r => r.Request).ThenInclude(req => req.User)
+                    .Include(r => r.Request).ThenInclude(req => req.RequestUnits),
+                cancellationToken: cancellationToken);
+
+            List<ReservationReportDto> reportData = Mapper.Map<List<ReservationReportDto>>(query);
+            string startDateReport = filter.StartDate.ToString("dd/MM/yyyy");
+            string endDateReport = filter.EndDate.ToString("dd/MM/yyyy");
+
+            foreach (ReservationReportDto row in reportData)
+            {
+                row.StartDateReport = startDateReport;
+                row.EndDateReport = endDateReport;
+            }
+
+            return ResponseResult.PostResult(
+                reportData,
+                status: HttpStatusCode.OK,
+                message: HttpStatusCode.OK.ToString());
+        }
+
+        public async Task<byte[]> GenerateReportAsync(FilterReservationReportDto filter, CancellationToken cancellationToken = default)
+        {
+            string fileDirPath = Assembly.GetExecutingAssembly().Location.Replace("SonoBooking.Application.dll", string.Empty);
+            string rdclFilePath = string.Format(@"{0}ReportsFiles\{1}.rdlc", fileDirPath, filter.ReportName);
+
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            Encoding.GetEncoding("utf-8");
+
+            LocalReport report = new()
+            {
+                ReportPath = rdclFilePath
+            };
+
+            IFinalResult reportResult = null;
+
+            if (filter.ReportName == "ReservationDetailsReport")
+            {
+                reportResult = await GetAllReportAsync(filter, cancellationToken);
+                List<ReservationReportDto> reportData = (reportResult.Data as IEnumerable<ReservationReportDto>)?.ToList()
+                    ?? throw new InvalidOperationException("No data found for the report.");
+
+                foreach (ReservationReportDto row in reportData)
+                    row.User = _user.Name;
+
+                report.DataSources.Add(new ReportDataSource() { Name = "ReservationDetailsReport", Value = reportData });
+            }
+
+            if (reportResult == null || reportResult.Data == null)
+                throw new InvalidOperationException("Failed to retrieve report data.");
+
+            byte[] renderedBytes = [];
+            try
+            {
+                renderedBytes = report.Render(filter.ReportType);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw new InvalidOperationException("Error rendering report: " + ex.Message, ex);
+            }
+
+            return renderedBytes;
         }
 
         public override async Task<IFinalResult> AddAsync(AddReservationDto model, CancellationToken cancellationToken = default)
@@ -197,6 +271,22 @@ namespace SonoBooking.Application.Services.Housing.Reservations
                 return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: e,
                     message: MessagesConstants.DeleteError);
             }
+        }
+
+        private static Expression<Func<Reservation, bool>> PredicateBuilderReportFunction(FilterReservationReportDto filter)
+        {
+            var predicate = PredicateBuilder.New<Reservation>(x => x.IsDeleted != true);
+
+            if (filter.StartDate != default)
+                predicate = predicate.And(e => e.StartDate >= filter.StartDate);
+
+            if (filter.EndDate != default)
+                predicate = predicate.And(e => e.EndDate <= filter.EndDate);
+
+            if (filter.ReservationStatus.HasValue)
+                predicate = predicate.And(e => e.Status == filter.ReservationStatus.Value);
+
+            return predicate;
         }
 
         private string GetUserIdFromHeader() =>

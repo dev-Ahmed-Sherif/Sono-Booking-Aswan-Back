@@ -1,4 +1,5 @@
 using SonoBooking.Common.Core;
+using SonoBooking.Common.DTO.Housing.RequestAttach;
 using SonoBooking.Common.DTO.Housing.RequestParticipant;
 using SonoBooking.Common.DTO.Housing.RequestUnit;
 using SonoBooking.Domain;
@@ -25,12 +26,14 @@ namespace SonoBooking.Common.DTO.Housing.Request
         public required AllocationType RequestAllocationType { get; set; }
         [Required]
         public required RequestCatagory RequestCatagory { get; set; }
-        public string? ReservationId { get; set; }
+        public string? PreviousRequestId { get; set; }
         public Status? Status { get; set; }
         public string RejectionReason { get; set; }
         public string ApprovedById { get; set; }
         public DateTime? ApprovedAt { get; set; }
         public ICollection<AddRequestUnitDto> RequestUnits { get; set; }
         public ICollection<AddRequestParticipantDto> RequestCompanions { get; set; }
+        public List<AddRequestAttachDto> Images { get; set; }
+        public List<AddRequestAttachDto> OldImages { get; set; }
     }
 }

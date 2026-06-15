@@ -1,6 +1,8 @@
 using SonoBooking.Common.Core;
+using SonoBooking.Common.DTO.Housing.RequestAttach;
 using SonoBooking.Domain;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace SonoBooking.Common.DTO.Housing.Request
@@ -16,7 +18,7 @@ namespace SonoBooking.Common.DTO.Housing.Request
         public Status Status { get; set; }
         public AllocationType RequestAllocationType { get; set; }
         public RequestCatagory RequestCatagory { get; set; }
-        public string? ReservationId { get; set; }
+        public string? PreviousRequestId { get; set; }
         public string RejectionReason { get; set; }
         public string RequestTypeId { get; set; }
         public string RequestType { get; set; }
@@ -24,6 +26,7 @@ namespace SonoBooking.Common.DTO.Housing.Request
         public string UserName { get; set; }
         public string? ApprovedById { get; set; }
         public DateTime? ApprovedAt { get; set; }
+        public ICollection<RequestAttachDto> RequestAttaches { get; set; }
         public DateTime CreatedAt { get; set; }
         public string CreatedById { get; set; }
         public string CreatedBy { get; set; }

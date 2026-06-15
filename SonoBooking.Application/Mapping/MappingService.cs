@@ -25,6 +25,7 @@ namespace SonoBooking.Application.Mapping
             MapRequest();
             MapRequestParticipant();
             MapRequestUnit();
+            MapRequestAttach();
             MapReservation();
             MapRoom();
             MapUnitImage();

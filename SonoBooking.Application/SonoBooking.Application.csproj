@@ -26,6 +26,9 @@
 	</ItemGroup>
 	-->
   <ItemGroup>
+    <Content Include="ReportsFiles\RequestReport.rdlc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="ReportsFiles\ReservationRequestReport.rdlc">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

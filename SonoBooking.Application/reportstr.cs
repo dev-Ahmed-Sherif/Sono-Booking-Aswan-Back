@@ -1,4 +1,4 @@
-﻿namespace SonoReservation.Application
+﻿namespace SonoBooking.Application
 {
 }
 

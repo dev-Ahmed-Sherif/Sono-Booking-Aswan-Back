@@ -31,6 +31,28 @@
             During registration there is no JWT; the client sends the new account id in the UserId header.
             </summary>
         </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Housing.RequestsController.GetProjectReportData(SonoBooking.Common.DTO.Reports.Requests.FilterRequestReportDto,System.Threading.CancellationToken)">
+            <summary>
+            Generates a project report based on the provided filter.
+            </summary>
+            <param name="filter">The filter containing report parameters.</param>
+            <param name="cancellationToken">Token to observe while waiting for the task to complete.</param>
+            <returns>A PDF file containing the generated report.</returns>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Housing.RequestsController.BindRequestImagesFromFormFiles(SonoBooking.Common.DTO.Housing.Request.AddRequestDto)">
+            <summary>
+            ASP.NET sometimes fails to bind nested <c>Images[n].Image</c> files on large multipart bodies.
+            Fall back to raw <see cref="T:Microsoft.AspNetCore.Http.IFormFile"/> entries from the form file collection.
+            </summary>
+        </member>
+        <member name="M:SonoBooking.Api.Controllers.V1.Housing.ReservationsController.GetReservationReportData(SonoBooking.Common.DTO.Reports.Reservations.FilterReservationReportDto,System.Threading.CancellationToken)">
+            <summary>
+            Generates a reservation report based on the provided filter.
+            </summary>
+            <param name="filter">The filter containing report parameters.</param>
+            <param name="cancellationToken">Token to observe while waiting for the task to complete.</param>
+            <returns>A PDF file containing the generated report.</returns>
+        </member>
         <member name="M:SonoBooking.Api.Controllers.V1.Housing.RoomsController.DeleteRangeAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)">
             <summary>
             Deletes a range of attachments by their IDs.

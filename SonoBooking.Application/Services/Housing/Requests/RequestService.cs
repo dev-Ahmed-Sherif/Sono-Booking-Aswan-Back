@@ -1,12 +1,18 @@
+using LinqKit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Reporting.NETCore;
 using SonoBooking.Application.Services.Base;
+using SonoBooking.Application.Services.LookUp.Attachments;
 using SonoBooking.Common.Constants;
 using SonoBooking.Common.Core;
 using SonoBooking.Common.DTO.Base;
 using SonoBooking.Common.DTO.Housing.Request;
 using SonoBooking.Common.DTO.Housing.Request.Parameters;
+using SonoBooking.Common.DTO.Housing.RequestAttach;
 using SonoBooking.Common.DTO.Housing.RequestParticipant;
 using SonoBooking.Common.DTO.Housing.RequestUnit;
+using SonoBooking.Common.DTO.Lookup.Attachment;
+using SonoBooking.Common.DTO.Reports.Requests;
 using SonoBooking.Domain;
 using SonoBooking.Domain.Entities.Housing;
 using System;
@@ -14,13 +20,48 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
+using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace SonoBooking.Application.Services.Housing.Requests
 {
-    public class RequestService(IServiceBaseParameter<Request> businessBaseParameter) : BaseService<Request, AddRequestDto, EditRequestDto, RequestDto, string, string>(businessBaseParameter), IRequestService
+    public class RequestService(
+        IServiceBaseParameter<Request> businessBaseParameter,
+        IAttachmentService attachmentService) : BaseService<Request, AddRequestDto, EditRequestDto, RequestDto, string, string>(businessBaseParameter), IRequestService
     {
+        public override async Task<IFinalResult> GetByIdAsync(object id, CancellationToken cancellationToken = default)
+        {
+            Request entity = await UnitOfWork.Repository.FirstOrDefaultAsync(
+                x => x.Id.Equals(id),
+                include: src => src
+                    .Include(r => r.RequestType)
+                    .Include(r => r.User)
+                    .Include(r => r.RequestAttaches).ThenInclude(a => a.Attachment),
+                disableTracking: true,
+                cancellationToken: cancellationToken);
+
+            if (entity == null)
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.NotFound, exception: null,
+                    message: MessagesConstants.NotFound);
+
+            RequestDto mapped = Mapper.Map<Request, RequestDto>(entity);
+            mapped.RequestAttaches = [.. entity.RequestAttaches.Select(a => new RequestAttachDto
+            {
+                Id = a.Id,
+                RequestId = a.RequestId,
+                AttachmentId = a.AttachmentId,
+                FileName = a.Attachment?.FileName,
+                Extension = a.Attachment?.Extension,
+                Url = a.Attachment?.Url,
+                IsPrimary = a.IsPrimary
+            })];
+
+            return ResponseResult.PostResult(result: mapped, status: HttpStatusCode.OK, exception: null,
+                message: MessagesConstants.Success);
+        }
+
         public override async Task<IFinalResult> GetAllAsync(
             bool disableTracking = false,
             Expression<Func<Request, bool>> predicate = null,
@@ -80,6 +121,103 @@ namespace SonoBooking.Application.Services.Housing.Requests
             IEnumerable<RequestDto> data = Mapper.Map<IEnumerable<Request>, IEnumerable<RequestDto>>(Result ?? []);
             return new PagingResult(pageNumber, limit, Count, data, status: HttpStatusCode.OK, MessagesConstants.Success);
         }
+        public async Task<IFinalResult> GetAllReportAsync(FilterRequestReportDto filter, CancellationToken cancellationToken = default)
+        {
+            IEnumerable<Request> query = await UnitOfWork.Repository.FindAsync(
+                predicate: PredicateBuilderReportFunction(filter),
+                include: src => src.Include(r => r.Reservation),
+                cancellationToken: cancellationToken);
+
+            List<Request> requests = [.. query];
+
+            int totalCount = requests.Count;
+            int acceptedCount = requests.Count(r => r.Status == Status.Approved);
+            int rejectedCount = requests.Count(r => r.Status == Status.Rejected);
+            // Approved requests with an active reservation (not canceled / no-show).
+            int confirmedReservationCount = requests.Count(r =>
+                r.Status == Status.Approved &&
+                r.Reservation != null &&
+                r.Reservation.Status != ReservationStatus.Canceled &&
+                r.Reservation.Status != ReservationStatus.NoShow);
+
+            float totalRevenue = (float)requests
+                .Where(r => r.Reservation != null && r.Status == Status.Approved)
+                .Sum(r => r.Reservation!.TotalAmount);
+
+            RequestReportDto reportData = new()
+            {
+                TotalRequestCount = totalCount,
+                TotalAcceptedRequestCount = acceptedCount,
+                TotalRejectedRequestCount = rejectedCount,
+                TotalAcceptedReservationCount = confirmedReservationCount,
+                TotalRevenue = totalRevenue,
+                StartDateReport = filter.StartDate.ToString("dd/MM/yyyy"),
+                EndDateReport = filter.EndDate.ToString("dd/MM/yyyy")
+            };
+
+            return ResponseResult.PostResult(
+                new[] { reportData },
+                status: HttpStatusCode.OK,
+                message: HttpStatusCode.OK.ToString());
+        }
+
+        public async Task<byte[]> GenerateReportAsync(FilterRequestReportDto filter, CancellationToken cancellationToken = default)
+        {
+            // get report file
+            string fileDirPath = Assembly.GetExecutingAssembly().Location.Replace("SonoBooking.Application.dll", string.Empty);
+            Console.WriteLine(string.Format(@"{0}ReportsFiles\{1}.rdlc", fileDirPath, filter.ReportName));
+            string rdclFilePath = string.Format(@"{0}ReportsFiles\{1}.rdlc", fileDirPath, filter.ReportName);
+
+            // file encoding
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            Encoding.GetEncoding("utf-8");
+
+            LocalReport report = new()
+            {
+                ReportPath = rdclFilePath
+                //ReportPath = fileDirPath
+            };
+
+            // prepare data for report
+            IFinalResult request = null; // Initialize Org to avoid CS0165 error
+
+            if (filter.ReportName == "RequestReport")
+            {
+                request = await GetAllReportAsync(filter, cancellationToken);
+                List<RequestReportDto> reportData = (request.Data as IEnumerable<RequestReportDto>)?.ToList()
+                    ?? throw new InvalidOperationException("No data found for the report.");
+
+                foreach (RequestReportDto row in reportData)
+                    row.User = _user.Name;
+
+                report.DataSources.Add(new ReportDataSource() { Name = "RequestReport", Value = reportData });
+                report.DataSources.Add(new ReportDataSource()
+                {
+                    Name = "RequestReportChart",
+                    Value = BuildRequestReportChartData(reportData[0])
+                });
+            }
+
+            if (request == null || request.Data == null)
+            {
+                throw new InvalidOperationException("Failed to retrieve report data.");
+            }
+
+            byte[] renderedBytes = [];
+            try
+            {
+                renderedBytes = report.Render(filter.ReportType);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw new InvalidOperationException("Error rendering report: " + ex.Message, ex);
+            }
+
+            //byte[] renderedBytes = report.Render("");
+
+            return renderedBytes;
+        }
 
         public override async Task<IFinalResult> AddAsync(AddRequestDto model, CancellationToken cancellationToken = default)
         {
@@ -94,6 +232,8 @@ namespace SonoBooking.Application.Services.Housing.Requests
                 entity.RequestDate = DateTime.UtcNow;
                 entity.Status = Status.Pending;
                 entity.UserId = !string.IsNullOrWhiteSpace(_user.Id) ? _user.Id : entity.CreatedById;
+
+                await AddRequestAttachmentsAsync(entity, model.Images, cancellationToken);
 
                 SetEntityCreatedBaseProperties(entity);
 
@@ -130,7 +270,8 @@ namespace SonoBooking.Application.Services.Housing.Requests
                     x => x.Id.Equals(model.Id),
                     include: src => src
                         .Include(r => r.RequestUnits)
-                        .Include(r => r.RequestParticipants),
+                        .Include(r => r.RequestParticipants)
+                        .Include(r => r.RequestAttaches),
                     disableTracking: false,
                     cancellationToken: cancellationToken);
 
@@ -147,6 +288,44 @@ namespace SonoBooking.Application.Services.Housing.Requests
 
                 if (IsSuperAdmin())
                     entity.IsDeleted = false;
+
+                await AddRequestAttachmentsAsync(entity, model.Images, cancellationToken);
+
+                if (model.OldImages != null)
+                {
+                    HashSet<string> keptAttachIds = model.OldImages
+                        .Where(o => !string.IsNullOrWhiteSpace(o.Id))
+                        .Select(o => o.Id.Trim())
+                        .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                    List<RequestAttach> attachesToRemove = entity.RequestAttaches
+                        .Where(ra => !keptAttachIds.Contains(ra.Id))
+                        .ToList();
+
+                    if (attachesToRemove.Count > 0)
+                    {
+                        List<string> attachIds = [.. attachesToRemove
+                            .Select(a => a.AttachmentId)
+                            .Where(id => !string.IsNullOrWhiteSpace(id))];
+
+                        foreach (RequestAttach removedAttach in attachesToRemove)
+                            entity.RequestAttaches.Remove(removedAttach);
+
+                        await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+                        if (attachIds.Count > 0)
+                            await attachmentService.DeleteRangeAsync(attachIds, cancellationToken);
+                    }
+
+                    foreach (AddRequestAttachDto oldImage in model.OldImages)
+                    {
+                        RequestAttach existingAttach = entity.RequestAttaches
+                            .FirstOrDefault(ra => ra.Id == oldImage.Id);
+
+                        if (existingAttach != null)
+                            existingAttach.IsPrimary = oldImage.IsPrimary;
+                    }
+                }
 
                 SetEntityModifiedBaseProperties(entity);
 
@@ -180,10 +359,26 @@ namespace SonoBooking.Application.Services.Housing.Requests
                     include: src => src
                         .Include(r => r.RequestParticipants)
                         .Include(r => r.RequestUnits)
+                        .Include(r => r.RequestAttaches)
                         .Include(r => r.Approval)
                         .Include(r => r.Reservation).ThenInclude(res => res.Payment),
                     disableTracking: false,
                     cancellationToken: cancellationToken);
+
+                if (entityToDelete == null)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.NotFound, exception: null,
+                        message: MessagesConstants.NotFound);
+
+                List<string> attachIds = [.. entityToDelete.RequestAttaches
+                    .Select(a => a.AttachmentId)
+                    .Where(id => !string.IsNullOrWhiteSpace(id))];
+
+                UnitOfWork.GetRepository<RequestAttach>().RemoveRange(entityToDelete.RequestAttaches, cancellationToken);
+                entityToDelete.RequestAttaches.Clear();
+                await UnitOfWork.SaveChangesAsync(cancellationToken);
+
+                if (attachIds.Count > 0)
+                    await attachmentService.DeleteRangeAsync(attachIds, cancellationToken);
 
                 if (entityToDelete.Reservation?.Payment != null)
                     UnitOfWork.GetRepository<Payment>().Remove(entityToDelete.Reservation.Payment);
@@ -212,15 +407,81 @@ namespace SonoBooking.Application.Services.Housing.Requests
             }
         }
 
+        private static List<RequestReportChartItemDto> BuildRequestReportChartData(RequestReportDto data)
+        {
+            int total = data.TotalRequestCount;
+
+            return
+            [
+                new() { Category = "عدد الطلبات", Value = total, Percentage = 0 },
+                new()
+                {
+                    Category = "الموافق عليها",
+                    Value = data.TotalAcceptedRequestCount,
+                    Percentage = CalculateReportPercentage(data.TotalAcceptedRequestCount, total)
+                },
+                new()
+                {
+                    Category = "المرفوضة",
+                    Value = data.TotalRejectedRequestCount,
+                    Percentage = CalculateReportPercentage(data.TotalRejectedRequestCount, total)
+                },
+                new()
+                {
+                    Category = "الحجوزات المؤكدة",
+                    Value = data.TotalAcceptedReservationCount,
+                    Percentage = CalculateReportPercentage(data.TotalAcceptedReservationCount, total)
+                },
+            ];
+        }
+
+        private static float CalculateReportPercentage(int part, int total) =>
+            total == 0 ? 0f : (float)part / total * 100f;
+
+        static Expression<Func<Request, bool>> PredicateBuilderReportFunction(FilterRequestReportDto filter)
+        {
+            var predicate = PredicateBuilder.New<Request>(x => x.IsDeleted != true && x.Status != Status.Canceled);
+
+            if (filter.StartDate != default)
+            {
+                predicate = predicate.And(e => e.StartDate >= filter.StartDate);
+            }
+            if (filter.EndDate != default)
+            {
+                predicate = predicate.And(e => e.EndDate <= filter.EndDate);
+            }
+
+            return predicate;
+        }
+
         private async Task<string> GenerateRequestNumberAsync(CancellationToken cancellationToken)
         {
             int year = DateTime.UtcNow.Year;
             string prefix = $"REQ-{year}-";
-            int sequence = await UnitOfWork.Repository.Count(
-                r => r.RequestNumber.StartsWith(prefix),
-                cancellationToken) + 1;
 
-            return $"{prefix}{sequence:D4}";
+            IEnumerable<string> requestNumbers = await UnitOfWork.Repository.FindSelectAsync(
+                r => r.RequestNumber,
+                r => r.RequestDate.Year == year,
+                disableTracking: true,
+                cancellationToken: cancellationToken);
+
+            int nextSequence = requestNumbers
+                .Where(number => !string.IsNullOrWhiteSpace(number) &&
+                                 number.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                .Select(ParseRequestSequence)
+                .DefaultIfEmpty(0)
+                .Max() + 1;
+
+            return $"{prefix}{nextSequence:D4}";
+        }
+
+        private static int ParseRequestSequence(string requestNumber)
+        {
+            int lastDash = requestNumber.LastIndexOf('-');
+            if (lastDash < 0 || lastDash >= requestNumber.Length - 1)
+                return 0;
+
+            return int.TryParse(requestNumber.AsSpan(lastDash + 1), out int sequence) ? sequence : 0;
         }
 
         private string GetUserIdFromHeader() =>
@@ -286,6 +547,43 @@ namespace SonoBooking.Application.Services.Housing.Requests
                 RequestParticipant participant = Mapper.Map<RequestParticipant>(dto);
                 participant.RequestId = requestId;
                 await UnitOfWork.GetRepository<RequestParticipant>().AddAsync(participant, cancellationToken);
+            }
+        }
+
+        private async Task AddRequestAttachmentsAsync(
+            Request entity,
+            List<AddRequestAttachDto> images,
+            CancellationToken cancellationToken)
+        {
+            if (images == null || images.Count == 0)
+                return;
+
+            foreach (AddRequestAttachDto formFile in images)
+            {
+                if (formFile?.Image == null || formFile.Image.Length <= 0)
+                    continue;
+
+                var addDto = new AddAttachmentDto
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    File = formFile.Image,
+                    AttachFolder = "Requests",
+                };
+
+                IFinalResult attach = await attachmentService.AddAsync(addDto, cancellationToken);
+                if (attach?.Data == null)
+                    continue;
+
+                string attachmentId = attach.Data.ToString()?.Trim();
+                if (string.IsNullOrWhiteSpace(attachmentId))
+                    continue;
+
+                entity.RequestAttaches.Add(new RequestAttach
+                {
+                    AttachmentId = attachmentId,
+                    RequestId = entity.Id,
+                    IsPrimary = formFile.IsPrimary
+                });
             }
         }
     }

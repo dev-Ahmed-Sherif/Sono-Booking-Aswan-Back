@@ -41,6 +41,8 @@ public partial class SonoBookingDbContext(
 
     public virtual DbSet<RequestUnit> RequestUnits { get; set; }
 
+    public virtual DbSet<RequestAttach> RequestAttaches { get; set; }
+
     public virtual DbSet<Reservation> Reservations { get; set; }
 
     public virtual DbSet<Room> Rooms { get; set; }
@@ -440,10 +442,10 @@ public partial class SonoBookingDbContext(
                 .IsRequired()
                 .HasColumnType("int");
 
-            entity.Property(e => e.ReservationId)
+            entity.Property(e => e.PreviousRequestId)
                 .HasMaxLength(50);
 
-            entity.HasIndex(e => e.ReservationId, "IDX_Requests_ReservationId");
+            entity.HasIndex(e => e.PreviousRequestId, "IDX_Requests_PreviousRequestId");
 
             entity.Property(e => e.RequestTypeId)
                 .IsRequired()
@@ -467,10 +469,10 @@ public partial class SonoBookingDbContext(
                 .HasForeignKey(d => d.RequestTypeId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasOne(d => d.Reservation).WithMany()
-                .HasForeignKey(d => d.ReservationId)
+            entity.HasOne(d => d.PreviousRequest).WithMany()
+                .HasForeignKey(d => d.PreviousRequestId)
                 .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("FK_Requests_Reservation");
+                .HasConstraintName("FK_Requests_PreviousRequest");
         });
 
         modelBuilder.Entity<RequestParticipant>(entity =>
@@ -516,6 +518,38 @@ public partial class SonoBookingDbContext(
                 .HasConstraintName("FK_RequestUnits_Room");
         });
 
+        modelBuilder.Entity<RequestAttach>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__RequestA__3214EC07A1B2C3D4");
+
+            entity.ToTable("RequestAttaches", "booking");
+
+            entity.HasIndex(e => e.RequestId, "IDX_RequestAttaches_RequestId");
+
+            entity.HasIndex(e => e.AttachmentId, "IDX_RequestAttaches_AttachmentId");
+
+            entity.HasIndex(e => new { e.RequestId, e.AttachmentId }, "UX_RequestAttaches_Request_Attachment")
+                .IsUnique();
+
+            entity.Property(e => e.AttachmentId)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(e => e.RequestId)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.HasOne(d => d.Request).WithMany(p => p.RequestAttaches)
+                .HasForeignKey(d => d.RequestId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_RequestAttaches_Request");
+
+            entity.HasOne(d => d.Attachment).WithMany()
+                .HasForeignKey(d => d.AttachmentId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_RequestAttaches_Attachment");
+        });
+
         modelBuilder.Entity<Reservation>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__Reservat__3214EC07909291A0");
@@ -543,8 +577,8 @@ public partial class SonoBookingDbContext(
                 .HasMaxLength(700)
                 .IsRequired(false);
 
-            entity.HasOne(d => d.Request).WithMany()
-                .HasForeignKey(d => d.RequestId)
+            entity.HasOne(d => d.Request).WithOne(p => p.Reservation)
+                .HasForeignKey<Reservation>(d => d.RequestId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Reservations_Request");
         });

@@ -40,12 +40,12 @@ namespace SonoBooking.Domain
     
     public enum Status
     {
-        [Values("Approved", "مقبول", "APPROVED")]
-        Approved = 1,
         [Values("Pending", "معلق", "PENDING")]
-        NeedCompelete = 2,
+        Pending = 1,
+        [Values("Approved", "مقبول", "APPROVED")]
+        Approved = 2,
         [Values("Rejected", "مرفوض", "REJECTED")]
-        Pending = 3,
+        Rejected = 3,
         [Values("Canceled", "ملغى", "CANCELED")]
         Canceled = 4
     }

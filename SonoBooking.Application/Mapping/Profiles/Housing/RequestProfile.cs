@@ -10,6 +10,7 @@ namespace SonoBooking.Application.Mapping
             CreateMap<Request, RequestDto>()
                 .ForMember(dest => dest.RequestType, opt => opt.MapFrom(src => src.RequestType.NameAr))
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName))
+                .ForMember(dest => dest.RequestAttaches, opt => opt.MapFrom(src => src.RequestAttaches))
                 .ReverseMap();
 
             CreateMap<Request, EditRequestDto>().ReverseMap();
@@ -23,11 +24,13 @@ namespace SonoBooking.Application.Mapping
                 .ForMember(dest => dest.UserId, opt => opt.Ignore())
                 .ForMember(dest => dest.RequestUnits, opt => opt.Ignore())
                 .ForMember(dest => dest.RequestParticipants, opt => opt.Ignore())
+                .ForMember(dest => dest.RequestAttaches, opt => opt.Ignore())
                 .ForMember(dest => dest.Reservation, opt => opt.Ignore())
                 .ForMember(dest => dest.Approval, opt => opt.Ignore())
                 .ForMember(dest => dest.RequestType, opt => opt.Ignore())
                 .ForMember(dest => dest.User, opt => opt.Ignore())
-                .ForMember(dest => dest.ApprovedBy, opt => opt.Ignore());
+                .ForMember(dest => dest.ApprovedBy, opt => opt.Ignore())
+                .ForMember(dest => dest.PreviousRequest, opt => opt.Ignore());
         }
     }
 }

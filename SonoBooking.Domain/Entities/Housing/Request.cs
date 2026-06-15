@@ -45,9 +45,9 @@ public class Request : BaseAudit<string>
     public string? RejectionReason { get; set; }
 
     [MaxLength(50)]
-    [ForeignKey(nameof(Reservation))]
-    public string? ReservationId { get; set; }
-    public virtual Reservation? Reservation { get; set; }
+    [ForeignKey(nameof(Request))]
+    public string? PreviousRequestId { get; set; }
+    public virtual Request? PreviousRequest { get; set; }
 
     [Required, MaxLength(50)]
     [ForeignKey(nameof(RequestType))]
@@ -66,9 +66,12 @@ public class Request : BaseAudit<string>
 
     public DateTime? ApprovedAt { get; set; }
 
+    public virtual Reservation Reservation { get; set; }
+    public virtual Approval Approval { get; set; }
     public virtual ICollection<RequestParticipant> RequestParticipants { get; set; } = [];
 
     public virtual ICollection<RequestUnit> RequestUnits { get; set; } = [];
 
-    public virtual Approval Approval { get; set; }
+    public virtual ICollection<RequestAttach> RequestAttaches { get; set; } = [];
+
 }
