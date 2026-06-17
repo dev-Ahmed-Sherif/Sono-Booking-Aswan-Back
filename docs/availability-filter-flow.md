@@ -44,11 +44,13 @@ Each unit type uses the **same pipeline** in its controller (`ApartmentsControll
 
 `UnitOccupancyService.BuildBlockingEndIndexAsync()` builds a lookup of active bookings:
 
-1. Load all non-canceled reservations → get checkout end date per request (`ActualCheckOutDate` or `EndDate`).
-2. Load all **approved** requests → get start date per request.
-3. Load all `RequestUnits` linked to those requests.
-4. For each request unit, **skip stays already ended** before the inquiry date.
-5. Apply blocking only on the **most specific** unit:
+1. Load all non-canceled reservations → checkout end per request (`ActualCheckOutDate` or `EndDate`).
+2. Merge approved **`Extensions`** entity end dates (`ReservationId` → request).
+3. Merge approved **request** `EndDate`; for `RequestCatagory.Extension`, roll end onto the **root** stay via `PreviousRequestId` chain.
+4. Load all **approved** requests → start date per request (`nextApprovedStart`).
+5. Load all `RequestUnits` linked to those requests.
+6. For each request unit, **skip stays already ended** before the inquiry date.
+7. Apply blocking only on the **most specific** unit:
    - `BedId` → block that bed only
    - else `RoomId` → block that room only
    - else `ApartmentId` → block whole apartment
@@ -82,7 +84,7 @@ Example: checkout on 21-06 → unit is bookable again from 21-06 12:00:01.
 
 ### 3b. Active occupancy rule
 
-Hide if an approved request **already started on or before** the inquiry date **and** checkout is still on or after the inquiry date.
+Hide when an approved stay **already started on or before** the inquiry date **and** is still blocked at inquiry start (uses the same **noon rule** as 3a — checkout day is bookable from 12:00:01).
 
 ### 3c. Nights overlap rule (only if `Nights` > 0)
 
@@ -152,6 +154,7 @@ flowchart TD
 3. **Leaf-level blocking** — bed bookings block only that bed; sibling units can still appear.
 4. **Apartment rollup** — whole-apartment bookings still block all children via `GetBedBlockingEnd` / `GetRoomBlockingEnd` reading the apartment index.
 5. **No allocation-type header** — `AllocationType` is not sent from the frontend; flexible rules are derived from the apartment record in the database.
+6. **Extensions** — blocking end uses reservation checkout, `Extensions` table, and extension requests (`PreviousRequestId`). See [availability-inquiry-chat-summary.md](./availability-inquiry-chat-summary.md).
 
 ---
 
