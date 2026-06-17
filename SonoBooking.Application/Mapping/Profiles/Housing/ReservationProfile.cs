@@ -37,7 +37,7 @@ namespace SonoBooking.Application.Mapping
                 .ForMember(dest => dest.RequestStatus, opt => opt.MapFrom(src => src.Request != null && src.Request.Status == Status.Approved))
                 .ForMember(dest => dest.ReservationStatus, opt => opt.MapFrom(src =>
                     src.Status != ReservationStatus.Canceled && src.Status != ReservationStatus.NoShow))
-                .ForMember(dest => dest.Revenue, opt => opt.MapFrom(src => (float)src.TotalAmount))
+                .ForMember(dest => dest.Revenue, opt => opt.MapFrom(src => (float)src.Payment.Amount))
                 .ForMember(dest => dest.Notes, opt => opt.MapFrom(src => src.CancelationReason ?? string.Empty))
                 .ForMember(dest => dest.User, opt => opt.Ignore())
                 .ForMember(dest => dest.StartDateReport, opt => opt.Ignore())

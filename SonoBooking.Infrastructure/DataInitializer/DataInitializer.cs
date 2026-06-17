@@ -4,6 +4,7 @@ using SonoBooking.Common.Extensions;
 using SonoBooking.Domain.Entities.Lookups;
 using ApartmentType = SonoBooking.Domain.Entities.Lookups.ApartmentType;
 using City = SonoBooking.Domain.Entities.Lookups.City;
+using Employee = SonoBooking.Domain.Entities.Lookups.Employee;
 using Governorate = SonoBooking.Domain.Entities.Lookups.Governorate;
 using RequestType = SonoBooking.Domain.Entities.Lookups.RequestType;
 using RoomType = SonoBooking.Domain.Entities.Lookups.RoomType;
@@ -68,6 +69,17 @@ namespace SonoBooking.Infrastructure.DataInitializer
             var dataText = File.ReadAllText(path);
             var roles = Seeder<List<Role>>.SeedIt(dataText);
             return roles ?? [];
+        }
+
+        public IEnumerable<Employee> SeedEmployeesAsync()
+        {
+            var path = Path.Combine(contentRootPath, "Seed", "Employees.json");
+            if (!File.Exists(path))
+                return [];
+
+            var dataText = File.ReadAllText(path);
+            var employees = Seeder<List<Employee>>.SeedIt(dataText);
+            return employees ?? [];
         }
 
         //public IEnumerable<Status> SeedStatusesAsync()

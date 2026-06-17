@@ -1,6 +1,7 @@
 using City = SonoBooking.Domain.Entities.Lookups.City;
 using System.Collections.Generic;
 using ApartmentType = SonoBooking.Domain.Entities.Lookups.ApartmentType;
+using Employee = SonoBooking.Domain.Entities.Lookups.Employee;
 using Governorate = SonoBooking.Domain.Entities.Lookups.Governorate;
 using RequestType = SonoBooking.Domain.Entities.Lookups.RequestType;
 using Relationship = SonoBooking.Domain.Entities.Lookups.Relationship;
@@ -24,6 +25,8 @@ namespace SonoBooking.Infrastructure.DataInitializer
         IEnumerable<Relationship> SeedRelationshipsAsync();
 
         IEnumerable<Role> SeedRolesAsync();
+
+        IEnumerable<Employee> SeedEmployeesAsync();
 
         //IEnumerable<Status> SeedStatusesAsync();
     }

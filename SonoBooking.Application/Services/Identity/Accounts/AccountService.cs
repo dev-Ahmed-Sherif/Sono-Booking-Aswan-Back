@@ -52,10 +52,21 @@ namespace SonoBooking.Application.Services.Identity.Accounts
                 return responseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
                     message: "رقم الهوية مطلوب.");
 
-            bool exists = await NationalIdExistsAsync(nationalId.Trim(), cancellationToken);
+            string documentNumber = nationalId.Trim();
+
+            bool isEmployee = await IsEmployeeNationalIdAsync(documentNumber, cancellationToken);
+            string? employeeId = isEmployee
+                ? await GetEmployeeIdByNationalIdAsync(documentNumber, cancellationToken)
+                : null;
+            bool exists = await NationalIdExistsAsync(documentNumber, cancellationToken);
 
             return responseResult.PostResult(
-                result: exists,
+                result: new CheckNationalIdResultDto
+                {
+                    Exists = exists,
+                    IsEmployee = isEmployee,
+                    EmployeeId = employeeId
+                },
                 status: HttpStatusCode.OK,
                 exception: null,
                 message: exists ? MessagesConstants.NationalIdExisted : MessagesConstants.Success);
@@ -74,6 +85,10 @@ namespace SonoBooking.Application.Services.Identity.Accounts
             if (await NationalIdExistsAsync(documentNumber, cancellationToken))
                 return responseResult.PostResult(result: null, status: HttpStatusCode.Conflict, exception: null,
                     message: MessagesConstants.NationalIdExisted);
+
+            string? employeeId = await IsEmployeeNationalIdAsync(documentNumber, cancellationToken)
+                ? await GetEmployeeIdByNationalIdAsync(documentNumber, cancellationToken)
+                : null;
 
             User checkUser = await userManager.FindByEmailAsync(request.Email);
 
@@ -100,6 +115,7 @@ namespace SonoBooking.Application.Services.Identity.Accounts
                 BirthDate = request.BirthDate,
                 PhoneNumber = request.Phone,
                 DocumentImageUrl = documentUpload,
+                EmployeeId = employeeId,
                 CreatedBy = auditUser.Name != "" ? auditUser.Name : request.Username,
                 CreatedById = auditUser.Id != "" ? auditUser.Id : "",
                 CreatedAt = DateTime.UtcNow,
@@ -156,6 +172,18 @@ namespace SonoBooking.Application.Services.Identity.Accounts
                 u => u.DocumentNumber == documentNumber && !u.IsDeleted,
                 cancellationToken);
         }
+
+        private async Task<bool> IsEmployeeNationalIdAsync(string documentNumber, CancellationToken cancellationToken = default) =>
+            await context.Employees.AnyAsync(
+                e => e.NationalId == documentNumber && !e.IsDeleted,
+                cancellationToken);
+
+        private async Task<string?> GetEmployeeIdByNationalIdAsync(string documentNumber, CancellationToken cancellationToken = default) =>
+            await context.Employees
+                .Where(e => e.NationalId == documentNumber && !e.IsDeleted)
+                .Select(e => e.Id)
+                .FirstOrDefaultAsync(cancellationToken);
+
         public async Task<IFinalResult> LoginAsync(LoginRequestDto request, CancellationToken cancellationToken = default)
         {
             ResponseResult responseResult = new();
@@ -191,6 +219,10 @@ namespace SonoBooking.Application.Services.Identity.Accounts
 
             string identifier = request.Identifier.Trim();
 
+            if (IsPasswordResetExcludedEmail(identifier))
+                return responseResult.PostResult(result: false, status: HttpStatusCode.OK, exception: null,
+                    message: MessagesConstants.PasswordResetContactAdmin);
+
             User? user = await userManager.FindByEmailAsync(identifier)
                 ?? await userManager.FindByNameAsync(identifier);
 
@@ -205,6 +237,10 @@ namespace SonoBooking.Application.Services.Identity.Accounts
                 return responseResult.PostResult(result: true, status: HttpStatusCode.OK, exception: null,
                     message: successMessage);
             }
+
+            if (IsPasswordResetExcludedEmail(user.Email))
+                return responseResult.PostResult(result: false, status: HttpStatusCode.OK, exception: null,
+                    message: MessagesConstants.PasswordResetContactAdmin);
 
             string newPassword = GenerateTemporaryPassword();
 
@@ -582,6 +618,12 @@ namespace SonoBooking.Application.Services.Identity.Accounts
                 password[i] = chars[randomBytes[i] % chars.Length];
             return new string(password);
         }
+
+        private static bool IsPasswordResetExcludedEmail(string? email) =>
+            !string.IsNullOrWhiteSpace(email) &&
+            (string.Equals(email.Trim(), AccountEmails.Leader, StringComparison.OrdinalIgnoreCase) ||
+             string.Equals(email.Trim(), AccountEmails.ReceptionStaff, StringComparison.OrdinalIgnoreCase));
+
         private async Task<string> CreateToken(User user, IEnumerable<Claim> claimDB, CancellationToken cancellationToken = default)
         {
             IList<string> userRoles = await userManager.GetRolesAsync(user);
@@ -597,6 +639,7 @@ namespace SonoBooking.Application.Services.Identity.Accounts
                 new Claim(ClaimTypes.Role, role),
                 new Claim(AuthConstants.OrgId, ""),
                 new Claim(AuthConstants.FloatingUnitId, ""),
+                new Claim(AuthConstants.EmployeeId, user.EmployeeId ?? ""),
 
             }.Union(claimDB);
 

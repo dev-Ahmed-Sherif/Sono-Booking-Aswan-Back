@@ -18,7 +18,7 @@ namespace SonoBooking.Api.Controllers.V1.Housing
 {
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
-    //[Authorize]
+    [Authorize]
     public class ReservationsController(IReservationService reservationService) : BaseController
     {
         [HttpGet("get/{id}")]

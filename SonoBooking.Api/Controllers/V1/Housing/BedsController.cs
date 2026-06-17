@@ -74,6 +74,7 @@ namespace SonoBooking.Api.Controllers.V1.Housing
                         filtered,
                         unitOccupancyService,
                         inquiryStart,
+                        nights,
                         cancellationToken);
                 }
 
@@ -83,6 +84,7 @@ namespace SonoBooking.Api.Controllers.V1.Housing
                         filtered,
                         unitOccupancyService,
                         genders,
+                        AvailabilityInquiryFilter.TryParseInquiryStart(startDate, out var parsedStart) ? parsedStart : null,
                         cancellationToken);
                 }
 

@@ -58,6 +58,12 @@ namespace SonoBooking.Domain.Entities.Identity
 
         public bool IsDeleted { get; set; }
 
+        [MaxLength(50)]
+        public string? EmployeeId { get; set; }
+
+        [ForeignKey(nameof(EmployeeId))]
+        public virtual Employee? Employee { get; set; }
+
         public virtual HashSet<RefreshToken> RefreshTokens { get; set; } = [];
         public virtual HashSet<Message> Messages { get; set; } = [];
         public virtual HashSet<Notification> Notifications { get; set; } = [];

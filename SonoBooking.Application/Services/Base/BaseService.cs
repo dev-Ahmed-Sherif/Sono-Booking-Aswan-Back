@@ -312,7 +312,8 @@ namespace SonoBooking.Application.Services.Base
                 claims?.FindFirst(t => t.Type == ClaimTypes.NameIdentifier)?.Value,
                 claims?.FindFirst(t => t.Type == ClaimTypes.Name)?.Value,
                 claims?.FindFirst(t => t.Type == ClaimTypes.Role)?.Value, [], "", "",
-                claims?.FindFirst(x => x.Type == AuthConstants.GovId)?.Value);
+                claims?.FindFirst(x => x.Type == AuthConstants.GovId)?.Value,
+                claims?.FindFirst(x => x.Type == AuthConstants.EmployeeId)?.Value);
             return claimData;
         }
     }

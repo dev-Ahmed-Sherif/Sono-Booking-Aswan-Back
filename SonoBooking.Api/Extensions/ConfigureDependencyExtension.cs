@@ -137,6 +137,10 @@ namespace SonoBooking.Api.Extensions
                 user.Claims.FirstOrDefault(x => x.Type == AuthConstants.GovId)?.Value ??
                 string.Empty;
 
+                string employeeId =
+                user.Claims.FirstOrDefault(x => x.Type == AuthConstants.EmployeeId)?.Value ??
+                string.Empty;
+
                 string role =
                 user.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value ?? "";
 
@@ -147,6 +151,7 @@ namespace SonoBooking.Api.Extensions
                     c.Type != ClaimTypes.NameIdentifier && c.Type != ClaimTypes.Name &&
                     c.Type != AuthConstants.OrgId && c.Type != ClaimTypes.Role &&
                     c.Type != AuthConstants.FloatingUnitId &&
+                    c.Type != AuthConstants.EmployeeId &&
                     c.Type != "exp" && c.Type != "iss")
                 .Select(c =>
                     new UserPermissionDto
@@ -158,7 +163,8 @@ namespace SonoBooking.Api.Extensions
                 //bool parsedUserId = int.TryParse(stringId, out int id);
                 //bool parsedOrgId = int.TryParse(stringOrganizationId, out int organizationId);
 
-                return new UserDataDto(Id, name, role, permissions, organizationId, floatingUnitId, governorateId);
+                return new UserDataDto(Id, name, role, permissions, organizationId, floatingUnitId, governorateId,
+                    string.IsNullOrWhiteSpace(employeeId) ? null : employeeId);
             });
             services.AddCors(option =>
             {

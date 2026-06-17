@@ -10,11 +10,17 @@ public sealed class UnitBlockingEndIndex
 {
     public Dictionary<string, DateOnly> Beds { get; } =
         new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<string, DateOnly> BedNextApprovedStarts { get; } =
+        new(StringComparer.OrdinalIgnoreCase);
 
     public Dictionary<string, DateOnly> Rooms { get; } =
         new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<string, DateOnly> RoomNextApprovedStarts { get; } =
+        new(StringComparer.OrdinalIgnoreCase);
 
     public Dictionary<string, DateOnly> Apartments { get; } =
+        new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<string, DateOnly> ApartmentNextApprovedStarts { get; } =
         new(StringComparer.OrdinalIgnoreCase);
 
     internal static void SetMax(IDictionary<string, DateOnly> map, string id, DateOnly end)
@@ -28,6 +34,20 @@ public sealed class UnitBlockingEndIndex
         else
         {
             map[key] = end;
+        }
+    }
+
+    internal static void SetMin(IDictionary<string, DateOnly> map, string id, DateOnly start)
+    {
+        if (string.IsNullOrWhiteSpace(id)) return;
+        var key = id.Trim();
+        if (map.TryGetValue(key, out var existing))
+        {
+            if (start < existing) map[key] = start;
+        }
+        else
+        {
+            map[key] = start;
         }
     }
 
@@ -79,6 +99,63 @@ public sealed class UnitBlockingEndIndex
             ? null
             : end;
 
+    public DateOnly? GetBedNextApprovedStart(string bedId, string roomId, string apartmentId)
+    {
+        DateOnly? best = null;
+        if (!string.IsNullOrWhiteSpace(bedId) &&
+            BedNextApprovedStarts.TryGetValue(bedId.Trim(), out var bedStart))
+        {
+            best = bedStart;
+        }
+
+        if (!string.IsNullOrWhiteSpace(roomId) &&
+            RoomNextApprovedStarts.TryGetValue(roomId.Trim(), out var roomStart))
+        {
+            best = Min(best, roomStart);
+        }
+
+        if (!string.IsNullOrWhiteSpace(apartmentId) &&
+            ApartmentNextApprovedStarts.TryGetValue(apartmentId.Trim(), out var aptStart))
+        {
+            best = Min(best, aptStart);
+        }
+
+        return best;
+    }
+
+    public DateOnly? GetRoomNextApprovedStart(string roomId, string apartmentId)
+    {
+        DateOnly? best = null;
+        if (!string.IsNullOrWhiteSpace(roomId) &&
+            RoomNextApprovedStarts.TryGetValue(roomId.Trim(), out var roomStart))
+        {
+            best = roomStart;
+        }
+
+        if (!string.IsNullOrWhiteSpace(apartmentId) &&
+            ApartmentNextApprovedStarts.TryGetValue(apartmentId.Trim(), out var aptStart))
+        {
+            best = Min(best, aptStart);
+        }
+
+        return best;
+    }
+
+    public DateOnly? GetApartmentNextApprovedStart(string apartmentId) =>
+        string.IsNullOrWhiteSpace(apartmentId) ||
+        !ApartmentNextApprovedStarts.TryGetValue(apartmentId.Trim(), out var start)
+            ? null
+            : start;
+
+    public bool HasDirectApartmentBooking(string apartmentId)
+    {
+        if (string.IsNullOrWhiteSpace(apartmentId)) return false;
+        var key = apartmentId.Trim();
+        return Apartments.ContainsKey(key) || ApartmentNextApprovedStarts.ContainsKey(key);
+    }
+
     private static DateOnly? Max(DateOnly? a, DateOnly b) =>
         a == null || b > a.Value ? b : a;
+    private static DateOnly? Min(DateOnly? a, DateOnly b) =>
+        a == null || b < a.Value ? b : a;
 }

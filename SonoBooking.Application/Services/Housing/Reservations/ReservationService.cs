@@ -87,7 +87,8 @@ namespace SonoBooking.Application.Services.Housing.Reservations
                 predicate: PredicateBuilderReportFunction(filter),
                 include: src => src
                     .Include(r => r.Request).ThenInclude(req => req.User)
-                    .Include(r => r.Request).ThenInclude(req => req.RequestUnits),
+                    .Include(r => r.Request).ThenInclude(req => req.RequestUnits)
+                    .Include(r => r.Payment),
                 cancellationToken: cancellationToken);
 
             List<ReservationReportDto> reportData = Mapper.Map<List<ReservationReportDto>>(query);

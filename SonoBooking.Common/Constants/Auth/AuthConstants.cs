@@ -11,6 +11,7 @@
         public const string OrgId = nameof(OrgId);
         public const string FloatingUnitId = nameof(FloatingUnitId);
         public const string GovId = nameof(GovId);
+        public const string EmployeeId = nameof(EmployeeId);
     }
 }
 

@@ -269,6 +269,28 @@ namespace SonoBooking.Api.Seed
                     await dbContext.Roles.AddRangeAsync(roles);
                 }
 
+                var seedEmployees = dataInitializer.SeedEmployeesAsync().ToList();
+                if (seedEmployees.Count > 0)
+                {
+                    var existingNationalIds = await dbContext.Employees
+                        .Where(e => !e.IsDeleted)
+                        .Select(e => e.NationalId)
+                        .ToListAsync();
+
+                    var employeesToAdd = seedEmployees
+                        .Where(e => !string.IsNullOrWhiteSpace(e.NationalId))
+                        .Select(e =>
+                        {
+                            e.NationalId = e.NationalId.Trim();
+                            return e;
+                        })
+                        .Where(e => !existingNationalIds.Contains(e.NationalId))
+                        .ToList();
+
+                    if (employeesToAdd.Count > 0)
+                        await dbContext.Employees.AddRangeAsync(employeesToAdd);
+                }
+
                 await dbContext.SaveChangesAsync();
             }
             catch (Exception ex)

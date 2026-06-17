@@ -65,9 +65,10 @@ public static class AvailabilityInquiryFilter
         IEnumerable<BedDto> items,
         IUnitOccupancyService occupancyService,
         DateOnly inquiryStart,
+        int? nights,
         CancellationToken cancellationToken)
     {
-        var index = await occupancyService.BuildBlockingEndIndexAsync(cancellationToken);
+        var index = await occupancyService.BuildBlockingEndIndexAsync(inquiryStart, cancellationToken);
         var roomApartmentById = await occupancyService.GetRoomApartmentIdsAsync(cancellationToken);
 
         return items.Where(bed =>
@@ -79,7 +80,12 @@ public static class AvailabilityInquiryFilter
             }
 
             var blockingEnd = index.GetBedBlockingEnd(bed.Id, bed.RoomId, apartmentId);
-            return occupancyService.IsUnitFreeOnInquiryStart(inquiryStart, blockingEnd);
+            var nextApprovedStart = index.GetBedNextApprovedStart(bed.Id, bed.RoomId, apartmentId);
+            return occupancyService.IsUnitFreeForInquiryWindow(
+                inquiryStart,
+                nights ?? 0,
+                blockingEnd,
+                nextApprovedStart);
         });
     }
 
@@ -87,13 +93,19 @@ public static class AvailabilityInquiryFilter
         IEnumerable<RoomDto> items,
         IUnitOccupancyService occupancyService,
         DateOnly inquiryStart,
+        int? nights,
         CancellationToken cancellationToken)
     {
-        var index = await occupancyService.BuildBlockingEndIndexAsync(cancellationToken);
+        var index = await occupancyService.BuildBlockingEndIndexAsync(inquiryStart, cancellationToken);
         return items.Where(room =>
         {
             var blockingEnd = index.GetRoomBlockingEnd(room.Id, room.ApartmentId);
-            return occupancyService.IsUnitFreeOnInquiryStart(inquiryStart, blockingEnd);
+            var nextApprovedStart = index.GetRoomNextApprovedStart(room.Id, room.ApartmentId);
+            return occupancyService.IsUnitFreeForInquiryWindow(
+                inquiryStart,
+                nights ?? 0,
+                blockingEnd,
+                nextApprovedStart);
         });
     }
 
@@ -101,13 +113,32 @@ public static class AvailabilityInquiryFilter
         IEnumerable<ApartmentDto> items,
         IUnitOccupancyService occupancyService,
         DateOnly inquiryStart,
+        int? nights,
         CancellationToken cancellationToken)
     {
-        var index = await occupancyService.BuildBlockingEndIndexAsync(cancellationToken);
+        var index = await occupancyService.BuildBlockingEndIndexAsync(inquiryStart, cancellationToken);
+        var nightsValue = nights ?? 0;
+        var apartmentsWithAvailableChildren =
+            await occupancyService.GetApartmentIdsWithAvailableChildrenAsync(
+                inquiryStart,
+                nightsValue,
+                cancellationToken);
+
         return items.Where(apartment =>
         {
             var blockingEnd = index.GetApartmentBlockingEnd(apartment.Id);
-            return occupancyService.IsUnitFreeOnInquiryStart(inquiryStart, blockingEnd);
+            var nextApprovedStart = index.GetApartmentNextApprovedStart(apartment.Id);
+            if (!occupancyService.IsUnitFreeForInquiryWindow(
+                    inquiryStart,
+                    nightsValue,
+                    blockingEnd,
+                    nextApprovedStart))
+                return false;
+
+            // Whole-apartment bookings use apartment-level index entries.
+            // Otherwise require at least one free child room/bed (flexible partial occupancy).
+            return index.HasDirectApartmentBooking(apartment.Id) ||
+                   apartmentsWithAvailableChildren.Contains(apartment.Id);
         });
     }
 
@@ -115,19 +146,36 @@ public static class AvailabilityInquiryFilter
         IEnumerable<BedDto> items,
         IUnitOccupancyService occupancyService,
         IReadOnlySet<Gender> genders,
+        DateOnly? inquiryStart,
         CancellationToken cancellationToken)
     {
         if (genders == null || genders.Count == 0) return items;
 
         var roomApartmentById = await occupancyService.GetRoomApartmentIdsAsync(cancellationToken);
         var apartmentGenders = await occupancyService.GetApartmentGendersAsync(cancellationToken);
+        var apartmentIds = items
+            .Where(b => !string.IsNullOrWhiteSpace(b.RoomId))
+            .Select(b => b.RoomId.Trim())
+            .Where(roomApartmentById.ContainsKey)
+            .Select(roomId => roomApartmentById[roomId])
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var flexibleOverrides = await occupancyService.GetFlexibleApartmentAllowedGendersAsync(
+            apartmentIds,
+            inquiryStart ?? DateOnly.MinValue,
+            cancellationToken);
 
         return items.Where(bed =>
         {
             if (string.IsNullOrWhiteSpace(bed.RoomId)) return false;
             if (!roomApartmentById.TryGetValue(bed.RoomId.Trim(), out var apartmentId)) return false;
-            if (!apartmentGenders.TryGetValue(apartmentId, out var apartmentGender)) return false;
-            return genders.Contains(apartmentGender);
+            if (!apartmentGenders.TryGetValue(apartmentId, out var apartmentGender) &&
+                !flexibleOverrides.TryGetValue(apartmentId, out _)) return false;
+            if (apartmentGenders.TryGetValue(apartmentId, out apartmentGender) &&
+                genders.Contains(apartmentGender)) return true;
+            return flexibleOverrides.TryGetValue(apartmentId, out var extra) &&
+                extra.Any(genders.Contains);
         });
     }
 
@@ -135,25 +183,44 @@ public static class AvailabilityInquiryFilter
         IEnumerable<RoomDto> items,
         IUnitOccupancyService occupancyService,
         IReadOnlySet<Gender> genders,
+        DateOnly? inquiryStart,
         CancellationToken cancellationToken)
     {
         if (genders == null || genders.Count == 0) return items;
 
         var apartmentGenders = await occupancyService.GetApartmentGendersAsync(cancellationToken);
+        var apartmentIds = items
+            .Where(r => !string.IsNullOrWhiteSpace(r.ApartmentId))
+            .Select(r => r.ApartmentId.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var flexibleOverrides = await occupancyService.GetFlexibleApartmentAllowedGendersAsync(
+            apartmentIds,
+            inquiryStart ?? DateOnly.MinValue,
+            cancellationToken);
 
         return items.Where(room =>
         {
             if (string.IsNullOrWhiteSpace(room.ApartmentId)) return false;
-            if (!apartmentGenders.TryGetValue(room.ApartmentId.Trim(), out var apartmentGender)) return false;
-            return genders.Contains(apartmentGender);
+            var apartmentId = room.ApartmentId.Trim();
+            if (!apartmentGenders.TryGetValue(apartmentId, out var apartmentGender) &&
+                !flexibleOverrides.TryGetValue(apartmentId, out _)) return false;
+            if (apartmentGenders.TryGetValue(apartmentId, out apartmentGender) &&
+                genders.Contains(apartmentGender)) return true;
+            return flexibleOverrides.TryGetValue(apartmentId, out var extra) &&
+                extra.Any(genders.Contains);
         });
     }
 
     public static IEnumerable<ApartmentDto> FilterApartmentsByGender(
         IEnumerable<ApartmentDto> items,
-        IReadOnlySet<Gender> genders)
+        IReadOnlySet<Gender> genders,
+        IReadOnlyDictionary<string, IReadOnlySet<Gender>> flexibleOverrides)
     {
         if (genders == null || genders.Count == 0) return items;
-        return items.Where(apartment => genders.Contains(apartment.Gender));
+        return items.Where(apartment =>
+            genders.Contains(apartment.Gender) ||
+            (flexibleOverrides.TryGetValue(apartment.Id, out var extra) &&
+             extra.Any(genders.Contains)));
     }
 }

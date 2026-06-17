@@ -125,7 +125,7 @@ namespace SonoBooking.Application.Services.Housing.Requests
         {
             IEnumerable<Request> query = await UnitOfWork.Repository.FindAsync(
                 predicate: PredicateBuilderReportFunction(filter),
-                include: src => src.Include(r => r.Reservation),
+                include: src => src.Include(r => r.Reservation).ThenInclude(re => re.Payment),
                 cancellationToken: cancellationToken);
 
             List<Request> requests = [.. query];
@@ -142,7 +142,7 @@ namespace SonoBooking.Application.Services.Housing.Requests
 
             float totalRevenue = (float)requests
                 .Where(r => r.Reservation != null && r.Status == Status.Approved)
-                .Sum(r => r.Reservation!.TotalAmount);
+                .Sum(r => r.Reservation!.Payment.Amount);
 
             RequestReportDto reportData = new()
             {
@@ -284,7 +284,22 @@ namespace SonoBooking.Application.Services.Housing.Requests
                 entity.RequestNumber = entityToUpdate.RequestNumber;
                 entity.RequestDate = entityToUpdate.RequestDate;
                 entity.UserId = entityToUpdate.UserId;
+
+                Status previousStatus = entityToUpdate.Status;
                 entity.Status = model.Status ?? entityToUpdate.Status;
+                bool isNewlyApproved = previousStatus != Status.Approved && entity.Status == Status.Approved;
+
+                if (isNewlyApproved && previousStatus != Status.Pending)
+                    return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
+                        message: "Only pending requests can be approved.");
+
+                if (isNewlyApproved)
+                {
+                    entity.ApprovedById = !string.IsNullOrWhiteSpace(model.ApprovedById)
+                        ? model.ApprovedById
+                        : (!string.IsNullOrWhiteSpace(_user.Id) ? _user.Id : null);
+                    entity.ApprovedAt = model.ApprovedAt ?? DateTime.UtcNow;
+                }
 
                 if (IsSuperAdmin())
                     entity.IsDeleted = false;
@@ -333,6 +348,20 @@ namespace SonoBooking.Application.Services.Housing.Requests
 
                 await SyncRequestUnitsAsync(entity.Id, model.RequestUnits, entityToUpdate.RequestUnits.ToList(), cancellationToken);
                 await SyncRequestParticipantsAsync(entity.Id, model.RequestCompanions, entityToUpdate.RequestParticipants.ToList(), cancellationToken);
+
+                if (isNewlyApproved)
+                {
+                    Request approvedRequest = await UnitOfWork.Repository.FirstOrDefaultAsync(
+                        x => x.Id == entity.Id,
+                        include: src => src
+                            .Include(r => r.RequestUnits).ThenInclude(u => u.Bed).ThenInclude(b => b.Room)
+                            .Include(r => r.RequestUnits).ThenInclude(u => u.Room),
+                        disableTracking: false,
+                        cancellationToken: cancellationToken);
+
+                    if (approvedRequest != null)
+                        await RejectConflictingFixedRequestsAsync(approvedRequest, cancellationToken);
+                }
 
                 int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -548,6 +577,212 @@ namespace SonoBooking.Application.Services.Housing.Requests
                 participant.RequestId = requestId;
                 await UnitOfWork.GetRepository<RequestParticipant>().AddAsync(participant, cancellationToken);
             }
+        }
+
+        private async Task RejectConflictingFixedRequestsAsync(Request approvedRequest, CancellationToken cancellationToken)
+        {
+            IEnumerable<Request> candidates = await UnitOfWork.Repository.FindAsync(
+                predicate: r => !r.IsDeleted
+                    && r.Id != approvedRequest.Id
+                    && r.RequestAllocationType == AllocationType.Fixed
+                    && r.Status == Status.Pending
+                    && r.StartDate >= approvedRequest.StartDate
+                    && r.StartDate < approvedRequest.EndDate,
+                include: src => src
+                    .Include(r => r.RequestUnits).ThenInclude(u => u.Bed).ThenInclude(b => b.Room)
+                    .Include(r => r.RequestUnits).ThenInclude(u => u.Room),
+                disableTracking: false,
+                cancellationToken: cancellationToken);
+
+            List<RequestUnit> approvedUnits = approvedRequest.RequestUnits
+                .Where(u => !u.IsDeleted)
+                .ToList();
+            if (approvedUnits.Count == 0)
+                return;
+
+            List<Request> candidateList = candidates.ToList();
+            List<RequestUnit> allUnits = [.. approvedUnits];
+            foreach (Request candidate in candidateList)
+                allUnits.AddRange(candidate.RequestUnits.Where(u => !u.IsDeleted));
+
+            IReadOnlyDictionary<string, string> bedRoomIds =
+                await GetBedRoomIdsAsync(allUnits, cancellationToken);
+            IReadOnlyDictionary<string, string> roomApartmentIds =
+                await GetRoomApartmentIdsAsync(allUnits, bedRoomIds, cancellationToken);
+
+            string rejectionReason =
+                $"تم إلغاء الحجز بسبب اولوية طلبات سابقة";
+
+            foreach (Request candidate in candidateList)
+            {
+                List<RequestUnit> candidateUnits = candidate.RequestUnits
+                    .Where(u => !u.IsDeleted)
+                    .ToList();
+                if (candidateUnits.Count == 0
+                    || !RequestUnitsOverlap(approvedUnits, candidateUnits, bedRoomIds, roomApartmentIds))
+                    continue;
+
+                candidate.Status = Status.Rejected;
+                candidate.RejectionReason = rejectionReason;
+                SetEntityModifiedBaseProperties(candidate);
+            }
+        }
+
+        private async Task<IReadOnlyDictionary<string, string>> GetBedRoomIdsAsync(
+            IEnumerable<RequestUnit> units,
+            CancellationToken cancellationToken)
+        {
+            HashSet<string> bedIds = new(StringComparer.OrdinalIgnoreCase);
+            foreach (RequestUnit unit in units)
+            {
+                if (!string.IsNullOrWhiteSpace(unit.BedId))
+                    bedIds.Add(unit.BedId.Trim());
+            }
+
+            if (bedIds.Count == 0)
+                return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            IEnumerable<Bed> beds = await UnitOfWork.GetRepository<Bed>().FindAsync(
+                predicate: b => bedIds.Contains(b.Id),
+                disableTracking: true,
+                cancellationToken: cancellationToken);
+
+            return beds.ToDictionary(b => b.Id, b => b.RoomId, StringComparer.OrdinalIgnoreCase);
+        }
+
+        private async Task<IReadOnlyDictionary<string, string>> GetRoomApartmentIdsAsync(
+            IEnumerable<RequestUnit> units,
+            IReadOnlyDictionary<string, string> bedRoomIds,
+            CancellationToken cancellationToken)
+        {
+            HashSet<string> roomIds = new(StringComparer.OrdinalIgnoreCase);
+            foreach (RequestUnit unit in units)
+            {
+                UnitScope scope = ResolveUnitScope(unit, bedRoomIds, new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
+                if (!string.IsNullOrWhiteSpace(scope.RoomId))
+                    roomIds.Add(scope.RoomId);
+            }
+
+            if (roomIds.Count == 0)
+                return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            IEnumerable<Room> rooms = await UnitOfWork.GetRepository<Room>().FindAsync(
+                predicate: r => roomIds.Contains(r.Id),
+                disableTracking: true,
+                cancellationToken: cancellationToken);
+
+            return rooms.ToDictionary(r => r.Id, r => r.ApartmentId, StringComparer.OrdinalIgnoreCase);
+        }
+
+        private static bool RequestUnitsOverlap(
+            IReadOnlyList<RequestUnit> approvedUnits,
+            IReadOnlyList<RequestUnit> candidateUnits,
+            IReadOnlyDictionary<string, string> bedRoomIds,
+            IReadOnlyDictionary<string, string> roomApartmentIds)
+        {
+            foreach (RequestUnit approvedUnit in approvedUnits)
+            {
+                UnitScope approvedScope = ResolveUnitScope(approvedUnit, bedRoomIds, roomApartmentIds);
+                foreach (RequestUnit candidateUnit in candidateUnits)
+                {
+                    UnitScope candidateScope = ResolveUnitScope(candidateUnit, bedRoomIds, roomApartmentIds);
+                    if (UnitScopesOverlap(approvedScope, candidateScope))
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool UnitScopesOverlap(UnitScope left, UnitScope right)
+        {
+            if (ShareSameApartment(left, right))
+                return true;
+
+            return ScopeContains(left, right) || ScopeContains(right, left);
+        }
+
+        private static bool ShareSameApartment(UnitScope left, UnitScope right) =>
+            !string.IsNullOrWhiteSpace(left.ApartmentId)
+            && !string.IsNullOrWhiteSpace(right.ApartmentId)
+            && string.Equals(left.ApartmentId, right.ApartmentId, StringComparison.OrdinalIgnoreCase);
+
+        private static bool ScopeContains(UnitScope outer, UnitScope inner)
+        {
+            return outer.Granularity switch
+            {
+                UnitBookingGranularity.Apartment =>
+                    !string.IsNullOrWhiteSpace(outer.ApartmentId)
+                    && !string.IsNullOrWhiteSpace(inner.ApartmentId)
+                    && string.Equals(outer.ApartmentId, inner.ApartmentId, StringComparison.OrdinalIgnoreCase),
+                UnitBookingGranularity.Room =>
+                    !string.IsNullOrWhiteSpace(outer.RoomId)
+                    && !string.IsNullOrWhiteSpace(inner.RoomId)
+                    && string.Equals(outer.RoomId, inner.RoomId, StringComparison.OrdinalIgnoreCase),
+                UnitBookingGranularity.Bed =>
+                    !string.IsNullOrWhiteSpace(outer.BedId)
+                    && !string.IsNullOrWhiteSpace(inner.BedId)
+                    && string.Equals(outer.BedId, inner.BedId, StringComparison.OrdinalIgnoreCase),
+                _ => false
+            };
+        }
+
+        private static UnitScope ResolveUnitScope(
+            RequestUnit unit,
+            IReadOnlyDictionary<string, string> bedRoomIds,
+            IReadOnlyDictionary<string, string> roomApartmentIds)
+        {
+            string bedId = string.IsNullOrWhiteSpace(unit.BedId) ? null : unit.BedId.Trim();
+
+            string roomId = string.IsNullOrWhiteSpace(unit.RoomId) ? null : unit.RoomId.Trim();
+            if (string.IsNullOrWhiteSpace(roomId) && !string.IsNullOrWhiteSpace(bedId))
+            {
+                if (unit.Bed?.RoomId is { Length: > 0 } bedRoomId)
+                    roomId = bedRoomId.Trim();
+                else if (bedRoomIds.TryGetValue(bedId, out string mappedRoomId))
+                    roomId = mappedRoomId;
+            }
+
+            string apartmentId = string.IsNullOrWhiteSpace(unit.ApartmentId) ? null : unit.ApartmentId.Trim();
+            if (string.IsNullOrWhiteSpace(apartmentId) && unit.Room?.ApartmentId is { Length: > 0 } roomApartmentId)
+                apartmentId = roomApartmentId.Trim();
+            if (string.IsNullOrWhiteSpace(apartmentId) && unit.Bed?.Room?.ApartmentId is { Length: > 0 } bedApartmentId)
+                apartmentId = bedApartmentId.Trim();
+            if (string.IsNullOrWhiteSpace(apartmentId)
+                && !string.IsNullOrWhiteSpace(roomId)
+                && roomApartmentIds.TryGetValue(roomId, out string mappedApartmentId))
+                apartmentId = mappedApartmentId;
+
+            UnitBookingGranularity granularity;
+            if (!string.IsNullOrWhiteSpace(bedId))
+                granularity = UnitBookingGranularity.Bed;
+            else if (!string.IsNullOrWhiteSpace(roomId))
+                granularity = UnitBookingGranularity.Room;
+            else if (!string.IsNullOrWhiteSpace(apartmentId))
+                granularity = UnitBookingGranularity.Apartment;
+            else
+                granularity = UnitBookingGranularity.Bed;
+
+            return new UnitScope(granularity, bedId, roomId, apartmentId);
+        }
+
+        private enum UnitBookingGranularity
+        {
+            Bed = 1,
+            Room = 2,
+            Apartment = 3
+        }
+
+        private readonly struct UnitScope(
+            UnitBookingGranularity granularity,
+            string bedId,
+            string roomId,
+            string apartmentId)
+        {
+            public UnitBookingGranularity Granularity { get; } = granularity;
+            public string BedId { get; } = bedId;
+            public string RoomId { get; } = roomId;
+            public string ApartmentId { get; } = apartmentId;
         }
 
         private async Task AddRequestAttachmentsAsync(

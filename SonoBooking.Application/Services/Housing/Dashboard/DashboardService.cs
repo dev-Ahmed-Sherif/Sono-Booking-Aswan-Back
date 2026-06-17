@@ -50,7 +50,7 @@ public class DashboardService(
         decimal totalRevenue = await dbContext.Reservations
             .AsNoTracking()
             .Where(r => !r.IsDeleted && activeReservationRequestIds.Contains(r.RequestId))
-            .SumAsync(r => r.TotalAmount, cancellationToken);
+            .SumAsync(r => r.Payment.Amount, cancellationToken);
 
         var apartments = await dbContext.Apartments
             .AsNoTracking()

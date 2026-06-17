@@ -13,6 +13,7 @@ using SonoBooking.Common.DTO.Housing.Apartment.Parameters;
 using SonoBooking.Domain;
 using SonoBooking.Domain.Entities.Housing;
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
 using System.Threading;
@@ -73,12 +74,20 @@ namespace SonoBooking.Api.Controllers.V1.Housing
                         filtered,
                         unitOccupancyService,
                         inquiryStart,
+                        nights,
                         cancellationToken);
                 }
 
                 if (AvailabilityInquiryFilter.TryParseGenders(gender, out var genders))
                 {
-                    filtered = AvailabilityInquiryFilter.FilterApartmentsByGender(filtered, genders);
+                    var parsed = AvailabilityInquiryFilter.TryParseInquiryStart(startDate, out var inquiryStartValue)
+                        ? inquiryStartValue
+                        : DateOnly.MinValue;
+                    var overridesByApartment = await unitOccupancyService.GetFlexibleApartmentAllowedGendersAsync(
+                        filtered.Select(a => a.Id),
+                        parsed,
+                        cancellationToken);
+                    filtered = AvailabilityInquiryFilter.FilterApartmentsByGender(filtered, genders, overridesByApartment);
                 }
 
                 res.Data = filtered;

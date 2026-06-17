@@ -61,6 +61,12 @@ public partial class SonoBookingDbContext(
         modelBuilder.Entity<User>()
                     .Ignore(r => r.ConcurrencyStamp);
 
+        modelBuilder.Entity<User>()
+            .HasOne(u => u.Employee)
+            .WithMany()
+            .HasForeignKey(u => u.EmployeeId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         modelBuilder.Entity<RefreshToken>()
             .HasOne(rt => rt.User)
             .WithMany(u => u.RefreshTokens)
