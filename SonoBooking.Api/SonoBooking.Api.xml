@@ -491,6 +491,13 @@
             </summary>
             <param name="services">The service collection to add SignalR to.</param>
         </member>
+        <member name="M:SonoBooking.Api.Extensions.ConfigureDependencyExtension.RegisterHangfire(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Registers Hangfire services with SQL Server storage.
+            </summary>
+            <param name="services">The service collection to add Hangfire to.</param>
+            <param name="configuration"></param>
+        </member>
         <member name="M:SonoBooking.Api.Extensions.ConfigureDependencyExtension.RegisterDbContext(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
             <summary>
             Add DbContext
@@ -704,11 +711,6 @@
             </summary>
             <param name="args"></param>
         </member>
-        <member name="M:SonoBooking.Api.Program.CreateHostBuilder(System.String[])">
-            <summary>
-            Web Host Builder
-            </summary>
-        </member>
         <member name="T:SonoBooking.Api.Seed.DatabaseSeed">
             <summary>
             Runs all database seed operations on startup.
@@ -723,36 +725,6 @@
             <summary>
             Seed lookup data from json files on startup.
             </summary>
-        </member>
-        <member name="T:SonoBooking.Api.Startup">
-            <summary>
-            Start Up Class
-            </summary>
-        </member>
-        <member name="M:SonoBooking.Api.Startup.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
-            <summary>
-            Constructor
-            </summary>
-            <param name="configuration"></param>
-        </member>
-        <member name="P:SonoBooking.Api.Startup.Configuration">
-            <summary>
-            Public Configuration Property
-            </summary>
-        </member>
-        <member name="M:SonoBooking.Api.Startup.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
-            <summary>
-            Configure Dependencies
-            </summary>
-            <param name="services"></param>
-        </member>
-        <member name="M:SonoBooking.Api.Startup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder,Microsoft.AspNetCore.Hosting.IWebHostEnvironment,Asp.Versioning.ApiExplorer.IApiVersionDescriptionProvider)">
-            <summary>
-            Configure Pipeline
-            </summary>
-            <param name="app"></param>
-            <param name="env"></param>
-            <param name="provider"></param>
         </member>
     </members>
 </doc>

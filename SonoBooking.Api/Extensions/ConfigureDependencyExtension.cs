@@ -23,6 +23,7 @@ using SonoBooking.Common.Constants.Auth;
 using SonoBooking.Common.DTO.Identity.User;
 using SonoBooking.Common.DTO.Email;
 using SonoBooking.Application.Services.Email;
+using SonoBooking.Application.Services.Housing.Reservations;
 using SonoBooking.Common.Helpers.HttpClient.RestSharp;
 using SonoBooking.Application.Mapping;
 using SonoBooking.Application.Services.Validators.Base;
@@ -33,6 +34,8 @@ using SonoBooking.Application.Helper;
 using SonoBooking.Application.Services.Base;
 using SonoBooking.Common.Infrastructure.UnitOfWork;
 using SonoBooking.Application.Services.Identity.Accounts;
+using SonoBooking.Application.Services.BackgroundJobs.Housing.Reservations;
+using Hangfire;
 
 namespace SonoBooking.Api.Extensions
 {
@@ -71,6 +74,7 @@ namespace SonoBooking.Api.Extensions
             services.RegisterSwaggerConfig();
             services.RegisterLowerCaseUrls();
             services.RegisterSignalR();
+            services.RegisterHangfire(configuration);
             services.AddScoped<IAccountService, AccountService>();
             services.AddIdentityCore<User>(options =>
             {
@@ -201,6 +205,20 @@ namespace SonoBooking.Api.Extensions
             });
         }
 
+
+        /// <summary>
+        /// Registers Hangfire services with SQL Server storage.
+        /// </summary>
+        /// <param name="services">The service collection to add Hangfire to.</param>
+        /// <param name="configuration"></param>
+        public static void RegisterHangfire(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddHangfire(x =>
+            {
+                x.UseSqlServerStorage(configuration.GetConnectionString(ConnectionStringName));
+            });
+            services.AddHangfireServer();
+        }
 
         /// <summary>
         /// Add DbContext
@@ -430,6 +448,9 @@ namespace SonoBooking.Api.Extensions
             services.RegisterAssemblyPublicNonGenericClasses(servicesToScan)
                 .Where(c => c.Name.EndsWith("Validator"))
                 .AsPublicImplementedInterfaces();
+            services.AddScoped<ReservationStatusEmailNotifier>();
+            services.AddTransient<ReservationNoShowJob>();
+            services.AddTransient<ReservationCheckoutJob>();
         }
     }
 }

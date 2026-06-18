@@ -2,6 +2,7 @@ using LinqKit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Reporting.NETCore;
 using SonoBooking.Application.Services.Base;
+using SonoBooking.Application.Services.Email;
 using SonoBooking.Application.Services.LookUp.Attachments;
 using SonoBooking.Common.Constants;
 using SonoBooking.Common.Core;
@@ -15,6 +16,7 @@ using SonoBooking.Common.DTO.Lookup.Attachment;
 using SonoBooking.Common.DTO.Reports.Requests;
 using SonoBooking.Domain;
 using SonoBooking.Domain.Entities.Housing;
+using SonoBooking.Domain.Entities.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +31,8 @@ namespace SonoBooking.Application.Services.Housing.Requests
 {
     public class RequestService(
         IServiceBaseParameter<Request> businessBaseParameter,
-        IAttachmentService attachmentService) : BaseService<Request, AddRequestDto, EditRequestDto, RequestDto, string, string>(businessBaseParameter), IRequestService
+        IAttachmentService attachmentService,
+        IEmailService emailService) : BaseService<Request, AddRequestDto, EditRequestDto, RequestDto, string, string>(businessBaseParameter), IRequestService
     {
         public override async Task<IFinalResult> GetByIdAsync(object id, CancellationToken cancellationToken = default)
         {
@@ -288,6 +291,7 @@ namespace SonoBooking.Application.Services.Housing.Requests
                 Status previousStatus = entityToUpdate.Status;
                 entity.Status = model.Status ?? entityToUpdate.Status;
                 bool isNewlyApproved = previousStatus != Status.Approved && entity.Status == Status.Approved;
+                bool isNewlyRejected = previousStatus != Status.Rejected && entity.Status == Status.Rejected;
 
                 if (isNewlyApproved && previousStatus != Status.Pending)
                     return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
@@ -300,6 +304,9 @@ namespace SonoBooking.Application.Services.Housing.Requests
                         : (!string.IsNullOrWhiteSpace(_user.Id) ? _user.Id : null);
                     entity.ApprovedAt = model.ApprovedAt ?? DateTime.UtcNow;
                 }
+
+                if (isNewlyRejected && !string.IsNullOrWhiteSpace(model.RejectionReason))
+                    entity.RejectionReason = model.RejectionReason.Trim();
 
                 if (IsSuperAdmin())
                     entity.IsDeleted = false;
@@ -366,6 +373,7 @@ namespace SonoBooking.Application.Services.Housing.Requests
                         return overlapValidation;
                 }
 
+                List<Request> autoRejectedRequests = [];
                 if (isNewlyApproved)
                 {
                     Request approvedRequest = await UnitOfWork.Repository.FirstOrDefaultAsync(
@@ -377,7 +385,7 @@ namespace SonoBooking.Application.Services.Housing.Requests
                         cancellationToken: cancellationToken);
 
                     if (approvedRequest != null)
-                        await RejectConflictingFixedRequestsAsync(approvedRequest, cancellationToken);
+                        autoRejectedRequests = await RejectConflictingFixedRequestsAsync(approvedRequest, cancellationToken);
                 }
 
                 int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
@@ -385,6 +393,12 @@ namespace SonoBooking.Application.Services.Housing.Requests
                 if (affectedRows < 0)
                     return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
                         message: MessagesConstants.UpdateError);
+
+                if (isNewlyApproved || isNewlyRejected)
+                    await TrySendRequestStatusEmailAsync(entity, cancellationToken);
+
+                foreach (Request rejectedRequest in autoRejectedRequests)
+                    await TrySendRequestStatusEmailAsync(rejectedRequest, cancellationToken);
 
                 return ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null,
                     message: MessagesConstants.UpdateSuccess);
@@ -682,7 +696,7 @@ namespace SonoBooking.Application.Services.Housing.Requests
         private static bool RequestDateRangesOverlap(Request left, Request right) =>
             left.StartDate < right.EndDate && right.StartDate < left.EndDate;
 
-        private async Task RejectConflictingFixedRequestsAsync(Request approvedRequest, CancellationToken cancellationToken)
+        private async Task<List<Request>> RejectConflictingFixedRequestsAsync(Request approvedRequest, CancellationToken cancellationToken)
         {
             IEnumerable<Request> candidates = await UnitOfWork.Repository.FindAsync(
                 predicate: r => !r.IsDeleted
@@ -701,7 +715,9 @@ namespace SonoBooking.Application.Services.Housing.Requests
                 .Where(u => !u.IsDeleted)
                 .ToList();
             if (approvedUnits.Count == 0)
-                return;
+                return [];
+
+            List<Request> rejectedRequests = [];
 
             List<Request> candidateList = candidates.ToList();
             List<RequestUnit> allUnits = [.. approvedUnits];
@@ -728,6 +744,52 @@ namespace SonoBooking.Application.Services.Housing.Requests
                 candidate.Status = Status.Rejected;
                 candidate.RejectionReason = rejectionReason;
                 SetEntityModifiedBaseProperties(candidate);
+                rejectedRequests.Add(candidate);
+            }
+
+            return rejectedRequests;
+        }
+
+        private async Task TrySendRequestStatusEmailAsync(Request request, CancellationToken cancellationToken)
+        {
+            if (request.Status is not (Status.Approved or Status.Rejected))
+                return;
+
+            User owner = await UnitOfWork.GetRepository<User>().FirstOrDefaultAsync(
+                u => u.Id == request.UserId,
+                disableTracking: true,
+                cancellationToken: cancellationToken);
+
+            if (owner == null || string.IsNullOrWhiteSpace(owner.Email))
+                return;
+
+            try
+            {
+                bool isApproved = request.Status == Status.Approved;
+                string subject = isApproved
+                    ? "قبول طلب الحجز - نظام حجز الإسكان"
+                    : "رفض طلب الحجز - نظام حجز الإسكان";
+                string statusText = isApproved ? "مقبول" : "مرفوض";
+                string rejectionSection = !isApproved
+                    ? $"<p><strong>سبب الرفض:</strong> {WebUtility.HtmlEncode(
+                        string.IsNullOrWhiteSpace(request.RejectionReason) ? "لم يتم تحديد سبب" : request.RejectionReason)}</p>"
+                    : string.Empty;
+
+                string body = $"""
+                    <div dir="rtl" style="font-family: Arial, sans-serif;">
+                    <h2>مرحباً {WebUtility.HtmlEncode(owner.FullName)}</h2>
+                    <p>طلب الحجز رقم <strong>{WebUtility.HtmlEncode(request.RequestNumber)}</strong> أصبح الآن <strong>{statusText}</strong>.</p>
+                    <p><strong>تاريخ الوصول:</strong> {request.StartDate:dd/MM/yyyy}</p>
+                    <p><strong>تاريخ المغادرة:</strong> {request.EndDate:dd/MM/yyyy}</p>
+                    {rejectionSection}
+                    </div>
+                    """;
+
+                await emailService.SendEmailAsync(owner.Email, subject, body);
+            }
+            catch
+            {
+                // Status change is already persisted; do not fail the update when email delivery fails.
             }
         }
 

@@ -21,7 +21,9 @@ using System.Threading.Tasks;
 
 namespace SonoBooking.Application.Services.Housing.Reservations
 {
-    public class ReservationService(IServiceBaseParameter<Reservation> businessBaseParameter) : BaseService<Reservation, AddReservationDto, EditReservationDto, ReservationDto, string, string>(businessBaseParameter), IReservationService
+    public class ReservationService(
+        IServiceBaseParameter<Reservation> businessBaseParameter,
+        ReservationStatusEmailNotifier statusEmailNotifier) : BaseService<Reservation, AddReservationDto, EditReservationDto, ReservationDto, string, string>(businessBaseParameter), IReservationService
     {
         public override async Task<IFinalResult> GetAllAsync(
             bool disableTracking = false,
@@ -200,7 +202,9 @@ namespace SonoBooking.Application.Services.Housing.Reservations
 
                 Reservation entityToUpdate = await UnitOfWork.Repository.FirstOrDefaultAsync(
                     x => x.Id.Equals(model.Id),
-                    include: src => src.Include(r => r.Payment),
+                    include: src => src
+                        .Include(r => r.Payment)
+                        .Include(r => r.Request),
                     disableTracking: false,
                     cancellationToken: cancellationToken);
 
@@ -208,6 +212,7 @@ namespace SonoBooking.Application.Services.Housing.Reservations
                     return ResponseResult.PostResult(result: false, status: HttpStatusCode.NotFound, exception: null,
                         message: MessagesConstants.NotFound);
 
+                ReservationStatus previousStatus = entityToUpdate.Status;
                 Reservation entity = Mapper.Map(model, entityToUpdate);
 
                 entity.RequestId = entityToUpdate.RequestId;
@@ -224,6 +229,10 @@ namespace SonoBooking.Application.Services.Housing.Reservations
                 if (affectedRows < 0)
                     return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: null,
                         message: MessagesConstants.UpdateError);
+
+                if (previousStatus != entityToUpdate.Status)
+                    await statusEmailNotifier.TrySendStatusChangeEmailAsync(
+                        entityToUpdate, previousStatus, cancellationToken);
 
                 return ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null,
                     message: MessagesConstants.UpdateSuccess);
