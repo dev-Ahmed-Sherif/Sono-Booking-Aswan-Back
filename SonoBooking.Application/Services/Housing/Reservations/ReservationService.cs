@@ -2,6 +2,7 @@ using LinqKit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Reporting.NETCore;
 using SonoBooking.Application.Services.Base;
+using SonoBooking.Application.Services.Housing.Notifications;
 using SonoBooking.Common.Core;
 using SonoBooking.Common.DTO.Base;
 using SonoBooking.Common.DTO.Housing.Reservation;
@@ -23,7 +24,8 @@ namespace SonoBooking.Application.Services.Housing.Reservations
 {
     public class ReservationService(
         IServiceBaseParameter<Reservation> businessBaseParameter,
-        ReservationStatusEmailNotifier statusEmailNotifier) : BaseService<Reservation, AddReservationDto, EditReservationDto, ReservationDto, string, string>(businessBaseParameter), IReservationService
+        ReservationStatusEmailNotifier statusEmailNotifier,
+        HousingNotificationService housingNotificationService) : BaseService<Reservation, AddReservationDto, EditReservationDto, ReservationDto, string, string>(businessBaseParameter), IReservationService
     {
         public override async Task<IFinalResult> GetAllAsync(
             bool disableTracking = false,
@@ -176,6 +178,16 @@ namespace SonoBooking.Application.Services.Housing.Reservations
                 if (affectedRows <= 0)
                     return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
                         message: MessagesConstants.AddError);
+
+                Reservation reservationWithRequest = await UnitOfWork.Repository.FirstOrDefaultAsync(
+                    x => x.Id == entity.Id,
+                    include: src => src.Include(r => r.Request),
+                    disableTracking: true,
+                    cancellationToken: cancellationToken) ?? entity;
+
+                await housingNotificationService.NotifyReceptionOnNewReservationAsync(
+                    reservationWithRequest,
+                    cancellationToken);
 
                 return ResponseResult.PostResult(result: entity.Id, status: HttpStatusCode.Created, exception: null,
                     message: MessagesConstants.AddSuccess);

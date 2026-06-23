@@ -19,12 +19,7 @@ namespace SonoBooking.Api.Extensions
 
         public static IApplicationBuilder Configure(this IApplicationBuilder app, IConfiguration configuration, IApiVersionDescriptionProvider provider)
         {
-            app.ConfigureCors();
             app.CreateDatabase();
-            app.UseHttpsRedirection();
-            app.UseRouting();
-            app.UseAuthentication();
-            app.UseAuthorization();
             app.AddLocalization();
             app.UseFluentScheduler(configuration);
             app.SwaggerConfig(provider , configuration);

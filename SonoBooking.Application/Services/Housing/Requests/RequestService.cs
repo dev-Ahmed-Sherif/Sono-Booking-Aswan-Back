@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Reporting.NETCore;
 using SonoBooking.Application.Services.Base;
 using SonoBooking.Application.Services.Email;
+using SonoBooking.Application.Services.Housing.Notifications;
 using SonoBooking.Application.Services.LookUp.Attachments;
 using SonoBooking.Common.Constants;
 using SonoBooking.Common.Core;
@@ -32,7 +33,8 @@ namespace SonoBooking.Application.Services.Housing.Requests
     public class RequestService(
         IServiceBaseParameter<Request> businessBaseParameter,
         IAttachmentService attachmentService,
-        IEmailService emailService) : BaseService<Request, AddRequestDto, EditRequestDto, RequestDto, string, string>(businessBaseParameter), IRequestService
+        IEmailService emailService,
+        HousingNotificationService housingNotificationService) : BaseService<Request, AddRequestDto, EditRequestDto, RequestDto, string, string>(businessBaseParameter), IRequestService
     {
         public override async Task<IFinalResult> GetByIdAsync(object id, CancellationToken cancellationToken = default)
         {
@@ -250,6 +252,8 @@ namespace SonoBooking.Application.Services.Housing.Requests
                     return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
                         message: MessagesConstants.AddError);
 
+                await housingNotificationService.NotifyLeadersOnNewRequestAsync(entity, cancellationToken);
+
                 return ResponseResult.PostResult(result: entity.Id, status: HttpStatusCode.Created, exception: null,
                     message: MessagesConstants.AddSuccess);
             }
@@ -395,10 +399,22 @@ namespace SonoBooking.Application.Services.Housing.Requests
                         message: MessagesConstants.UpdateError);
 
                 if (isNewlyApproved || isNewlyRejected)
+                {
                     await TrySendRequestStatusEmailAsync(entity, cancellationToken);
+                    await housingNotificationService.NotifyOwnerOnRequestDecisionAsync(
+                        entity,
+                        _user?.Name,
+                        cancellationToken);
+                }
 
                 foreach (Request rejectedRequest in autoRejectedRequests)
+                {
                     await TrySendRequestStatusEmailAsync(rejectedRequest, cancellationToken);
+                    await housingNotificationService.NotifyOwnerOnRequestDecisionAsync(
+                        rejectedRequest,
+                        _user?.Name,
+                        cancellationToken);
+                }
 
                 return ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null,
                     message: MessagesConstants.UpdateSuccess);

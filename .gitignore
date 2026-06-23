@@ -102,3 +102,4 @@
 /SonoBooking.Domain/bin/Release/net9.0
 /SonoBooking.Infrastructure/bin/Release/net9.0
 /SonoBooking.Integration/bin/Release/net9.0
+/SonoBooking.Api/logs/

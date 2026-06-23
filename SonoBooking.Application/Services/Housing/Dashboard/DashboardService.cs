@@ -17,6 +17,8 @@ public class DashboardService(
     IResponseResult responseResult,
     SonoBookingDbContext dbContext) : IDashboardService
 {
+    private const int ChartDays = 365;
+
     public async Task<IFinalResult> GetGovernorSummaryAsync(CancellationToken cancellationToken = default)
     {
         DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -50,7 +52,77 @@ public class DashboardService(
         decimal totalRevenue = await dbContext.Reservations
             .AsNoTracking()
             .Where(r => !r.IsDeleted && activeReservationRequestIds.Contains(r.RequestId))
-            .SumAsync(r => r.Payment.Amount, cancellationToken);
+            .SumAsync(r => r.Payment!.Amount, cancellationToken);
+
+        DateOnly chartStart = today.AddDays(-(ChartDays - 1));
+        DateTime chartStartUtc = chartStart.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+
+        List<(DateOnly RequestDay, Status Status)> requestsInChartRange = (await dbContext.Requests
+            .AsNoTracking()
+            .Where(r => !r.IsDeleted
+                && r.RequestDate >= chartStartUtc
+                && r.RequestDate < todayEndUtc)
+            .Select(r => new { r.RequestDate, r.Status })
+            .ToListAsync(cancellationToken))
+            .Select(r => (DateOnly.FromDateTime(r.RequestDate), r.Status))
+            .ToList();
+
+        List<(DateOnly StartDate, DateOnly EndDate, DateOnly? ActualCheckOutDay, decimal Amount)> revenueReservations =
+            (await dbContext.Reservations
+                .AsNoTracking()
+                .Where(r => !r.IsDeleted
+                    && r.Payment != null
+                    && r.Status != ReservationStatus.Canceled
+                    && r.Status != ReservationStatus.NoShow
+                    && r.Status != ReservationStatus.Checkout
+                    && r.StartDate <= today
+                    && (r.ActualCheckOutDate.HasValue
+                        ? DateOnly.FromDateTime(r.ActualCheckOutDate.Value.Date) >= chartStart
+                        : r.EndDate >= chartStart))
+                .Select(r => new
+                {
+                    r.StartDate,
+                    r.EndDate,
+                    r.ActualCheckOutDate,
+                    Amount = r.Payment!.Amount
+                })
+                .ToListAsync(cancellationToken))
+            .Select(r => (
+                r.StartDate,
+                r.EndDate,
+                r.ActualCheckOutDate.HasValue
+                    ? DateOnly.FromDateTime(r.ActualCheckOutDate.Value.Date)
+                    : (DateOnly?)null,
+                r.Amount))
+            .ToList();
+
+        List<DashboardDailyStatDto> dailyStats = [];
+        for (int offset = 0; offset < ChartDays; offset++)
+        {
+            DateOnly day = chartStart.AddDays(offset);
+
+            int dayTotalRequests = requestsInChartRange.Count(r => r.RequestDay == day);
+            int dayApproved = requestsInChartRange.Count(r =>
+                r.RequestDay == day && r.Status == Status.Approved);
+            int dayRejected = requestsInChartRange.Count(r =>
+                r.RequestDay == day && r.Status == Status.Rejected);
+
+            decimal dayRevenue = revenueReservations
+                .Where(r => r.StartDate <= day
+                    && (r.ActualCheckOutDay.HasValue
+                        ? r.ActualCheckOutDay.Value >= day
+                        : r.EndDate >= day))
+                .Sum(r => r.Amount);
+
+            dailyStats.Add(new DashboardDailyStatDto
+            {
+                Date = day.ToString("yyyy-MM-dd"),
+                TotalRequests = dayTotalRequests,
+                ApprovedRequests = dayApproved,
+                RejectedRequests = dayRejected,
+                TotalRevenue = dayRevenue
+            });
+        }
 
         var apartments = await dbContext.Apartments
             .AsNoTracking()
@@ -157,7 +229,8 @@ public class DashboardService(
             OccupancyPercent = occupancyPercent,
             TotalRevenue = totalRevenue,
             ApartmentOccupancy = apartmentOccupancy,
-            LatestApprovedRequests = latestApproved
+            LatestApprovedRequests = latestApproved,
+            DailyStats = dailyStats
         };
 
         return responseResult.PostResult(

@@ -11,6 +11,7 @@ using SonoBooking.Common.Core;
 using SonoBooking.Common.DTO.Base;
 using SonoBooking.Common.DTO.Identity.User;
 using SonoBooking.Application.Services.Email;
+using SonoBooking.Application.Services.BusinessNotification.Chat;
 using SonoBooking.Common.Helpers.MediaUploader;
 using SonoBooking.Common.Infrastructure.UnitOfWork;
 using SonoBooking.Domain;
@@ -41,7 +42,8 @@ namespace SonoBooking.Application.Services.Identity.Accounts
                  IMapper Mapper,
                  IWebHostEnvironment hostingEnvironment,
                  IHttpContextAccessor httpContextAccessor,
-                 IEmailService emailService) : IAccountService
+                 IEmailService emailService,
+                 IChatRealtimePublisher chatRealtimePublisher) : IAccountService
     {
         private readonly UploaderConfiguration _uploaderConfiguration = new(hostingEnvironment, httpContextAccessor);
         public async Task<IFinalResult> CheckNationalIdExistsAsync(string nationalId, CancellationToken cancellationToken = default)
@@ -203,6 +205,8 @@ namespace SonoBooking.Application.Services.Identity.Accounts
 
             await userManager.UpdateAsync(user);
 
+            await chatRealtimePublisher.PublishUserPresenceChangedAsync(user.Id, isOnline: true, cancellationToken);
+
             response = await CreateTokenResponse(user, cancellationToken);
 
             return responseResult.PostResult(result: response, status: HttpStatusCode.OK, exception: null,
@@ -268,6 +272,8 @@ namespace SonoBooking.Application.Services.Identity.Accounts
             user.ModifiedAt = DateTime.UtcNow;
             await userManager.UpdateAsync(user);
 
+            await chatRealtimePublisher.PublishUserPresenceChangedAsync(user.Id, isOnline: false, cancellationToken);
+
             try
             {
                 string subject = "إعادة تعيين كلمة المرور - نظام حجز الإسكان";
@@ -302,11 +308,18 @@ namespace SonoBooking.Application.Services.Identity.Accounts
                 if (refreshToken is not null)
                 {
                     await RemoveOldRefreshToken(id, refreshToken!.Token, cancellationToken);
-                    user.IsLogedIn = false;
-                    await userManager.UpdateAsync(user);
-                    return responseResult.PostResult(result: true, status: HttpStatusCode.OK, exception: null,
-                                                     message: MessagesConstants.Success);
                 }
+
+                user.IsLogedIn = false;
+                user.ModifiedBy = user.FullName;
+                user.ModifiedById = user.Id;
+                user.ModifiedAt = DateTime.UtcNow;
+                await userManager.UpdateAsync(user);
+
+                await chatRealtimePublisher.PublishUserPresenceChangedAsync(user.Id, isOnline: false, cancellationToken);
+
+                return responseResult.PostResult(result: true, status: HttpStatusCode.OK, exception: null,
+                                                 message: MessagesConstants.Success);
             }
 
             return responseResult.PostResult(result: false, status: HttpStatusCode.Unauthorized, exception: null,
@@ -455,9 +468,9 @@ namespace SonoBooking.Application.Services.Identity.Accounts
                     UserName = u.FullName,
                     Role = roles.FirstOrDefault() ?? "",
                     RoleId = "",
-                    BirthDate = (DateOnly)u.BirthDate,
-                    Gender = (Gender)u.Gender,
-                    DocumentType = (IDType)u.DocumentType,
+                    BirthDate = u.BirthDate ?? default,
+                    Gender = u.Gender ?? default,
+                    DocumentType = u.DocumentType ?? default,
                     DocumentNumber = u.DocumentNumber,
                     DocumentImageUrl = u.DocumentImageUrl,
                     CreatedAt = u.CreatedAt,
@@ -657,6 +670,7 @@ namespace SonoBooking.Application.Services.Identity.Accounts
 
             return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
         }
+
         private static Expression<Func<User, bool>> PredicateBuilderFunction(FilterUserDto filter)
         {
             var predicate = PredicateBuilder.New<User>(true);

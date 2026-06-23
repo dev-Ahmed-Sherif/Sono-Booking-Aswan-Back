@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using SonoBooking.Application.Services.Housing.Notifications;
 using SonoBooking.Common.Constants.Auth;
+using SonoBooking.Common.Constants.BusinessNotification;
 using SonoBooking.Domain;
+using SonoBooking.Domain.Entities.BusinessNotification;
 using SonoBooking.Domain.Entities.Identity;
 using SonoBooking.Infrastructure.Context;
 using SonoBooking.Infrastructure.DataInitializer;
@@ -20,6 +23,7 @@ namespace SonoBooking.Api.Seed
         private const string SuperUserEmail = "super@sonobooking.com";
         private const string LeaderUserEmail = "leader@sonobooking.com";
         private const string ReceptionStaffUserEmail = "reception@sonobooking.com";
+        private const string OwnerUserEmail = "owner@sonobooking.com";
         private const string SuperAdminSeedPassword = "(as1+me2)";
         private const string SeedUserPassword = "12345";
 
@@ -134,6 +138,13 @@ namespace SonoBooking.Api.Seed
                     ReceptionStaffUserEmail,
                     "موظف استقبال",
                     RoleNames.ReceptionStaff,
+                    now);
+
+                await EnsureSeedUserAsync(
+                    userManager,
+                    OwnerUserEmail,
+                    "صاحب الطلب",
+                    RoleNames.User,
                     now);
             }
             catch (Exception ex)
@@ -257,6 +268,12 @@ namespace SonoBooking.Api.Seed
                     await dbContext.Set<Domain.Entities.Lookups.RoomType>().AddRangeAsync(roomTypes);
                 }
 
+                if (!await dbContext.AllowedDayBeforeReservations.AnyAsync())
+                {
+                    var allowedDayBeforeReservations = dataInitializer.SeedAllowedDayBeforeReservationsAsync();
+                    await dbContext.AllowedDayBeforeReservations.AddRangeAsync(allowedDayBeforeReservations);
+                }
+
                 if (!await dbContext.Set<Domain.Entities.Lookups.RequestType>().AnyAsync())
                 {
                     var requestTypes = dataInitializer.SeedRequestTypesAsync();
@@ -291,12 +308,201 @@ namespace SonoBooking.Api.Seed
                         await dbContext.Employees.AddRangeAsync(employeesToAdd);
                 }
 
+                var seedNotificationGroups = dataInitializer.SeedNotificationGroupsAsync().ToList();
+                if (seedNotificationGroups.Count > 0)
+                {
+                    var existingGroupCodes = await dbContext.Set<NotificationGroup>()
+                        .Where(g => !g.IsDeleted)
+                        .Select(g => g.Code)
+                        .ToListAsync();
+
+                    var groupsToAdd = seedNotificationGroups
+                        .Where(g => !string.IsNullOrWhiteSpace(g.Code))
+                        .Where(g => !existingGroupCodes.Contains(g.Code))
+                        .ToList();
+
+                    if (groupsToAdd.Count > 0)
+                        await dbContext.Set<NotificationGroup>().AddRangeAsync(groupsToAdd);
+                }
+
                 await dbContext.SaveChangesAsync();
             }
             catch (Exception ex)
             {
                 Log.Warning(ex, "Lookup seed skipped or failed");
             }
+        }
+
+        /// <summary>
+        /// Seed sample bell notifications for local testing (Development only, idempotent).
+        /// </summary>
+        public static async Task SeedTestNotificationsAsync(IHost host)
+        {
+            try
+            {
+                await using var scope = host.Services.CreateAsyncScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<SonoBookingDbContext>();
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+
+                const string seedMarkerNotificationId = "019f0e20-3a9b-7a5c-9c9b-5b44b1a10001";
+                if (await dbContext.Notifications.AnyAsync(n => n.Id == seedMarkerNotificationId))
+                    return;
+
+                User? owner = await userManager.FindByEmailAsync(OwnerUserEmail);
+                User? leader = await userManager.FindByEmailAsync(LeaderUserEmail);
+                User? reception = await userManager.FindByEmailAsync(ReceptionStaffUserEmail);
+
+                if (owner == null || leader == null || reception == null)
+                {
+                    Log.Warning("Test notification seed skipped: required seed users were not found");
+                    return;
+                }
+
+                var now = DateTime.UtcNow;
+                const string ownerLeaderGroupId = "019f0e10-3a9b-7a5c-9c9b-5b44b1a10001";
+                const string leaderReceptionGroupId = "019f0e10-3a9b-7a5c-9c9b-5b44b1a10002";
+
+                const string requestRef1 = "019f0e30-3a9b-7a5c-9c9b-5b44b1a20001";
+                const string requestRef2 = "019f0e30-3a9b-7a5c-9c9b-5b44b1a20002";
+                const string reservationRef1 = "019f0e30-3a9b-7a5c-9c9b-5b44b1a20003";
+                const string reservationRef2 = "019f0e30-3a9b-7a5c-9c9b-5b44b1a20004";
+
+                const string requestNumber1 = "REQ-2026-001";
+                const string requestNumber2 = "REQ-2026-002";
+                var requestDate = now.AddDays(-2);
+                var checkIn = DateOnly.FromDateTime(now.AddDays(3));
+                var checkOut = DateOnly.FromDateTime(now.AddDays(7));
+
+                var notifications = new List<Notification>
+                {
+                    CreateSeedNotification(
+                        "019f0e20-3a9b-7a5c-9c9b-5b44b1a10001",
+                        HousingNotificationMessages.NewRequest(requestNumber1, owner.FullName ?? "صاحب الطلب", requestDate),
+                        NotificationTypes.Request,
+                        requestRef1,
+                        owner.Id!,
+                        leader.Id!,
+                        ownerLeaderGroupId,
+                        isRead: false,
+                        now.AddDays(-2)),
+
+                    CreateSeedNotification(
+                        "019f0e20-3a9b-7a5c-9c9b-5b44b1a10002",
+                        HousingNotificationMessages.NewRequest(requestNumber2, owner.FullName ?? "صاحب الطلب", requestDate.AddHours(3)),
+                        NotificationTypes.Request,
+                        requestRef2,
+                        owner.Id!,
+                        leader.Id!,
+                        ownerLeaderGroupId,
+                        isRead: true,
+                        now.AddDays(-1)),
+
+                    CreateSeedNotification(
+                        "019f0e20-3a9b-7a5c-9c9b-5b44b1a10003",
+                        HousingNotificationMessages.RequestApproved(requestNumber1, leader.FullName ?? "القائد"),
+                        NotificationTypes.Request,
+                        requestRef1,
+                        leader.Id!,
+                        owner.Id!,
+                        ownerLeaderGroupId,
+                        isRead: false,
+                        now.AddHours(-6)),
+
+                    CreateSeedNotification(
+                        "019f0e20-3a9b-7a5c-9c9b-5b44b1a10004",
+                        HousingNotificationMessages.RequestRejected(requestNumber2),
+                        NotificationTypes.Request,
+                        requestRef2,
+                        leader.Id!,
+                        owner.Id!,
+                        ownerLeaderGroupId,
+                        isRead: true,
+                        now.AddDays(-1).AddHours(2)),
+
+                    CreateSeedNotification(
+                        "019f0e20-3a9b-7a5c-9c9b-5b44b1a10005",
+                        HousingNotificationMessages.NewReservationForReception(requestNumber1, checkIn, checkOut),
+                        NotificationTypes.Reservation,
+                        reservationRef1,
+                        leader.Id!,
+                        reception.Id!,
+                        leaderReceptionGroupId,
+                        isRead: false,
+                        now.AddHours(-3)),
+
+                    CreateSeedNotification(
+                        "019f0e20-3a9b-7a5c-9c9b-5b44b1a10006",
+                        HousingNotificationMessages.NewReservationForReception(requestNumber2, checkIn.AddDays(1), checkOut.AddDays(1)),
+                        NotificationTypes.Reservation,
+                        reservationRef2,
+                        leader.Id!,
+                        reception.Id!,
+                        leaderReceptionGroupId,
+                        isRead: true,
+                        now.AddDays(-1)),
+
+                    CreateSeedNotification(
+                        "019f0e20-3a9b-7a5c-9c9b-5b44b1a10007",
+                        HousingNotificationMessages.ReservationStatusUpdated(requestNumber1, ReservationStatus.Reserved),
+                        NotificationTypes.Reservation,
+                        reservationRef1,
+                        reception.Id!,
+                        owner.Id!,
+                        null,
+                        isRead: false,
+                        now.AddHours(-1)),
+
+                    CreateSeedNotification(
+                        "019f0e20-3a9b-7a5c-9c9b-5b44b1a10008",
+                        HousingNotificationMessages.ReservationStatusUpdated(requestNumber1, ReservationStatus.Completed),
+                        NotificationTypes.Reservation,
+                        reservationRef1,
+                        reception.Id!,
+                        owner.Id!,
+                        null,
+                        isRead: true,
+                        now.AddMinutes(-30)),
+                };
+
+                await dbContext.Notifications.AddRangeAsync(notifications);
+                await dbContext.SaveChangesAsync();
+                Log.Information("Seeded {Count} test bell notifications", notifications.Count);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Test notification seed skipped or failed");
+            }
+        }
+
+        private static Notification CreateSeedNotification(
+            string id,
+            string content,
+            string type,
+            string referenceId,
+            string senderId,
+            string receiverId,
+            string? notificationGroupId,
+            bool isRead,
+            DateTime createdAt)
+        {
+            return new Notification
+            {
+                Id = id,
+                Content = content,
+                Type = type,
+                ReferenceId = referenceId,
+                SenderId = senderId,
+                ReceiverId = receiverId,
+                NotificationGroupId = notificationGroupId,
+                IsRead = isRead,
+                CreatedAt = createdAt,
+                ModifiedAt = createdAt,
+                CreatedById = SystemActor,
+                CreatedBy = SystemActor,
+                ModifiedById = SystemActor,
+                ModifiedBy = SystemActor,
+                IsDeleted = false
+            };
         }
     }
 }

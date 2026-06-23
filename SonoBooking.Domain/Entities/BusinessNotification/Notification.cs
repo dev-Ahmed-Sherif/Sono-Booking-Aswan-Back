@@ -21,6 +21,13 @@ namespace SonoBooking.Domain.Entities.BusinessNotification
 
         [Required, MaxLength(14000)]
         public  required string Content { get; set; }
+
+        [Required, MaxLength(50)]
+        public string Type { get; set; } = "system";
+
+        [MaxLength(50)]
+        public string? ReferenceId { get; set; }
+
         public bool IsRead { get; set; }
 
         [Required]

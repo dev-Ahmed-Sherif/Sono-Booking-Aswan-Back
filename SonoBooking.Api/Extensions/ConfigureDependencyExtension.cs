@@ -24,6 +24,7 @@ using SonoBooking.Common.DTO.Identity.User;
 using SonoBooking.Common.DTO.Email;
 using SonoBooking.Application.Services.Email;
 using SonoBooking.Application.Services.Housing.Reservations;
+using SonoBooking.Application.Services.Housing.Notifications;
 using SonoBooking.Common.Helpers.HttpClient.RestSharp;
 using SonoBooking.Application.Mapping;
 using SonoBooking.Application.Services.Validators.Base;
@@ -35,7 +36,12 @@ using SonoBooking.Application.Services.Base;
 using SonoBooking.Common.Infrastructure.UnitOfWork;
 using SonoBooking.Application.Services.Identity.Accounts;
 using SonoBooking.Application.Services.BackgroundJobs.Housing.Reservations;
+using SonoBooking.Application.Services.BusinessNotification.Chat;
+using SonoBooking.Application.Services.BusinessNotification.Notification;
+using SonoBooking.Api.Hubs;
+using SonoBooking.Api.Services.BusinessNotification;
 using Hangfire;
+using Microsoft.AspNetCore.SignalR;
 
 namespace SonoBooking.Api.Extensions
 {
@@ -74,6 +80,8 @@ namespace SonoBooking.Api.Extensions
             services.RegisterSwaggerConfig();
             services.RegisterLowerCaseUrls();
             services.RegisterSignalR();
+            services.AddScoped<IChatRealtimePublisher, ChatRealtimePublisher>();
+            services.AddScoped<INotificationRealtimePublisher, NotificationRealtimePublisher>();
             services.RegisterHangfire(configuration);
             services.AddScoped<IAccountService, AccountService>();
             services.AddIdentityCore<User>(options =>
@@ -113,12 +121,23 @@ namespace SonoBooking.Api.Extensions
             .AddApiEndpoints()
             .AddDefaultTokenProviders();
             services.AddHttpContextAccessor();
-            // Read User Data from HttpContext
+            // Read User Data from HttpContext (empty user outside HTTP requests, e.g. Hangfire jobs)
             services.AddTransient(provider =>
             {
-                HttpContext context =
-                provider.GetService<IHttpContextAccessor>()?.HttpContext ??
-                throw new NullReferenceException(nameof(HttpContext));
+                HttpContext? context = provider.GetService<IHttpContextAccessor>()?.HttpContext;
+                if (context == null)
+                {
+                    return new UserDataDto(
+                        string.Empty,
+                        string.Empty,
+                        string.Empty,
+                        [],
+                        string.Empty,
+                        string.Empty,
+                        string.Empty,
+                        null);
+                }
+
                 ClaimsPrincipal user = context.User;
 
                 string Id =
@@ -172,16 +191,33 @@ namespace SonoBooking.Api.Extensions
             });
             services.AddCors(option =>
             {
-                option
-                .AddPolicy("policy",i =>
+                option.AddPolicy("policy", builder =>
                 {
-                    i
-                    .AllowAnyHeader()
-                    .AllowAnyMethod()
-                    .AllowAnyOrigin()
-                    //.WithOrigins("http://localhost:4200", "http://sonotracker.aswan.gov.eg")
-                    //.AllowCredentials()
-                    ;
+                    builder
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .SetIsOriginAllowed(origin =>
+                        {
+                            if (string.IsNullOrWhiteSpace(origin))
+                            {
+                                return false;
+                            }
+
+                            if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri))
+                            {
+                                return false;
+                            }
+
+                            if (uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase)
+                                || uri.Host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return true;
+                            }
+
+                            return uri.Host.EndsWith(".sono.net", StringComparison.OrdinalIgnoreCase)
+                                || uri.Host.Equals("sonobooking.runasp.net", StringComparison.OrdinalIgnoreCase);
+                        })
+                        .AllowCredentials();
                 });
             });
 
@@ -198,10 +234,18 @@ namespace SonoBooking.Api.Extensions
         /// <param name="services">The service collection to add SignalR to.</param>
         public static void RegisterSignalR(this IServiceCollection services)
         {
+            services.AddSingleton<IUserIdProvider, SignalRUserIdProvider>();
             services.AddSignalR(options =>
             {
                 options.EnableDetailedErrors = true;
                 options.MaximumReceiveMessageSize = 102400000; // 100MB
+                options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+                options.ClientTimeoutInterval = TimeSpan.FromSeconds(60);
+                options.HandshakeTimeout = TimeSpan.FromSeconds(30);
+            })
+            .AddJsonProtocol(options =>
+            {
+                options.PayloadSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
             });
         }
 
@@ -265,6 +309,7 @@ namespace SonoBooking.Api.Extensions
 
             }).AddJwtBearer(options =>
             {
+                options.RequireHttpsMetadata = false;
                 options.TokenValidationParameters = new TokenValidationParameters()
                 {
                     // Remove Default Plus Time (5 min)
@@ -278,11 +323,24 @@ namespace SonoBooking.Api.Extensions
                 {
                     OnMessageReceived = context =>
                     {
-                        var accessToken = context.Request.Query["access_token"];
                         var path = context.HttpContext.Request.Path;
+                        if (!path.StartsWithSegments("/hubs") &&
+                            !path.StartsWithSegments("/api/v1/hubs"))
+                        {
+                            return Task.CompletedTask;
+                        }
 
-                        if (!string.IsNullOrEmpty(accessToken) &&
-                            path.StartsWithSegments("/hubs"))
+                        var accessToken = context.Request.Query["access_token"];
+                        if (string.IsNullOrEmpty(accessToken))
+                        {
+                            var authHeader = context.Request.Headers.Authorization.ToString();
+                            if (authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                            {
+                                accessToken = authHeader["Bearer ".Length..].Trim();
+                            }
+                        }
+
+                        if (!string.IsNullOrEmpty(accessToken))
                         {
                             context.Token = accessToken;
                         }
@@ -449,6 +507,7 @@ namespace SonoBooking.Api.Extensions
                 .Where(c => c.Name.EndsWith("Validator"))
                 .AsPublicImplementedInterfaces();
             services.AddScoped<ReservationStatusEmailNotifier>();
+            services.AddScoped<HousingNotificationService>();
             services.AddTransient<ReservationNoShowJob>();
             services.AddTransient<ReservationCheckoutJob>();
         }

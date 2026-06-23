@@ -11,6 +11,8 @@ public partial class SonoBookingDbContext(
             DbContextOptions<SonoBookingDbContext> options)
         : IdentityDbContext<User, Role, string>(options)
 {
+    public virtual DbSet<AllowedDayBeforeReservation> AllowedDayBeforeReservations { get; set; }
+
     public virtual DbSet<Apartment> Apartments { get; set; }
 
     public virtual DbSet<Attachment> Attachments { get; set; }
@@ -28,6 +30,8 @@ public partial class SonoBookingDbContext(
     public virtual DbSet<Leader> Leaders { get; set; }
 
     public virtual DbSet<Message> Messages { get; set; }
+
+    public virtual DbSet<MessagingGroup> MessagingGroups { get; set; }
 
     public virtual DbSet<Notification> Notifications { get; set; }
 
@@ -98,6 +102,14 @@ public partial class SonoBookingDbContext(
                 .IsRequired()
                 .HasMaxLength(14000);
 
+            entity.Property(e => e.Type)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasDefaultValue("system");
+
+            entity.Property(e => e.ReferenceId)
+                .HasMaxLength(50);
+
             entity.HasOne(d => d.Sender).WithMany()
                 .HasForeignKey(d => d.SenderId)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -105,6 +117,15 @@ public partial class SonoBookingDbContext(
             entity.HasOne(d => d.Receiver).WithMany()
                 .HasForeignKey(d => d.ReceiverId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<MessagingGroup>(entity =>
+        {
+            entity.ToTable("MessagingGroups");
+
+            entity.Property(e => e.Code)
+                .IsRequired()
+                .HasMaxLength(280);
         });
 
         modelBuilder.Entity<Apartment>(entity =>
@@ -276,6 +297,31 @@ public partial class SonoBookingDbContext(
             entity.HasOne(d => d.User).WithMany(p => p.Companions)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("FK_Companions_Users");
+        });
+
+        modelBuilder.Entity<AllowedDayBeforeReservation>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_AllowedDayBeforeReservation");
+
+            entity.ToTable("AllowedDayBeforeReservation");
+
+            entity.Property(e => e.Id)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.Property(e => e.NameAr)
+                .HasMaxLength(280)
+                .IsRequired();
+
+            entity.Property(e => e.NameEn)
+                .HasMaxLength(280);
+
+            entity.Property(e => e.Code)
+                .HasMaxLength(35)
+                .IsRequired();
+
+            entity.Property(e => e.NumofDays)
+                .IsRequired();
         });
 
         modelBuilder.Entity<Relationship>(entity =>

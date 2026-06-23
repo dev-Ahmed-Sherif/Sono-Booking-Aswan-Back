@@ -1,0 +1,41 @@
+[
+  {
+    "Id": "019f0e10-3a9b-7a5c-9c9b-5b44b1a10001",
+    "Code": "owner-leader",
+    "NameAr": "صاحب الطلب ↔ القائد",
+    "NameEn": "Request owner ↔ Leader",
+    "CreatedAt": "01/01/2023",
+    "CreatedById": "System",
+    "CreatedBy": "System",
+    "ModifiedAt": "01/01/2023",
+    "ModifiedById": "System",
+    "ModifiedBy": "System",
+    "IsDeleted": false
+  },
+  {
+    "Id": "019f0e10-3a9b-7a5c-9c9b-5b44b1a10002",
+    "Code": "leader-reception",
+    "NameAr": "القائد ↔ موظف الحجز",
+    "NameEn": "Leader ↔ Reservation employee",
+    "CreatedAt": "01/01/2023",
+    "CreatedById": "System",
+    "CreatedBy": "System",
+    "ModifiedAt": "01/01/2023",
+    "ModifiedById": "System",
+    "ModifiedBy": "System",
+    "IsDeleted": false
+  },
+  {
+    "Id": "019f0e10-3a9b-7a5c-9c9b-5b44b1a10003",
+    "Code": "owner-reception",
+    "NameAr": "صاحب الطلب ↔ موظف الحجز",
+    "NameEn": "Request owner ↔ Reservation employee",
+    "CreatedAt": "01/01/2023",
+    "CreatedById": "System",
+    "CreatedBy": "System",
+    "ModifiedAt": "01/01/2023",
+    "ModifiedById": "System",
+    "ModifiedBy": "System",
+    "IsDeleted": false
+  }
+]

@@ -5,6 +5,7 @@ using SonoBooking.Api.Extensions;
 using SonoBooking.Api.MiddleWares;
 using SonoBooking.Api.Seed;
 using SonoBooking.Application.DependencyExtension;
+using SonoBooking.Api.Hubs;
 using SonoBooking.Application.Services.BackgroundJobs.Housing.Reservations;
 
 namespace SonoBooking.Api
@@ -53,24 +54,34 @@ namespace SonoBooking.Api
                 app.UseCors("policy");
                 shell.ConfigureHttp(app, app.Environment);
                 Shell.Start(shell);
-                app.UseStaticFiles();
-                app.Configure(builder.Configuration, app.Services.GetRequiredService<IApiVersionDescriptionProvider>());
                 if (app.Environment.IsDevelopment())
                 {
                     app.UseDeveloperExceptionPage();
                 }
+                else
+                {
+                    app.UseHttpsRedirection();
+                }
+                app.UseStaticFiles();
+                app.Configure(builder.Configuration, app.Services.GetRequiredService<IApiVersionDescriptionProvider>());
                 app.UseHangfireDashboard("/sono-booking-Jobs");
                 //app.UseHangfireServer();
                 ReservationNoShowJob.RegisterDailySchedule();
                 ReservationCheckoutJob.RegisterDailySchedule();
                 app.ConfigureCustomMiddleware();
+                app.UseWebSockets();
                 app.UseRouting();
                 app.UseAuthentication();
                 app.UseAuthorization();
                 app.MapControllers();
+                app.MapHub<ChatHub>("/api/v1/hubs/chat");
+                app.MapHub<NotificationHub>("/api/v1/hubs/notifications");
+                app.MapHub<VideoChatHub>("/api/v1/hubs/video");
 
                 await DatabaseSeed.SeedIdentityAsync(app);
                 await DatabaseSeed.SeedLookupsAsync(app);
+                if (app.Environment.IsDevelopment())
+                    await DatabaseSeed.SeedTestNotificationsAsync(app);
 
                 await app.RunAsync();
             }

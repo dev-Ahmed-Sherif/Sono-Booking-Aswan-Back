@@ -13,6 +13,7 @@ public class GovernorDashboardDto
     public decimal TotalRevenue { get; set; }
     public List<ApartmentOccupancyItemDto> ApartmentOccupancy { get; set; } = [];
     public List<ApprovedRequestItemDto> LatestApprovedRequests { get; set; } = [];
+    public List<DashboardDailyStatDto> DailyStats { get; set; } = [];
 }
 
 [ExcludeFromCodeCoverage]
@@ -29,4 +30,14 @@ public class ApprovedRequestItemDto
     public string Name { get; set; } = string.Empty;
     public string Reason { get; set; } = string.Empty;
     public string Date { get; set; } = string.Empty;
+}
+
+[ExcludeFromCodeCoverage]
+public class DashboardDailyStatDto
+{
+    public string Date { get; set; } = string.Empty;
+    public int TotalRequests { get; set; }
+    public int ApprovedRequests { get; set; }
+    public int RejectedRequests { get; set; }
+    public decimal TotalRevenue { get; set; }
 }

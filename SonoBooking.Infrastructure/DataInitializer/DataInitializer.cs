@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using SonoBooking.Common.Extensions;
+using SonoBooking.Domain.Entities.BusinessNotification;
 using SonoBooking.Domain.Entities.Lookups;
+using AllowedDayBeforeReservation = SonoBooking.Domain.Entities.Lookups.AllowedDayBeforeReservation;
 using ApartmentType = SonoBooking.Domain.Entities.Lookups.ApartmentType;
 using City = SonoBooking.Domain.Entities.Lookups.City;
 using Employee = SonoBooking.Domain.Entities.Lookups.Employee;
@@ -47,6 +49,17 @@ namespace SonoBooking.Infrastructure.DataInitializer
             return roomTypes ?? [];
         }
 
+        public IEnumerable<AllowedDayBeforeReservation> SeedAllowedDayBeforeReservationsAsync()
+        {
+            var path = Path.Combine(contentRootPath, "Seed", "AllowedDayBeforeReservations.json");
+            if (!File.Exists(path))
+                return [];
+
+            var dataText = File.ReadAllText(path);
+            var allowedDays = Seeder<List<AllowedDayBeforeReservation>>.SeedIt(dataText);
+            return allowedDays ?? [];
+        }
+
         public IEnumerable<RequestType> SeedRequestTypesAsync()
         {
             var path = Path.Combine(contentRootPath, "Seed", "RequestTypes.json");
@@ -80,6 +93,17 @@ namespace SonoBooking.Infrastructure.DataInitializer
             var dataText = File.ReadAllText(path);
             var employees = Seeder<List<Employee>>.SeedIt(dataText);
             return employees ?? [];
+        }
+
+        public IEnumerable<NotificationGroup> SeedNotificationGroupsAsync()
+        {
+            var path = Path.Combine(contentRootPath, "Seed", "NotificationGroups.json");
+            if (!File.Exists(path))
+                return [];
+
+            var dataText = File.ReadAllText(path);
+            var groups = Seeder<List<NotificationGroup>>.SeedIt(dataText);
+            return groups ?? [];
         }
 
         //public IEnumerable<Status> SeedStatusesAsync()

@@ -7,6 +7,7 @@ namespace SonoBooking.Application.Mapping
         public MappingService()
         {
             MapAttachment();
+            MapAllowedDayBeforeReservation();
             MapApartmentType();
             MapCity();
             MapEmployee();

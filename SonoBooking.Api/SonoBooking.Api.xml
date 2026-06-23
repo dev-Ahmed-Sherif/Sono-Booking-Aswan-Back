@@ -615,6 +615,71 @@
         <member name="M:SonoBooking.Api.Extensions.Swagger.Options.SwaggerConfigureOptions.Configure(Swashbuckle.AspNetCore.SwaggerGen.SwaggerGenOptions)">
             <inheritdoc/>
         </member>
+        <member name="T:SonoBooking.Api.Hubs.ChatHub">
+            <summary>
+            Realtime chat hub for conversation messaging and live updates.
+            </summary>
+        </member>
+        <member name="M:SonoBooking.Api.Hubs.ChatHub.#ctor(SonoBooking.Application.Services.BusinessNotification.Chat.IChatService)">
+            <summary>
+            Realtime chat hub for conversation messaging and live updates.
+            </summary>
+        </member>
+        <member name="M:SonoBooking.Api.Hubs.ChatHub.GetOnlineStatuses(System.String[])">
+            <summary>
+            Returns online status for the requested user ids (initial load).
+            </summary>
+        </member>
+        <member name="M:SonoBooking.Api.Hubs.ChatHub.JoinConversation(System.String)">
+            <summary>
+            Adds the connection to a conversation group after verifying membership.
+            </summary>
+        </member>
+        <member name="M:SonoBooking.Api.Hubs.ChatHub.LeaveConversation(System.String)">
+            <summary>
+            Removes the connection from a conversation group.
+            </summary>
+        </member>
+        <member name="M:SonoBooking.Api.Hubs.ChatHub.SendMessage(System.String,System.String)">
+            <summary>
+            Sends a message to a conversation and broadcasts it to group members.
+            </summary>
+        </member>
+        <member name="T:SonoBooking.Api.Hubs.NotificationHub">
+            <summary>
+            Realtime notification hub for user-targeted alerts.
+            </summary>
+        </member>
+        <member name="T:SonoBooking.Api.Hubs.SignalRUserIdProvider">
+            <summary>
+            Maps authenticated users to SignalR user identifiers for targeted messaging.
+            </summary>
+        </member>
+        <member name="T:SonoBooking.Api.Hubs.VideoChatHub">
+            <summary>
+            WebRTC signaling hub for 1:1 video calls (offer, answer, ICE, end).
+            </summary>
+        </member>
+        <member name="M:SonoBooking.Api.Hubs.VideoChatHub.SendOffer(System.String,System.String)">
+            <summary>
+            Sends a WebRTC session offer to the target user.
+            </summary>
+        </member>
+        <member name="M:SonoBooking.Api.Hubs.VideoChatHub.SendAnswer(System.String,System.String)">
+            <summary>
+            Sends a WebRTC session answer to the target user.
+            </summary>
+        </member>
+        <member name="M:SonoBooking.Api.Hubs.VideoChatHub.SendIceCandidate(System.String,System.String)">
+            <summary>
+            Forwards an ICE candidate to the target user.
+            </summary>
+        </member>
+        <member name="M:SonoBooking.Api.Hubs.VideoChatHub.EndCall(System.String)">
+            <summary>
+            Notifies the remote participant that the call has ended.
+            </summary>
+        </member>
         <member name="T:SonoBooking.Api.MiddleWares.ExceptionMiddleware">
             <summary>
             Exception Middleware
@@ -724,6 +789,16 @@
         <member name="M:SonoBooking.Api.Seed.DatabaseSeed.SeedLookupsAsync(Microsoft.Extensions.Hosting.IHost)">
             <summary>
             Seed lookup data from json files on startup.
+            </summary>
+        </member>
+        <member name="M:SonoBooking.Api.Seed.DatabaseSeed.SeedTestNotificationsAsync(Microsoft.Extensions.Hosting.IHost)">
+            <summary>
+            Seed sample bell notifications for local testing (Development only, idempotent).
+            </summary>
+        </member>
+        <member name="T:SonoBooking.Api.Services.BusinessNotification.InMemoryUserPresenceTracker">
+            <summary>
+            In-memory presence tracker keyed by user id with per-user connection counts.
             </summary>
         </member>
     </members>
