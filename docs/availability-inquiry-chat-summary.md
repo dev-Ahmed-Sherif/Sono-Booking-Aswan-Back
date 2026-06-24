@@ -1,7 +1,10 @@
 # Availability Inquiry — Chat Session Summary
 
 Summary of the availability search investigation and fixes from the June 2026 session.  
-For the full backend pipeline, see [availability-filter-flow.md](./availability-filter-flow.md).
+**Related docs:**
+
+- [availability-filter-flow.md](./availability-filter-flow.md) — backend pipeline detail
+- [available-unit-search-flow.md](./available-unit-search-flow.md) — full stack UI → API → UI flow
 
 ---
 

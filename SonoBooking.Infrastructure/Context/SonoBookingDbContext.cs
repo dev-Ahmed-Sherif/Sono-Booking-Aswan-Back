@@ -138,8 +138,6 @@ public partial class SonoBookingDbContext(
 
             entity.HasIndex(e => e.Status, "IDX_Apartments_Status");
 
-            entity.HasIndex(e => new { e.ApartmentNumber, e.BuildingNumber, e.Street, e.CityId }, "UX_Apartment_Number_Location").IsUnique();
-
             entity.Property(e => e.AllocationType)
                 .IsRequired()
                 .HasConversion<string>()

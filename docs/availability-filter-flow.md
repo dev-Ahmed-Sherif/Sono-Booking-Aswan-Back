@@ -156,6 +156,8 @@ flowchart TD
 5. **No allocation-type header** — `AllocationType` is not sent from the frontend; flexible rules are derived from the apartment record in the database.
 6. **Extensions** — blocking end uses reservation checkout, `Extensions` table, and extension requests (`PreviousRequestId`). See [availability-inquiry-chat-summary.md](./availability-inquiry-chat-summary.md).
 
+**See also:** [available-unit-search-flow.md](./available-unit-search-flow.md) — end-to-end search from UI through API and back.
+
 ---
 
 ## Frontend follow-up (after API)
