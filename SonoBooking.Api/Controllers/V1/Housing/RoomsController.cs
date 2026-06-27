@@ -45,6 +45,7 @@ namespace SonoBooking.Api.Controllers.V1.Housing
             [FromHeader(Name = "StartDate")] string startDate = null,
             [FromHeader(Name = "Nights")] int? nights = null,
             [FromHeader(Name = "Gender")] string gender = null,
+            [FromHeader(Name = "Hierarchy")] string hierarchy = null,
             CancellationToken cancellationToken = default)
         {
             var isAnonymous = !(User?.Identity?.IsAuthenticated ?? false);
@@ -52,11 +53,15 @@ namespace SonoBooking.Api.Controllers.V1.Housing
             var isAvailableRequested =
                 string.Equals(requestedStatus, "متاح", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(requestedStatus, "Available", StringComparison.OrdinalIgnoreCase);
+            var isHierarchyCatalog =
+                string.Equals(hierarchy, "true", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(hierarchy, "1", StringComparison.OrdinalIgnoreCase);
 
             if (isAnonymous && !isAvailableRequested)
                 return Unauthorized();
 
-            var hasInquiryStart = AvailabilityInquiryFilter.TryParseInquiryStart(startDate, out _);
+            var hasInquiryStart = AvailabilityInquiryFilter.TryParseInquiryStart(startDate, out _)
+                || isHierarchyCatalog;
             Expression<Func<Room, bool>> predicate;
 
             predicate = isAnonymous || isAvailableRequested
@@ -68,7 +73,8 @@ namespace SonoBooking.Api.Controllers.V1.Housing
             if (res?.Data is IEnumerable<RoomDto> rooms)
             {
                 var filtered = rooms;
-                if (AvailabilityInquiryFilter.TryParseInquiryStart(startDate, out var inquiryStart))
+                if (!isHierarchyCatalog
+                    && AvailabilityInquiryFilter.TryParseInquiryStart(startDate, out var inquiryStart))
                 {
                     filtered = await AvailabilityInquiryFilter.FilterRoomsAsync(
                         filtered,
@@ -78,7 +84,8 @@ namespace SonoBooking.Api.Controllers.V1.Housing
                         cancellationToken);
                 }
 
-                if (AvailabilityInquiryFilter.TryParseGenders(gender, out var genders))
+                if (!isHierarchyCatalog
+                    && AvailabilityInquiryFilter.TryParseGenders(gender, out var genders))
                 {
                     filtered = await AvailabilityInquiryFilter.FilterRoomsByGenderAsync(
                         filtered,

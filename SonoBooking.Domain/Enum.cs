@@ -30,9 +30,9 @@ namespace SonoBooking.Domain
 
     public enum Gender
     {
-        [Values("Male", "ذكر", "Male")]
+        [Values("Male", "رجال", "Male")]
         Male = 1,
-        [Values("Female", "أنثى", "Female")]
+        [Values("Female", "سيدات", "Female")]
         Female = 2,
         //[Values("Both", "الكل", "Both")]
         //Both

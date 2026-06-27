@@ -27,6 +27,22 @@ public interface IUnitOccupancyService
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Apartment ids with at least one child room or bed blocked for the inquiry window.
+    /// </summary>
+    Task<HashSet<string>> GetApartmentIdsWithBlockedChildrenAsync(
+        DateOnly inquiryStart,
+        int nights,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Room ids with at least one child bed blocked for the inquiry window.
+    /// </summary>
+    Task<HashSet<string>> GetRoomIdsWithBlockedBedsAsync(
+        DateOnly inquiryStart,
+        int nights,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// For flexible apartments, returns extra allowed genders based on child-unit state/occupancy.
     /// </summary>
     Task<IReadOnlyDictionary<string, IReadOnlySet<Gender>>> GetFlexibleApartmentAllowedGendersAsync(

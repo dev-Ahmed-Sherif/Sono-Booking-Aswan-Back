@@ -97,13 +97,23 @@ public static class AvailabilityInquiryFilter
         CancellationToken cancellationToken)
     {
         var index = await occupancyService.BuildBlockingEndIndexAsync(inquiryStart, cancellationToken);
+        var nightsValue = nights ?? 0;
+        var roomsWithBlockedBeds = await occupancyService.GetRoomIdsWithBlockedBedsAsync(
+            inquiryStart,
+            nightsValue,
+            cancellationToken);
+
         return items.Where(room =>
         {
+            if (!string.IsNullOrWhiteSpace(room.Id) &&
+                roomsWithBlockedBeds.Contains(room.Id.Trim()))
+                return false;
+
             var blockingEnd = index.GetRoomBlockingEnd(room.Id, room.ApartmentId);
             var nextApprovedStart = index.GetRoomNextApprovedStart(room.Id, room.ApartmentId);
             return occupancyService.IsUnitFreeForInquiryWindow(
                 inquiryStart,
-                nights ?? 0,
+                nightsValue,
                 blockingEnd,
                 nextApprovedStart);
         });
@@ -123,6 +133,11 @@ public static class AvailabilityInquiryFilter
                 inquiryStart,
                 nightsValue,
                 cancellationToken);
+        var apartmentsWithBlockedChildren =
+            await occupancyService.GetApartmentIdsWithBlockedChildrenAsync(
+                inquiryStart,
+                nightsValue,
+                cancellationToken);
 
         return items.Where(apartment =>
         {
@@ -133,6 +148,10 @@ public static class AvailabilityInquiryFilter
                     nightsValue,
                     blockingEnd,
                     nextApprovedStart))
+                return false;
+
+            if (!string.IsNullOrWhiteSpace(apartment.Id) &&
+                apartmentsWithBlockedChildren.Contains(apartment.Id.Trim()))
                 return false;
 
             // Whole-apartment bookings use apartment-level index entries.

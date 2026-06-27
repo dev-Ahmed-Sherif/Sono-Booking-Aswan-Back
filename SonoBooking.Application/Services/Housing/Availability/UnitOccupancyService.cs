@@ -227,6 +227,77 @@ public class UnitOccupancyService(SonoBookingDbContext dbContext) : IUnitOccupan
         return availableApartmentIds;
     }
 
+    public async Task<HashSet<string>> GetApartmentIdsWithBlockedChildrenAsync(
+        DateOnly inquiryStart,
+        int nights,
+        CancellationToken cancellationToken = default)
+    {
+        var index = await BuildBlockingEndIndexAsync(inquiryStart, cancellationToken);
+        var roomApartmentById = await GetRoomApartmentIdsAsync(cancellationToken);
+        var blockedApartmentIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        var rooms = await dbContext.Rooms
+            .AsNoTracking()
+            .Where(r => !r.IsDeleted)
+            .Select(r => new { r.Id, r.ApartmentId })
+            .ToListAsync(cancellationToken);
+
+        foreach (var room in rooms)
+        {
+            if (string.IsNullOrWhiteSpace(room.ApartmentId)) continue;
+            var blockingEnd = index.GetRoomBlockingEnd(room.Id, room.ApartmentId);
+            var nextApprovedStart = index.GetRoomNextApprovedStart(room.Id, room.ApartmentId);
+            if (!IsUnitFreeForInquiryWindow(inquiryStart, nights, blockingEnd, nextApprovedStart))
+                blockedApartmentIds.Add(room.ApartmentId.Trim());
+        }
+
+        var beds = await dbContext.Beds
+            .AsNoTracking()
+            .Where(b => !b.IsDeleted)
+            .Select(b => new { b.Id, b.RoomId })
+            .ToListAsync(cancellationToken);
+
+        foreach (var bed in beds)
+        {
+            if (string.IsNullOrWhiteSpace(bed.RoomId)) continue;
+            if (!roomApartmentById.TryGetValue(bed.RoomId.Trim(), out var apartmentId)) continue;
+            var blockingEnd = index.GetBedBlockingEnd(bed.Id, bed.RoomId, apartmentId);
+            var nextApprovedStart = index.GetBedNextApprovedStart(bed.Id, bed.RoomId, apartmentId);
+            if (!IsUnitFreeForInquiryWindow(inquiryStart, nights, blockingEnd, nextApprovedStart))
+                blockedApartmentIds.Add(apartmentId.Trim());
+        }
+
+        return blockedApartmentIds;
+    }
+
+    public async Task<HashSet<string>> GetRoomIdsWithBlockedBedsAsync(
+        DateOnly inquiryStart,
+        int nights,
+        CancellationToken cancellationToken = default)
+    {
+        var index = await BuildBlockingEndIndexAsync(inquiryStart, cancellationToken);
+        var roomApartmentById = await GetRoomApartmentIdsAsync(cancellationToken);
+        var blockedRoomIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        var beds = await dbContext.Beds
+            .AsNoTracking()
+            .Where(b => !b.IsDeleted)
+            .Select(b => new { b.Id, b.RoomId })
+            .ToListAsync(cancellationToken);
+
+        foreach (var bed in beds)
+        {
+            if (string.IsNullOrWhiteSpace(bed.RoomId)) continue;
+            if (!roomApartmentById.TryGetValue(bed.RoomId.Trim(), out var apartmentId)) continue;
+            var blockingEnd = index.GetBedBlockingEnd(bed.Id, bed.RoomId, apartmentId);
+            var nextApprovedStart = index.GetBedNextApprovedStart(bed.Id, bed.RoomId, apartmentId);
+            if (!IsUnitFreeForInquiryWindow(inquiryStart, nights, blockingEnd, nextApprovedStart))
+                blockedRoomIds.Add(bed.RoomId.Trim());
+        }
+
+        return blockedRoomIds;
+    }
+
     public async Task<IReadOnlyDictionary<string, IReadOnlySet<Gender>>> GetFlexibleApartmentAllowedGendersAsync(
         IEnumerable<string> apartmentIds,
         DateOnly inquiryStart,
