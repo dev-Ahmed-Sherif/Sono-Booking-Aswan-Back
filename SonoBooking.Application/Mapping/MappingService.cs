@@ -11,6 +11,9 @@ namespace SonoBooking.Application.Mapping
             MapApartmentType();
             MapCity();
             MapEmployee();
+            MapEmployeeOrg();
+            MapEmployeeJob();
+            MapUser();
             MapExtension();
             MapGovernorate();
             MapRelationship();

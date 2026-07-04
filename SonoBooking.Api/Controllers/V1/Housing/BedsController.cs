@@ -74,11 +74,13 @@ namespace SonoBooking.Api.Controllers.V1.Housing
             {
                 var filtered = beds;
                 if (!isHierarchyCatalog
+                    && AvailabilityInquiryFilter.TryParseInquiryStartInstant(startDate, out var inquiryInstant)
                     && AvailabilityInquiryFilter.TryParseInquiryStart(startDate, out var inquiryStart))
                 {
                     filtered = await AvailabilityInquiryFilter.FilterBedsAsync(
                         filtered,
                         unitOccupancyService,
+                        inquiryInstant,
                         inquiryStart,
                         nights,
                         cancellationToken);

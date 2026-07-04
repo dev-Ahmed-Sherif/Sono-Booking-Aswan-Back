@@ -92,6 +92,16 @@ namespace SonoBooking.Application.Services.Identity.Accounts
                 ? await GetEmployeeIdByNationalIdAsync(documentNumber, cancellationToken)
                 : null;
 
+            string? leaderId = string.IsNullOrWhiteSpace(request.LeaderId) ? null : request.LeaderId.Trim();
+            if (leaderId != null)
+            {
+                bool leaderExists = await context.Leaders
+                    .AnyAsync(l => l.Id == leaderId && !l.IsDeleted && l.IsActive, cancellationToken);
+                if (!leaderExists)
+                    return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                        message: "Invalid or inactive leader.");
+            }
+
             User checkUser = await userManager.FindByEmailAsync(request.Email);
 
             if (checkUser != null)
@@ -101,6 +111,14 @@ namespace SonoBooking.Application.Services.Identity.Accounts
             if (request.DocumentImage == null)
                 return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
                     message: "Document image is required.");
+
+            if (string.IsNullOrWhiteSpace(request.JobTitle))
+                return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                    message: "المسمى الوظيفي مطلوب.");
+
+            if (string.IsNullOrWhiteSpace(request.Organization))
+                return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                    message: "الجهة مطلوبة.");
 
             string documentUpload = await _uploaderConfiguration.UploadFile(request.DocumentImage, "Attach/Users", cancellationToken);
             if (UploadResponse(documentUpload) is { } uploadErr)
@@ -118,6 +136,9 @@ namespace SonoBooking.Application.Services.Identity.Accounts
                 PhoneNumber = request.Phone,
                 DocumentImageUrl = documentUpload,
                 EmployeeId = employeeId,
+                LeaderId = leaderId,
+                JobTitle = request.JobTitle.Trim(),
+                Organization = request.Organization.Trim(),
                 CreatedBy = auditUser.Name != "" ? auditUser.Name : request.Username,
                 CreatedById = auditUser.Id != "" ? auditUser.Id : "",
                 CreatedAt = DateTime.UtcNow,
@@ -347,6 +368,33 @@ namespace SonoBooking.Application.Services.Identity.Accounts
             user.UserName = updateUser.Email;
             user.FullName = updateUser.UserName;
 
+            if (!string.IsNullOrWhiteSpace(updateUser.LeaderId))
+            {
+                string leaderId = updateUser.LeaderId.Trim();
+                bool leaderExists = await context.Leaders
+                    .AnyAsync(l => l.Id == leaderId && !l.IsDeleted && l.IsActive, cancellationToken);
+                if (!leaderExists)
+                    return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                        message: "Invalid or inactive leader.");
+
+                user.LeaderId = leaderId;
+            }
+            else
+            {
+                user.LeaderId = null;
+            }
+
+            if (string.IsNullOrWhiteSpace(updateUser.JobTitle))
+                return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                    message: "المسمى الوظيفي مطلوب.");
+
+            if (string.IsNullOrWhiteSpace(updateUser.Organization))
+                return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                    message: "الجهة مطلوبة.");
+
+            user.JobTitle = updateUser.JobTitle.Trim();
+            user.Organization = updateUser.Organization.Trim();
+
             user.ModifiedById = auditUser.Name != "" ? auditUser.Name : user.FullName;
             user.ModifiedAt = DateTime.UtcNow;
 
@@ -437,6 +485,8 @@ namespace SonoBooking.Application.Services.Identity.Accounts
                 DocumentType = user.DocumentType ?? default,
                 DocumentNumber = user.DocumentNumber,
                 DocumentImageUrl = user.DocumentImageUrl,
+                JobTitle = user.JobTitle,
+                Organization = user.Organization,
                 CreatedAt = user.CreatedAt,
                 CreatedBy = user.CreatedBy,
                 ModifiedAt = user.ModifiedAt,
@@ -445,6 +495,15 @@ namespace SonoBooking.Application.Services.Identity.Accounts
 
             userDto.RoleId = roleManager.Roles.Where(r => r.Name == userDto.Role)
                                               .Select(r => r.Id).FirstOrDefault() ?? "";
+
+            userDto.LeaderId = user.LeaderId;
+            if (!string.IsNullOrWhiteSpace(user.LeaderId))
+            {
+                userDto.LeaderName = await context.Leaders
+                    .Where(l => l.Id == user.LeaderId)
+                    .Select(l => l.FullName)
+                    .FirstOrDefaultAsync(cancellationToken);
+            }
 
             return responseResult.PostResult(result: userDto, status: HttpStatusCode.OK, exception: null,
                                              message: MessagesConstants.Success);
@@ -473,6 +532,9 @@ namespace SonoBooking.Application.Services.Identity.Accounts
                     DocumentType = u.DocumentType ?? default,
                     DocumentNumber = u.DocumentNumber,
                     DocumentImageUrl = u.DocumentImageUrl,
+                    LeaderId = u.LeaderId,
+                    JobTitle = u.JobTitle,
+                    Organization = u.Organization,
                     CreatedAt = u.CreatedAt,
                     CreatedBy = u.CreatedBy,
                     ModifiedAt = u.ModifiedAt,
@@ -651,7 +713,7 @@ namespace SonoBooking.Application.Services.Identity.Accounts
                 new Claim(ClaimTypes.Name,user.FullName),
                 new Claim(ClaimTypes.Role, role),
                 new Claim(AuthConstants.OrgId, ""),
-                new Claim(AuthConstants.FloatingUnitId, ""),
+                new Claim(AuthConstants.LeaderId, user.LeaderId ?? ""),
                 new Claim(AuthConstants.EmployeeId, user.EmployeeId ?? ""),
 
             }.Union(claimDB);

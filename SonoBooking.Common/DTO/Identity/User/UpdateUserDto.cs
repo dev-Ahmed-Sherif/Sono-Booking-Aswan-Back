@@ -23,6 +23,15 @@ namespace SonoBooking.Common.DTO.Identity.User
         
         public Guid RoleId { get; set; }
 
+        [MaxLength(50)]
+        public string LeaderId { get; set; }
+
+        [Required, MaxLength(280)]
+        public required string JobTitle { get; set; }
+
+        [Required, MaxLength(280)]
+        public required string Organization { get; set; }
+
         /// <summary>Optional identity document image; when set, replaces the stored document file (same flow as MaintenanceService upload).</summary>
         public IFormFile DocumentImage { get; set; }
         

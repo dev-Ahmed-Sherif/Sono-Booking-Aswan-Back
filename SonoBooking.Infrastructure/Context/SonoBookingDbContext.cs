@@ -25,6 +25,10 @@ public partial class SonoBookingDbContext(
 
     public virtual DbSet<Employee> Employees { get; set; }
 
+    public virtual DbSet<EmployeeOrg> EmployeeOrgs { get; set; }
+
+    public virtual DbSet<EmployeeJob> EmployeeJobs { get; set; }
+
     public virtual DbSet<Extension> Extensions { get; set; }
 
     public virtual DbSet<Leader> Leaders { get; set; }
@@ -69,6 +73,12 @@ public partial class SonoBookingDbContext(
             .HasOne(u => u.Employee)
             .WithMany()
             .HasForeignKey(u => u.EmployeeId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<User>()
+            .HasOne(u => u.Leader)
+            .WithMany()
+            .HasForeignKey(u => u.LeaderId)
             .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<RefreshToken>()
@@ -352,12 +362,67 @@ public partial class SonoBookingDbContext(
             entity.Property(e => e.Id)
                 .IsRequired()
                 .HasMaxLength(50);
+            entity.Property(e => e.Name)
+                .IsRequired()
+                .HasMaxLength(280);
             entity.Property(e => e.NationalId)
                 .IsRequired()
                 .HasMaxLength(20);
+            entity.Property(e => e.EmployeeOrgId)
+                .HasMaxLength(50);
+            entity.Property(e => e.EmployeeJobId)
+                .HasMaxLength(50);
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+
+            entity.HasOne(d => d.EmployeeOrg).WithMany()
+                .HasForeignKey(d => d.EmployeeOrgId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Employees_EmployeeOrg");
+
+            entity.HasOne(d => d.EmployeeJob).WithMany()
+                .HasForeignKey(d => d.EmployeeJobId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("FK_Employees_EmployeeJob");
+        });
+
+        modelBuilder.Entity<EmployeeOrg>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_EmployeeOrgs");
+
+            entity.ToTable("EmployeeOrgs");
+
+            entity.Property(e => e.Id)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.Property(e => e.NameAr)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            entity.Property(e => e.NameEn)
+                .HasMaxLength(200)
+                .IsRequired();
+        });
+
+        modelBuilder.Entity<EmployeeJob>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_EmployeeJobs");
+
+            entity.ToTable("EmployeeJobs");
+
+            entity.Property(e => e.Id)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.Property(e => e.NameAr)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            entity.Property(e => e.NameEn)
+                .HasMaxLength(200)
+                .IsRequired();
         });
 
         modelBuilder.Entity<Leader>(entity =>
@@ -380,6 +445,8 @@ public partial class SonoBookingDbContext(
             entity.Property(e => e.Position)
                 .IsRequired()
                 .HasMaxLength(150);
+            entity.Property(e => e.FileContent)
+                .HasColumnType("varbinary(max)");
         });
 
         modelBuilder.Entity<Payment>(entity =>
@@ -523,6 +590,18 @@ public partial class SonoBookingDbContext(
                 .HasForeignKey(d => d.PreviousRequestId)
                 .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_Requests_PreviousRequest");
+
+            entity.Property(e => e.RequestToId)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(e => e.Percentage)
+                .HasColumnType("real");
+
+            entity.HasOne(d => d.RequestTo).WithMany(p => p.Requests)
+                .HasForeignKey(d => d.RequestToId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_Requests_Leaders_RequestToId");
         });
 
         modelBuilder.Entity<RequestParticipant>(entity =>

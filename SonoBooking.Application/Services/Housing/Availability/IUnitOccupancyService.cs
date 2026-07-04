@@ -51,16 +51,17 @@ public interface IUnitOccupancyService
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Unit is bookable when inquiry start is strictly after the latest blocking end.
+    /// Unit is bookable when inquiry start is strictly after the latest blocking end instant.
     /// </summary>
-    bool IsUnitFreeOnInquiryStart(DateOnly inquiryStart, DateOnly? blockingEnd);
+    bool IsUnitFreeOnInquiryStart(DateTime inquiryStart, DateTime? blockingEnd);
 
     /// <summary>
     /// Inquiry end date (`inquiryStart + nights`) must be strictly before the next approved request start.
     /// </summary>
     bool IsUnitFreeForInquiryWindow(
-        DateOnly inquiryStart,
+        DateTime inquiryStartInstant,
+        DateOnly inquiryStartDate,
         int nights,
-        DateOnly? blockingEnd,
+        DateTime? blockingEnd,
         DateOnly? nextApprovedStart);
 }

@@ -22,6 +22,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Drawing.Text;
+using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Text;
@@ -43,6 +47,7 @@ namespace SonoBooking.Application.Services.Housing.Requests
                 include: src => src
                     .Include(r => r.RequestType)
                     .Include(r => r.User)
+                    .Include(r => r.RequestTo)
                     .Include(r => r.RequestAttaches).ThenInclude(a => a.Attachment),
                 disableTracking: true,
                 cancellationToken: cancellationToken);
@@ -73,6 +78,7 @@ namespace SonoBooking.Application.Services.Housing.Requests
             CancellationToken cancellationToken = default)
         {
             string userId = GetUserIdFromHeader();
+            string leaderScopeId = GetLeaderScopeId();
 
             IEnumerable<Request> query;
             if (!string.IsNullOrWhiteSpace(userId))
@@ -80,7 +86,15 @@ namespace SonoBooking.Application.Services.Housing.Requests
                 string trimmedUserId = userId.Trim();
                 query = await UnitOfWork.Repository.FindAsync(
                     x => x.UserId == trimmedUserId,
-                    include: src => src.Include(r => r.RequestType),
+                    include: src => src.Include(r => r.RequestType).Include(r => r.RequestTo),
+                    disableTracking: disableTracking,
+                    cancellationToken: cancellationToken);
+            }
+            else if (!string.IsNullOrWhiteSpace(leaderScopeId))
+            {
+                query = await UnitOfWork.Repository.FindAsync(
+                    x => x.RequestToId == leaderScopeId,
+                    include: src => src.Include(r => r.RequestType).Include(r => r.RequestTo),
                     disableTracking: disableTracking,
                     cancellationToken: cancellationToken);
             }
@@ -88,14 +102,14 @@ namespace SonoBooking.Application.Services.Housing.Requests
             {
                 query = await UnitOfWork.Repository.FindAsync(
                     predicate,
-                    include: src => src.Include(r => r.RequestType),
+                    include: src => src.Include(r => r.RequestType).Include(r => r.RequestTo),
                     disableTracking: disableTracking,
                     cancellationToken: cancellationToken);
             }
             else
             {
                 query = await UnitOfWork.Repository.GetAllAsync(
-                    include: src => src.Include(r => r.RequestType),
+                    include: src => src.Include(r => r.RequestType).Include(r => r.RequestTo),
                     disableTracking: disableTracking,
                     cancellationToken: cancellationToken);
             }
@@ -115,12 +129,15 @@ namespace SonoBooking.Application.Services.Housing.Requests
             int limit = filter.PageSize;
             int offset = (pageNumber - 1) * limit;
             RequestFilter requestFilter = filter?.Filter ?? new RequestFilter();
+            string leaderScopeId = GetLeaderScopeId();
 
             (int Count, IEnumerable<Request> Result) = await UnitOfWork.Repository.FindPagedAsync(
-                predicate: x => x.IsDeleted == requestFilter.IsDeleted,
+                predicate: x => x.IsDeleted == requestFilter.IsDeleted
+                    && (string.IsNullOrWhiteSpace(leaderScopeId) || x.RequestToId == leaderScopeId),
                 pageNumber: offset,
                 pageSize: limit,
                 filter.OrderByValue,
+                include: src => src.Include(r => r.RequestType).Include(r => r.RequestTo),
                 cancellationToken: cancellationToken);
 
             IEnumerable<RequestDto> data = Mapper.Map<IEnumerable<Request>, IEnumerable<RequestDto>>(Result ?? []);
@@ -166,6 +183,30 @@ namespace SonoBooking.Application.Services.Housing.Requests
                 message: HttpStatusCode.OK.ToString());
         }
 
+        public async Task<IFinalResult> GetRequestDetailsReportAsync(FilterRequestReportDto filter, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(filter.RequestId))
+            {
+                return ResponseResult.PostResult(
+                    result: null,
+                    status: HttpStatusCode.BadRequest,
+                    exception: null,
+                    message: "RequestId is required for RequestDetailsReport.");
+            }
+
+            (RequestDetailsReportDto details, List<RequestDetailsCompanionReportDto> companions) =
+                await BuildRequestDetailsReportDataAsync(filter.RequestId.Trim(), cancellationToken);
+
+            return ResponseResult.PostResult(
+                new
+                {
+                    Details = details,
+                    Companions = companions
+                },
+                status: HttpStatusCode.OK,
+                message: HttpStatusCode.OK.ToString());
+        }
+
         public async Task<byte[]> GenerateReportAsync(FilterRequestReportDto filter, CancellationToken cancellationToken = default)
         {
             // get report file
@@ -202,6 +243,21 @@ namespace SonoBooking.Application.Services.Housing.Requests
                     Value = BuildRequestReportChartData(reportData[0])
                 });
             }
+            else if (filter.ReportName == "RequestDetailsReport")
+            {
+                if (string.IsNullOrWhiteSpace(filter.RequestId))
+                    throw new InvalidOperationException("RequestId is required for RequestDetailsReport.");
+
+                (RequestDetailsReportDto details, List<RequestDetailsCompanionReportDto> companions) =
+                    await BuildRequestDetailsReportDataAsync(filter.RequestId.Trim(), cancellationToken);
+
+                details.User = _user.Name;
+
+                report.DataSources.Add(new ReportDataSource() { Name = "RequestDetails", Value = new[] { details } });
+                report.DataSources.Add(new ReportDataSource() { Name = "RequestDetailsCompanion", Value = companions });
+
+                request = ResponseResult.PostResult(details, HttpStatusCode.OK, null, HttpStatusCode.OK.ToString());
+            }
 
             if (request == null || request.Data == null)
             {
@@ -228,9 +284,9 @@ namespace SonoBooking.Application.Services.Housing.Requests
         {
             try
             {
-                //IFinalResult validation = ValidateRequestDto(model);
-                //if (validation != null)
-                //    return validation;
+                IFinalResult? leaderValidation = await ValidateRequestToLeaderAsync(model.RequestToId, cancellationToken);
+                if (leaderValidation != null)
+                    return leaderValidation;
 
                 Request entity = Mapper.Map<Request>(model);
                 entity.RequestNumber = await GenerateRequestNumberAsync(cancellationToken);
@@ -269,9 +325,9 @@ namespace SonoBooking.Application.Services.Housing.Requests
         {
             try
             {
-                //IFinalResult validation = ValidateRequestDto(model);
-                //if (validation != null)
-                //    return validation;
+                IFinalResult? leaderValidation = await ValidateRequestToLeaderAsync(model.RequestToId, cancellationToken);
+                if (leaderValidation != null)
+                    return leaderValidation;
 
                 Request entityToUpdate = await UnitOfWork.Repository.FirstOrDefaultAsync(
                     x => x.Id.Equals(model.Id),
@@ -392,6 +448,13 @@ namespace SonoBooking.Application.Services.Housing.Requests
                         autoRejectedRequests = await RejectConflictingFixedRequestsAsync(approvedRequest, cancellationToken);
                 }
 
+                if (isNewlyApproved && entity.RequestCatagory == RequestCatagory.Extension)
+                {
+                    await SyncRootReservationCheckoutOnExtensionApprovalAsync(
+                        entity,
+                        cancellationToken);
+                }
+
                 int affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
 
                 if (affectedRows < 0)
@@ -483,6 +546,220 @@ namespace SonoBooking.Application.Services.Housing.Requests
             }
         }
 
+        private async Task<(RequestDetailsReportDto Details, List<RequestDetailsCompanionReportDto> Companions)> BuildRequestDetailsReportDataAsync(
+            string requestId,
+            CancellationToken cancellationToken)
+        {
+            Request entity = await UnitOfWork.Repository.FirstOrDefaultAsync(
+                x => x.Id.Equals(requestId),
+                include: src => src
+                    .Include(r => r.User)
+                    .Include(r => r.RequestTo)
+                    .Include(r => r.RequestType)
+                    .Include(r => r.RequestAttaches).ThenInclude(a => a.Attachment)
+                    .Include(r => r.RequestUnits).ThenInclude(u => u.Apartment).ThenInclude(a => a.Governorate)
+                    .Include(r => r.RequestUnits).ThenInclude(u => u.Room).ThenInclude(room => room.Apartment).ThenInclude(a => a.Governorate)
+                    .Include(r => r.RequestUnits).ThenInclude(u => u.Bed).ThenInclude(b => b.Room).ThenInclude(room => room.Apartment).ThenInclude(a => a.Governorate)
+                    .Include(r => r.RequestParticipants).ThenInclude(p => p.Companion).ThenInclude(c => c.Relationship),
+                disableTracking: true,
+                cancellationToken: cancellationToken);
+
+            if (entity == null)
+                throw new InvalidOperationException("Request not found.");
+
+            return (MapRequestDetailsReport(entity), MapRequestDetailsCompanions(entity));
+        }
+
+        private static RequestDetailsReportDto MapRequestDetailsReport(Request entity)
+        {
+            DateTime requestDate = entity.RequestDate;
+            int nights = entity.EndDate.DayNumber - entity.StartDate.DayNumber;
+            if (nights <= 0)
+                nights = 1;
+
+            string typeCode = ResolveRequestTypeCode(entity);
+            string unitGovernorate = entity.RequestUnits?
+                .Where(u => !u.IsDeleted)
+                .Select(ResolveRequestUnitGovernorateName)
+                .FirstOrDefault(name => !string.IsNullOrWhiteSpace(name))
+                ?? "أسوان";
+
+            IEnumerable<RequestUnit> activeUnits = entity.RequestUnits?.Where(u => !u.IsDeleted) ?? [];
+            int apartments = activeUnits.Count(u => !string.IsNullOrWhiteSpace(u.ApartmentId));
+            int rooms = activeUnits.Count(u => !string.IsNullOrWhiteSpace(u.RoomId));
+            int beds = activeUnits.Count(u => !string.IsNullOrWhiteSpace(u.BedId));
+
+            bool isWorkMission = typeCode.Equals("mission", StringComparison.OrdinalIgnoreCase);
+            bool isApproved = entity.Status == Status.Approved;
+            bool isRejected = entity.Status == Status.Rejected;
+            string statusUpdatedAt = (isApproved || isRejected) ? entity.ModifiedAt.ToString("yyyy/MM/dd") : string.Empty;
+            byte[]? leaderSignature = entity.RequestTo?.FileContent is { Length: > 0 } content ? content : null;
+            bool showLeaderSignature = (isApproved || isRejected) && leaderSignature != null;
+
+            return new RequestDetailsReportDto
+            {
+                RequestDate = requestDate.ToString("dd/MM/yyyy"),
+                RequestDateDay = requestDate.Day.ToString("00"),
+                RequestDateMonth = requestDate.Month.ToString("00"),
+                RequestDateYear = requestDate.Year.ToString(),
+                LeaderFullName = entity.RequestTo?.FullName ?? string.Empty,
+                LeaderPosition = entity.RequestTo?.Position ?? "محافظ أسوان",
+                ApplicantName = entity.User?.FullName ?? string.Empty,
+                NationalId = entity.User?.DocumentNumber ?? string.Empty,
+                JobTitle = entity.User?.JobTitle ?? string.Empty,
+                Employer = entity.User?.Organization ?? string.Empty,
+                UnitGovernorate = unitGovernorate,
+                DestinationGovernorate = unitGovernorate,
+                StartDate = entity.StartDate.ToString("dd/MM/yyyy"),
+                EndDate = entity.EndDate.ToString("dd/MM/yyyy"),
+                Nights = nights.ToString(),
+                Apartments = apartments.ToString(),
+                Rooms = rooms.ToString(),
+                Beds = beds.ToString(),
+                IsWorkMission = PurposeCheckboxMark(isWorkMission),
+                IsMedical = PurposeCheckboxMark(typeCode.Equals("medical", StringComparison.OrdinalIgnoreCase)),
+                IsSpecial = PurposeCheckboxMark(typeCode.Equals("personal", StringComparison.OrdinalIgnoreCase)),
+                Phone = entity.User?.PhoneNumber ?? string.Empty,
+                Attachments = BuildRequestDetailsAttachments(isWorkMission),
+                RejectionReason = isRejected
+                    ? (string.IsNullOrWhiteSpace(entity.RejectionReason) ? "لم يتم تحديد سبب" : entity.RejectionReason.Trim())
+                    : string.Empty,
+                ShowApprovedStamp = PurposeCheckboxMark(isApproved),
+                ShowRejectedStamp = PurposeCheckboxMark(isRejected),
+                StatusUpdatedAt = statusUpdatedAt,
+                StatusUpdatedAtImage = GenerateRotatedStatusDateImage(statusUpdatedAt, isRejected),
+                LeaderSignatureImage = leaderSignature,
+                LeaderSignatureMimeType = leaderSignature == null ? string.Empty : ResolveImageMimeType(leaderSignature),
+                ShowLeaderSignature = PurposeCheckboxMark(showLeaderSignature)
+            };
+        }
+
+        private static string ResolveImageMimeType(byte[] content)
+        {
+            if (content.Length >= 2 && content[0] == 0xFF && content[1] == 0xD8)
+                return "image/jpeg";
+
+            return "image/png";
+        }
+
+        private static byte[]? GenerateRotatedStatusDateImage(string dateText, bool isRejected)
+        {
+            if (string.IsNullOrWhiteSpace(dateText))
+                return null;
+
+            const float stampRotationDegrees = -22f;
+            int imageWidth = isRejected ? 368 : 351;
+            int imageHeight = isRejected ? 346 : 325;
+            float anchorX = isRejected ? 208f : 183f;
+            float anchorY = isRejected ? 170f : 167f;
+
+            using Bitmap bitmap = new(imageWidth, imageHeight, PixelFormat.Format32bppArgb);
+            using Graphics graphics = Graphics.FromImage(bitmap);
+            graphics.Clear(Color.Transparent);
+            graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            graphics.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+
+            using Font font = new("Arial", 22f, FontStyle.Bold, GraphicsUnit.Point);
+            using Brush brush = new SolidBrush(Color.FromArgb(0x2E, 0x75, 0xB6));
+            using StringFormat format = new(StringFormatFlags.NoClip)
+            {
+                Alignment = StringAlignment.Center,
+                LineAlignment = StringAlignment.Center
+            };
+
+            graphics.TranslateTransform(anchorX, anchorY);
+            graphics.RotateTransform(stampRotationDegrees);
+            graphics.DrawString(dateText, font, brush, 0f, 0f, format);
+
+            using MemoryStream memoryStream = new();
+            bitmap.Save(memoryStream, ImageFormat.Png);
+            return memoryStream.ToArray();
+        }
+
+        private static List<RequestDetailsCompanionReportDto> MapRequestDetailsCompanions(Request entity)
+        {
+            List<RequestDetailsCompanionReportDto> companions = [];
+            int rowNumber = 1;
+            DateOnly referenceDate = entity.StartDate;
+
+            foreach (RequestParticipant participant in entity.RequestParticipants.Where(p => !p.IsDeleted))
+            {
+                Companion? companion = participant.Companion;
+                if (companion == null)
+                    continue;
+
+                int age = referenceDate.Year - companion.BirthDate.Year;
+                if (companion.BirthDate > referenceDate.AddYears(-age))
+                    age--;
+
+                companions.Add(new RequestDetailsCompanionReportDto
+                {
+                    RowNumber = rowNumber.ToString(),
+                    Name = companion.FullName,
+                    Relationship = companion.Relationship?.NameAr ?? string.Empty,
+                    Age = age.ToString()
+                });
+                rowNumber++;
+            }
+
+            if (companions.Count > 2)
+                companions = companions.Take(2).ToList();
+
+            return companions;
+        }
+
+        private static string? ResolveRequestUnitGovernorateName(RequestUnit unit)
+        {
+            string? fromApartment = unit.Apartment?.Governorate?.NameAr;
+            if (!string.IsNullOrWhiteSpace(fromApartment))
+                return fromApartment.Trim();
+
+            string? fromRoom = unit.Room?.Apartment?.Governorate?.NameAr;
+            if (!string.IsNullOrWhiteSpace(fromRoom))
+                return fromRoom.Trim();
+
+            string? fromBed = unit.Bed?.Room?.Apartment?.Governorate?.NameAr;
+            if (!string.IsNullOrWhiteSpace(fromBed))
+                return fromBed.Trim();
+
+            return null;
+        }
+
+        private static string ResolveRequestTypeCode(Request entity)
+        {
+            string? code = entity.RequestType?.Code?.Trim();
+            if (!string.IsNullOrWhiteSpace(code))
+                return code;
+
+            string nameAr = entity.RequestType?.NameAr?.Trim() ?? string.Empty;
+            if (nameAr.Contains("مأمور", StringComparison.OrdinalIgnoreCase))
+                return "mission";
+            if (nameAr.Contains("طبي", StringComparison.OrdinalIgnoreCase) || nameAr.Contains("علاج", StringComparison.OrdinalIgnoreCase))
+                return "medical";
+            if (nameAr.Contains("شخص", StringComparison.OrdinalIgnoreCase) || nameAr.Contains("خاص", StringComparison.OrdinalIgnoreCase))
+                return "personal";
+
+            return string.Empty;
+        }
+
+        private static string PurposeCheckboxMark(bool selected) => selected ? "1" : string.Empty;
+
+        private static string BuildRequestDetailsAttachments(bool isWorkMission)
+        {
+            List<string> lines =
+            [
+                FormatAttachmentReportLine("صورة بطاقة الرقم القومي (سارية).")
+            ];
+
+            if (isWorkMission)
+                lines.Add(FormatAttachmentReportLine("خطاب جهة العمل في حالة القيام بمأمورية عمل."));
+
+            return string.Join("\r\n", lines);
+        }
+
+        private static string FormatAttachmentReportLine(string text) =>
+            $"\u202B• {text.Trim()}\u202C";
+
         private static List<RequestReportChartItemDto> BuildRequestReportChartData(RequestReportDto data)
         {
             int total = data.TotalRequestCount;
@@ -563,6 +840,11 @@ namespace SonoBooking.Application.Services.Housing.Requests
         private string GetUserIdFromHeader() =>
             HttpContextAccessor?.HttpContext?.Request.Headers["UserId"].FirstOrDefault()?.Trim();
 
+        private string GetLeaderScopeId() =>
+            IsSuperAdmin() || string.IsNullOrWhiteSpace(_user.LeaderId)
+                ? string.Empty
+                : _user.LeaderId.Trim();
+
         private IFinalResult ValidateRequestDto(AddRequestDto model)
         {
             if (model.Nights <= 0)
@@ -603,6 +885,53 @@ namespace SonoBooking.Application.Services.Housing.Requests
                 RequestUnit unit = Mapper.Map<RequestUnit>(dto);
                 unit.RequestId = requestId;
                 await UnitOfWork.GetRepository<RequestUnit>().AddAsync(unit, cancellationToken);
+            }
+        }
+
+        private async Task SyncRootReservationCheckoutOnExtensionApprovalAsync(
+            Request extensionRequest,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(extensionRequest.PreviousRequestId))
+                return;
+
+            string rootRequestId = extensionRequest.PreviousRequestId.Trim();
+            HashSet<string> visited = new(StringComparer.OrdinalIgnoreCase);
+            while (true)
+            {
+                if (!visited.Add(rootRequestId))
+                    break;
+
+                Request? chain = await UnitOfWork.Repository.FirstOrDefaultAsync(
+                    x => x.Id == rootRequestId,
+                    disableTracking: true,
+                    cancellationToken: cancellationToken);
+                if (chain == null)
+                    return;
+
+                if (string.IsNullOrWhiteSpace(chain.PreviousRequestId))
+                    break;
+
+                rootRequestId = chain.PreviousRequestId.Trim();
+            }
+
+            Reservation? reservation = await UnitOfWork.GetRepository<Reservation>().FirstOrDefaultAsync(
+                r => !r.IsDeleted && r.RequestId == rootRequestId,
+                disableTracking: false,
+                cancellationToken: cancellationToken);
+
+            if (reservation == null)
+                return;
+
+            if (extensionRequest.EndDate > reservation.EndDate)
+                reservation.EndDate = extensionRequest.EndDate;
+
+            if (reservation.ActualCheckOutDate != null
+                && extensionRequest.EndDate >
+                    DateOnly.FromDateTime(reservation.ActualCheckOutDate.Value.Date))
+            {
+                reservation.ActualCheckOutDate =
+                    extensionRequest.EndDate.ToDateTime(new TimeOnly(12, 0, 0));
             }
         }
 
@@ -1049,6 +1378,24 @@ namespace SonoBooking.Application.Services.Housing.Requests
             public string BedId { get; } = bedId;
             public string RoomId { get; } = roomId;
             public string ApartmentId { get; } = apartmentId;
+        }
+
+        private async Task<IFinalResult?> ValidateRequestToLeaderAsync(string requestToId, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(requestToId))
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                    message: "RequestToId is required.");
+
+            Leader? leader = await UnitOfWork.GetRepository<Leader>().FirstOrDefaultAsync(
+                x => x.Id == requestToId.Trim() && !x.IsDeleted && x.IsActive,
+                disableTracking: true,
+                cancellationToken: cancellationToken);
+
+            if (leader == null)
+                return ResponseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                    message: "Invalid or inactive leader.");
+
+            return null;
         }
 
         private async Task AddRequestAttachmentsAsync(

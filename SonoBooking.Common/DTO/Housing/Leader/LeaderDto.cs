@@ -12,6 +12,8 @@ namespace SonoBooking.Common.DTO.Housing.Leader
         public string FullName { get; set; }
         public string Position { get; set; }
         public bool IsActive { get; set; }
+        public bool HasFileContent { get; set; }
+        public string FileContentBase64 { get; set; }
         public DateTime CreatedAt { get; set; }
         public string CreatedById { get; set; }
         public string CreatedBy { get; set; }

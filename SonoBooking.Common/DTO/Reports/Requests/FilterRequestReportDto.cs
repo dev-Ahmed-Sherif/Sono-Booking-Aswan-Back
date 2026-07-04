@@ -9,6 +9,7 @@ namespace SonoBooking.Common.DTO.Reports.Requests
         public required DateOnly StartDate { get; set; }
         [Required]
         public required DateOnly EndDate { get; set; }
+        public string? RequestId { get; set; }
     }
 }
 

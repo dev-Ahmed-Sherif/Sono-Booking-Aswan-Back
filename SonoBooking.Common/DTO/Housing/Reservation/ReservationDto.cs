@@ -15,6 +15,8 @@ namespace SonoBooking.Common.DTO.Housing.Reservation
         public DateTime? ActualCheckOutDate { get; set; }
         public ReservationStatus Status { get; set; }
         public decimal TotalAmount { get; set; }
+        /// <summary>Paid amount from linked <see cref="Payment"/> when present.</summary>
+        public decimal? PaymentAmount { get; set; }
         public string CancelationReason { get; set; }
         public string RequestId { get; set; }
         public string UserId { get; set; }

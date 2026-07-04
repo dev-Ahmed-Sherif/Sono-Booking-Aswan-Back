@@ -74,7 +74,7 @@ namespace SonoBooking.Application.Services.Housing.Companions
                     message: "UserId is required.");
 
             if (!string.IsNullOrWhiteSpace(ownerUserId) && predicate == null)
-                predicate = x => x.UserId == ownerUserId;
+                predicate = x => x.UserId == ownerUserId && !x.IsDeleted;
 
             return await base.GetAllAsync(disableTracking, predicate, cancellationToken);
         }
@@ -282,10 +282,19 @@ namespace SonoBooking.Application.Services.Housing.Companions
 
         private string ResolveOwnerUserIdForRead()
         {
-            //if (IsAuthenticatedUser())
-            //    return IsSuperAdmin() ? null : _user.Id;
+            string headerUserId = GetRegistrationUserIdFromHeader();
 
-            return GetRegistrationUserIdFromHeader();
+            if (IsAuthenticatedUser())
+            {
+                // Housing leader/sender: explicit request owner via UserId header.
+                if (!string.IsNullOrWhiteSpace(headerUserId))
+                    return headerUserId.Trim();
+
+                // Logged-in user loading their own companions.
+                return IsSuperAdmin() ? null : _user.Id;
+            }
+
+            return headerUserId;
         }
 
         private bool CanAccessCompanion(Companion companion, AddCompanionDto model = null)

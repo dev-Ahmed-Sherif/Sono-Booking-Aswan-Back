@@ -7,7 +7,10 @@ namespace SonoBooking.Application.Mapping
     {
         public void MapEmployee()
         {
-            CreateMap<Employee, EmployeeDto>().ReverseMap();
+            CreateMap<Employee, EmployeeDto>()
+                .ForMember(dest => dest.EmployeeOrg, cfg => cfg.MapFrom(src => src.EmployeeOrg.NameAr))
+                .ForMember(dest => dest.EmployeeJob, cfg => cfg.MapFrom(src => src.EmployeeJob.NameAr))
+                .ReverseMap();
 
             CreateMap<Employee, EditEmployeeDto>().ReverseMap();
 

@@ -2,6 +2,7 @@ using LinqKit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Reporting.NETCore;
 using SonoBooking.Application.Services.Base;
+using SonoBooking.Application.Services.Housing.Availability;
 using SonoBooking.Application.Services.Housing.Notifications;
 using SonoBooking.Common.Core;
 using SonoBooking.Common.DTO.Base;
@@ -25,7 +26,8 @@ namespace SonoBooking.Application.Services.Housing.Reservations
     public class ReservationService(
         IServiceBaseParameter<Reservation> businessBaseParameter,
         ReservationStatusEmailNotifier statusEmailNotifier,
-        HousingNotificationService housingNotificationService) : BaseService<Reservation, AddReservationDto, EditReservationDto, ReservationDto, string, string>(businessBaseParameter), IReservationService
+        HousingNotificationService housingNotificationService,
+        IUnitAvailabilityGapService unitAvailabilityGapService) : BaseService<Reservation, AddReservationDto, EditReservationDto, ReservationDto, string, string>(businessBaseParameter), IReservationService
     {
         public override async Task<IFinalResult> GetAllAsync(
             bool disableTracking = false,
@@ -40,7 +42,7 @@ namespace SonoBooking.Application.Services.Housing.Reservations
                 string trimmedUserId = userId.Trim();
                 query = await UnitOfWork.Repository.FindAsync(
                     x => x.Request.UserId == trimmedUserId,
-                    include: src => src.Include(r => r.Request),
+                    include: src => src.Include(r => r.Request).Include(r => r.Payment),
                     disableTracking: disableTracking,
                     cancellationToken: cancellationToken);
             }
@@ -48,14 +50,14 @@ namespace SonoBooking.Application.Services.Housing.Reservations
             {
                 query = await UnitOfWork.Repository.FindAsync(
                     predicate,
-                    include: src => src.Include(r => r.Request),
+                    include: src => src.Include(r => r.Request).Include(r => r.Payment),
                     disableTracking: disableTracking,
                     cancellationToken: cancellationToken);
             }
             else
             {
                 query = await UnitOfWork.Repository.GetAllAsync(
-                    include: src => src.Include(r => r.Request),
+                    include: src => src.Include(r => r.Request).Include(r => r.Payment),
                     disableTracking: disableTracking,
                     cancellationToken: cancellationToken);
             }
@@ -225,6 +227,7 @@ namespace SonoBooking.Application.Services.Housing.Reservations
                         message: MessagesConstants.NotFound);
 
                 ReservationStatus previousStatus = entityToUpdate.Status;
+                DateTime? previousActualCheckOut = entityToUpdate.ActualCheckOutDate;
                 Reservation entity = Mapper.Map(model, entityToUpdate);
 
                 entity.RequestId = entityToUpdate.RequestId;
@@ -245,6 +248,14 @@ namespace SonoBooking.Application.Services.Housing.Reservations
                 if (previousStatus != entityToUpdate.Status)
                     await statusEmailNotifier.TrySendStatusChangeEmailAsync(
                         entityToUpdate, previousStatus, cancellationToken);
+
+                if (entityToUpdate.ActualCheckOutDate != previousActualCheckOut
+                    && entityToUpdate.ActualCheckOutDate.HasValue)
+                {
+                    await unitAvailabilityGapService.OnActualCheckOutDateChangedAsync(
+                        entityToUpdate.Id,
+                        cancellationToken);
+                }
 
                 return ResponseResult.PostResult(result: true, status: HttpStatusCode.Accepted, exception: null,
                     message: MessagesConstants.UpdateSuccess);

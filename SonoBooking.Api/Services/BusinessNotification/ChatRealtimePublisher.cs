@@ -44,6 +44,16 @@ namespace SonoBooking.Api.Services.BusinessNotification
                 .SendAsync("ConversationUpdated", update, cancellationToken);
         }
 
+        public Task PublishChatUnreadCountAsync(
+            string userId,
+            int unreadCount,
+            CancellationToken cancellationToken = default)
+        {
+            return hubContext.Clients
+                .User(userId)
+                .SendAsync("ChatUnreadCountUpdated", unreadCount, cancellationToken);
+        }
+
         public Task PublishUserPresenceChangedAsync(
             string userId,
             bool isOnline,

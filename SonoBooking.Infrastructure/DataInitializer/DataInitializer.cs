@@ -2,6 +2,7 @@
 using System.IO;
 using SonoBooking.Common.Extensions;
 using SonoBooking.Domain.Entities.BusinessNotification;
+using SonoBooking.Domain.Entities.Housing;
 using SonoBooking.Domain.Entities.Lookups;
 using AllowedDayBeforeReservation = SonoBooking.Domain.Entities.Lookups.AllowedDayBeforeReservation;
 using ApartmentType = SonoBooking.Domain.Entities.Lookups.ApartmentType;
@@ -104,6 +105,17 @@ namespace SonoBooking.Infrastructure.DataInitializer
             var dataText = File.ReadAllText(path);
             var groups = Seeder<List<NotificationGroup>>.SeedIt(dataText);
             return groups ?? [];
+        }
+
+        public IEnumerable<Leader> SeedLeadersAsync()
+        {
+            var path = Path.Combine(contentRootPath, "Seed", "Leaders.json");
+            if (!File.Exists(path))
+                return [];
+
+            var dataText = File.ReadAllText(path);
+            var leaders = Seeder<List<Leader>>.SeedIt(dataText);
+            return leaders ?? [];
         }
 
         //public IEnumerable<Status> SeedStatusesAsync()

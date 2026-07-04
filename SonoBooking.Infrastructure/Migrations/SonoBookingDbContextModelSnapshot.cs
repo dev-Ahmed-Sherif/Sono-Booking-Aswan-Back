@@ -885,6 +885,9 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<byte[]>("FileContent")
+                        .HasColumnType("varbinary(max)");
+
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -1047,9 +1050,6 @@ namespace SonoBooking.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<string>("LeaderId")
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<DateTime>("ModifiedAt")
                         .HasColumnType("datetime2");
 
@@ -1062,6 +1062,9 @@ namespace SonoBooking.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<float>("Percentage")
+                        .HasColumnType("real");
 
                     b.Property<string>("PreviousRequestId")
                         .HasMaxLength(50)
@@ -1086,6 +1089,11 @@ namespace SonoBooking.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("RequestToId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("RequestTypeId")
                         .IsRequired()
@@ -1112,7 +1120,7 @@ namespace SonoBooking.Infrastructure.Migrations
 
                     b.HasIndex("ApprovedById");
 
-                    b.HasIndex("LeaderId");
+                    b.HasIndex("RequestToId");
 
                     b.HasIndex("RequestTypeId");
 
@@ -1628,6 +1636,14 @@ namespace SonoBooking.Infrastructure.Migrations
                     b.Property<bool>("IsLogedIn")
                         .HasColumnType("bit");
 
+                    b.Property<string>("JobTitle")
+                        .HasMaxLength(280)
+                        .HasColumnType("nvarchar(280)");
+
+                    b.Property<string>("LeaderId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -1655,6 +1671,10 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<string>("Organization")
+                        .HasMaxLength(280)
+                        .HasColumnType("nvarchar(280)");
+
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
@@ -1677,6 +1697,8 @@ namespace SonoBooking.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("EmployeeId");
+
+                    b.HasIndex("LeaderId");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -1924,6 +1946,14 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("EmployeeJobId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("EmployeeOrgId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("IpAddress")
                         .HasMaxLength(28)
                         .HasColumnType("nvarchar(28)");
@@ -1944,6 +1974,11 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(280)
+                        .HasColumnType("nvarchar(280)");
+
                     b.Property<string>("NationalId")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -1952,10 +1987,134 @@ namespace SonoBooking.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("PK_Employees");
 
+                    b.HasIndex("EmployeeJobId");
+
+                    b.HasIndex("EmployeeOrgId");
+
                     b.HasIndex(new[] { "NationalId" }, "UX_Employees_NationalId")
                         .IsUnique();
 
                     b.ToTable("Employees", (string)null);
+                });
+
+            modelBuilder.Entity("SonoBooking.Domain.Entities.Lookups.EmployeeJob", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(35)
+                        .HasColumnType("nvarchar(35)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(70)
+                        .HasColumnType("nvarchar(70)");
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(28)
+                        .HasColumnType("nvarchar(28)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .IsRequired()
+                        .HasMaxLength(70)
+                        .HasColumnType("nvarchar(70)");
+
+                    b.Property<string>("ModifiedById")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id")
+                        .HasName("PK_EmployeeJobs");
+
+                    b.ToTable("EmployeeJobs", (string)null);
+                });
+
+            modelBuilder.Entity("SonoBooking.Domain.Entities.Lookups.EmployeeOrg", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(35)
+                        .HasColumnType("nvarchar(35)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(70)
+                        .HasColumnType("nvarchar(70)");
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(28)
+                        .HasColumnType("nvarchar(28)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .IsRequired()
+                        .HasMaxLength(70)
+                        .HasColumnType("nvarchar(70)");
+
+                    b.Property<string>("ModifiedById")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("NameAr")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("NameEn")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id")
+                        .HasName("PK_EmployeeOrgs");
+
+                    b.ToTable("EmployeeOrgs", (string)null);
                 });
 
             modelBuilder.Entity("SonoBooking.Domain.Entities.Lookups.Governorate", b =>
@@ -2531,15 +2690,18 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasForeignKey("ApprovedById")
                         .OnDelete(DeleteBehavior.NoAction);
 
-                    b.HasOne("SonoBooking.Domain.Entities.Housing.Leader", null)
-                        .WithMany("Requests")
-                        .HasForeignKey("LeaderId");
-
                     b.HasOne("SonoBooking.Domain.Entities.Housing.Request", "PreviousRequest")
                         .WithMany()
                         .HasForeignKey("PreviousRequestId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .HasConstraintName("FK_Requests_PreviousRequest");
+
+                    b.HasOne("SonoBooking.Domain.Entities.Housing.Leader", "RequestTo")
+                        .WithMany("Requests")
+                        .HasForeignKey("RequestToId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_Requests_Leaders_RequestToId");
 
                     b.HasOne("SonoBooking.Domain.Entities.Lookups.RequestType", "RequestType")
                         .WithMany()
@@ -2554,6 +2716,8 @@ namespace SonoBooking.Infrastructure.Migrations
                     b.Navigation("ApprovedBy");
 
                     b.Navigation("PreviousRequest");
+
+                    b.Navigation("RequestTo");
 
                     b.Navigation("RequestType");
 
@@ -2714,7 +2878,14 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("SonoBooking.Domain.Entities.Housing.Leader", "Leader")
+                        .WithMany()
+                        .HasForeignKey("LeaderId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Employee");
+
+                    b.Navigation("Leader");
                 });
 
             modelBuilder.Entity("SonoBooking.Domain.Entities.Lookups.City", b =>
@@ -2724,6 +2895,25 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasForeignKey("GovernorateId");
 
                     b.Navigation("Governorate");
+                });
+
+            modelBuilder.Entity("SonoBooking.Domain.Entities.Lookups.Employee", b =>
+                {
+                    b.HasOne("SonoBooking.Domain.Entities.Lookups.EmployeeJob", "EmployeeJob")
+                        .WithMany()
+                        .HasForeignKey("EmployeeJobId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("FK_Employees_EmployeeJob");
+
+                    b.HasOne("SonoBooking.Domain.Entities.Lookups.EmployeeOrg", "EmployeeOrg")
+                        .WithMany()
+                        .HasForeignKey("EmployeeOrgId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("FK_Employees_EmployeeOrg");
+
+                    b.Navigation("EmployeeJob");
+
+                    b.Navigation("EmployeeOrg");
                 });
 
             modelBuilder.Entity("SonoBooking.Domain.Entities.Lookups.Town", b =>

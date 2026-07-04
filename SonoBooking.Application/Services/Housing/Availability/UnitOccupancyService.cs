@@ -12,45 +12,31 @@ namespace SonoBooking.Application.Services.Housing.Availability;
 public class UnitOccupancyService(SonoBookingDbContext dbContext) : IUnitOccupancyService
 {
     /// <summary>
-    /// Inquiry start is 12:00:01 on the selected day; blocking ends at 12:00 on ActualCheckOutDate.
-    /// Checkout 21-06-2026 → bookable from 21-06-2026 12:00:01 (same calendar day).
+    /// Inquiry start is 12:00:01 on the selected day (or the sent time when datetime is provided).
+    /// Planned checkout: blocking ends at 12:00:00 when end date equals checkout day.
+    /// Early/late checkout: blocking ends at actual checkout + 1 hour.
     /// </summary>
-    public bool IsUnitFreeOnInquiryStart(DateOnly inquiryStart, DateOnly? blockingEnd) =>
-        !blockingEnd.HasValue ||
-        inquiryStart.ToDateTime(new TimeOnly(12, 0, 1)) >
-        blockingEnd.Value.ToDateTime(new TimeOnly(12, 0, 0));
+    public bool IsUnitFreeOnInquiryStart(DateTime inquiryStart, DateTime? blockingEnd) =>
+        AvailabilityCheckoutBlocking.IsInquiryAfterBlocking(inquiryStart, blockingEnd);
 
     public bool IsUnitFreeForInquiryWindow(
-        DateOnly inquiryStart,
+        DateTime inquiryStartInstant,
+        DateOnly inquiryStartDate,
         int nights,
-        DateOnly? blockingEnd,
+        DateTime? blockingEnd,
         DateOnly? nextApprovedStart)
     {
-        if (!IsUnitFreeOnInquiryStart(inquiryStart, blockingEnd))
-            return false;
-
-        if (!nextApprovedStart.HasValue)
-            return true;
-
-        // Enhanced rule: hide when an approved stay is still active at inquiry start (noon rule).
-        if (nextApprovedStart.Value <= inquiryStart &&
-            !IsUnitFreeOnInquiryStart(inquiryStart, blockingEnd))
+        if (!IsUnitFreeOnInquiryStart(inquiryStartInstant, blockingEnd))
             return false;
 
         if (nights <= 0)
             return true;
 
-        // Past occupancy ended before this inquiry — no overlap check needed.
-        if (blockingEnd.HasValue && blockingEnd.Value < inquiryStart)
+        if (!nextApprovedStart.HasValue)
             return true;
 
-        var inquiryEnd = inquiryStart.AddDays(nights);
-
-        // Nights overlap applies only to a future approved stay on this unit.
-        if (nextApprovedStart.Value <= inquiryStart)
-            return true;
-
-        return inquiryEnd < nextApprovedStart.Value;
+        DateOnly inquiryEnd = inquiryStartDate.AddDays(nights);
+        return inquiryEnd <= nextApprovedStart.Value;
     }
 
     public async Task<UnitBlockingEndIndex> BuildBlockingEndIndexAsync(
@@ -63,103 +49,120 @@ public class UnitOccupancyService(SonoBookingDbContext dbContext) : IUnitOccupan
             .AsNoTracking()
             .Where(r => !r.IsDeleted
                 && r.Status != ReservationStatus.Canceled
-                && r.Status != ReservationStatus.NoShow)
-            .Select(r => new { r.Id, r.RequestId, r.ActualCheckOutDate, r.EndDate })
+                && r.Status != ReservationStatus.NoShow
+                && r.ActualCheckOutDate != null)
+            .Select(r => new
+            {
+                r.RequestId,
+                r.EndDate,
+                r.ActualCheckOutDate,
+                r.Status
+            })
             .ToListAsync(cancellationToken);
 
-        var requestIdByReservationId = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        var requestEndById = new Dictionary<string, DateOnly>(StringComparer.OrdinalIgnoreCase);
+        var reservationMetaByRequestId =
+            new Dictionary<string, (DateOnly EndDate, DateTime ActualCheckOut, ReservationStatus Status)>(
+                StringComparer.OrdinalIgnoreCase);
+
+        var requestEndById = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
         foreach (var row in reservationRows)
         {
-            if (string.IsNullOrWhiteSpace(row.RequestId)) continue;
-            var endYmd = row.ActualCheckOutDate is not null
-                ? DateOnly.FromDateTime(row.ActualCheckOutDate.Value.Date)
-                : row.EndDate;
-            var key = row.RequestId.Trim();
-            MergeRequestEnd(requestEndById, key, endYmd);
-            if (!string.IsNullOrWhiteSpace(row.Id))
-                requestIdByReservationId[row.Id.Trim()] = key;
+            if (string.IsNullOrWhiteSpace(row.RequestId) || row.ActualCheckOutDate is null) continue;
+            reservationMetaByRequestId[row.RequestId] =
+                (row.EndDate, row.ActualCheckOutDate.Value, row.Status);
         }
 
-        var approvedExtensionEntities = await dbContext.Extensions
-            .AsNoTracking()
-            .Where(e => !e.IsDeleted && e.Status == Status.Approved)
-            .Select(e => new { e.ReservationId, e.EndDate })
-            .ToListAsync(cancellationToken);
-
-        foreach (var ext in approvedExtensionEntities)
-        {
-            if (string.IsNullOrWhiteSpace(ext.ReservationId)) continue;
-            if (!requestIdByReservationId.TryGetValue(ext.ReservationId.Trim(), out var requestId)) continue;
-            MergeRequestEnd(requestEndById, requestId, ext.EndDate);
-        }
-
-        var previousRequestById = await dbContext.Requests
-            .AsNoTracking()
-            .Where(r => !r.IsDeleted)
-            .Select(r => new { r.Id, r.PreviousRequestId })
-            .ToDictionaryAsync(
-                r => r.Id,
-                r => r.PreviousRequestId,
-                StringComparer.OrdinalIgnoreCase,
-                cancellationToken);
+        DateTime? inquiryStartInstant = inquiryStart.HasValue
+            ? AvailabilityCheckoutBlocking.ResolveInquiryStartInstant(inquiryStart.Value)
+            : null;
 
         var approvedRequests = await dbContext.Requests
             .AsNoTracking()
             .Where(r => !r.IsDeleted && r.Status == Status.Approved)
-            .Select(r => new { r.Id, r.StartDate, r.EndDate, r.PreviousRequestId, r.RequestCatagory })
+            .Select(r => new { r.Id, r.StartDate })
             .ToListAsync(cancellationToken);
 
-        foreach (var req in approvedRequests)
-        {
-            MergeRequestEnd(requestEndById, req.Id, req.EndDate);
-            if (req.RequestCatagory == RequestCatagory.Extension
-                && !string.IsNullOrWhiteSpace(req.PreviousRequestId))
-            {
-                var rootId = ResolveRootStayRequestId(req.PreviousRequestId, previousRequestById);
-                MergeRequestEnd(requestEndById, rootId, req.EndDate);
-            }
-        }
+        var approvedRequestIds = approvedRequests
+            .Select(r => r.Id)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        var requestNextStartById = approvedRequests
+        var requestStartById = approvedRequests
             .ToDictionary(r => r.Id, r => r.StartDate, StringComparer.OrdinalIgnoreCase);
 
         var requestUnits = await dbContext.RequestUnits
             .AsNoTracking()
-            .Include(ru => ru.Bed)
-            .ThenInclude(b => b.Room)
             .ToListAsync(cancellationToken);
 
         foreach (var unit in requestUnits)
         {
             if (string.IsNullOrWhiteSpace(unit.RequestId)) continue;
-            if (!requestEndById.TryGetValue(unit.RequestId, out var endYmd)) continue;
-            if (!requestNextStartById.TryGetValue(unit.RequestId, out var requestStart)) continue;
+            if (!approvedRequestIds.Contains(unit.RequestId)) continue;
+            if (!requestStartById.TryGetValue(unit.RequestId, out var requestStart)) continue;
 
-            // Ignore completed stays for future inquiries.
-            if (inquiryStart.HasValue && endYmd < inquiryStart.Value)
-                continue;
-
-            // Apply blocking only on the most specific booked unit so sibling beds/rooms
-            // can remain available (flexible partial occupancy).
             if (!string.IsNullOrWhiteSpace(unit.BedId))
             {
-                UnitBlockingEndIndex.SetMax(index.Beds, unit.BedId, endYmd);
-                UnitBlockingEndIndex.SetMin(index.BedNextApprovedStarts, unit.BedId, requestStart);
+                UnitBlockingEndIndex.AddApprovedStart(index.BedApprovedStarts, unit.BedId, requestStart);
                 continue;
             }
 
             if (!string.IsNullOrWhiteSpace(unit.RoomId))
             {
-                UnitBlockingEndIndex.SetMax(index.Rooms, unit.RoomId, endYmd);
-                UnitBlockingEndIndex.SetMin(index.RoomNextApprovedStarts, unit.RoomId, requestStart);
+                UnitBlockingEndIndex.AddApprovedStart(index.RoomApprovedStarts, unit.RoomId, requestStart);
                 continue;
             }
 
             if (!string.IsNullOrWhiteSpace(unit.ApartmentId))
             {
-                UnitBlockingEndIndex.SetMax(index.Apartments, unit.ApartmentId, endYmd);
-                UnitBlockingEndIndex.SetMin(index.ApartmentNextApprovedStarts, unit.ApartmentId, requestStart);
+                UnitBlockingEndIndex.AddApprovedStart(index.ApartmentApprovedStarts, unit.ApartmentId, requestStart);
+            }
+        }
+
+        foreach (var unit in requestUnits)
+        {
+            if (string.IsNullOrWhiteSpace(unit.RequestId)) continue;
+            if (!requestStartById.TryGetValue(unit.RequestId, out var requestStart)) continue;
+            if (!reservationMetaByRequestId.TryGetValue(unit.RequestId, out var reservationMeta)) continue;
+
+            if (!inquiryStart.HasValue || !inquiryStartInstant.HasValue)
+                continue;
+
+            if (!AvailabilityCheckoutBlocking.TryResolveReservationBlockingEnd(
+                    reservationMeta.Status,
+                    requestStart,
+                    reservationMeta.EndDate,
+                    reservationMeta.ActualCheckOut,
+                    inquiryStart.Value,
+                    out var blockingEnd))
+            {
+                continue;
+            }
+
+            if (blockingEnd < inquiryStartInstant.Value)
+                continue;
+
+            MergeRequestEnd(requestEndById, unit.RequestId, blockingEnd);
+        }
+
+        foreach (var unit in requestUnits)
+        {
+            if (string.IsNullOrWhiteSpace(unit.RequestId)) continue;
+            if (!requestEndById.TryGetValue(unit.RequestId, out var blockingEnd)) continue;
+
+            if (!string.IsNullOrWhiteSpace(unit.BedId))
+            {
+                UnitBlockingEndIndex.SetMax(index.Beds, unit.BedId, blockingEnd);
+                continue;
+            }
+
+            if (!string.IsNullOrWhiteSpace(unit.RoomId))
+            {
+                UnitBlockingEndIndex.SetMax(index.Rooms, unit.RoomId, blockingEnd);
+                continue;
+            }
+
+            if (!string.IsNullOrWhiteSpace(unit.ApartmentId))
+            {
+                UnitBlockingEndIndex.SetMax(index.Apartments, unit.ApartmentId, blockingEnd);
             }
         }
 
@@ -189,6 +192,7 @@ public class UnitOccupancyService(SonoBookingDbContext dbContext) : IUnitOccupan
         int nights,
         CancellationToken cancellationToken = default)
     {
+        var inquiryInstant = AvailabilityCheckoutBlocking.ResolveInquiryStartInstant(inquiryStart);
         var index = await BuildBlockingEndIndexAsync(inquiryStart, cancellationToken);
         var roomApartmentById = await GetRoomApartmentIdsAsync(cancellationToken);
         var availableApartmentIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -203,8 +207,8 @@ public class UnitOccupancyService(SonoBookingDbContext dbContext) : IUnitOccupan
         {
             if (string.IsNullOrWhiteSpace(room.ApartmentId)) continue;
             var blockingEnd = index.GetRoomBlockingEnd(room.Id, room.ApartmentId);
-            var nextApprovedStart = index.GetRoomNextApprovedStart(room.Id, room.ApartmentId);
-            if (IsUnitFreeForInquiryWindow(inquiryStart, nights, blockingEnd, nextApprovedStart))
+            var nextApprovedStart = index.GetRoomNextApprovedStart(room.Id, room.ApartmentId, inquiryStart);
+            if (IsUnitFreeForInquiryWindow(inquiryInstant, inquiryStart, nights, blockingEnd, nextApprovedStart))
                 availableApartmentIds.Add(room.ApartmentId.Trim());
         }
 
@@ -219,8 +223,8 @@ public class UnitOccupancyService(SonoBookingDbContext dbContext) : IUnitOccupan
             if (string.IsNullOrWhiteSpace(bed.RoomId)) continue;
             if (!roomApartmentById.TryGetValue(bed.RoomId.Trim(), out var apartmentId)) continue;
             var blockingEnd = index.GetBedBlockingEnd(bed.Id, bed.RoomId, apartmentId);
-            var nextApprovedStart = index.GetBedNextApprovedStart(bed.Id, bed.RoomId, apartmentId);
-            if (IsUnitFreeForInquiryWindow(inquiryStart, nights, blockingEnd, nextApprovedStart))
+            var nextApprovedStart = index.GetBedNextApprovedStart(bed.Id, bed.RoomId, apartmentId, inquiryStart);
+            if (IsUnitFreeForInquiryWindow(inquiryInstant, inquiryStart, nights, blockingEnd, nextApprovedStart))
                 availableApartmentIds.Add(apartmentId.Trim());
         }
 
@@ -232,6 +236,7 @@ public class UnitOccupancyService(SonoBookingDbContext dbContext) : IUnitOccupan
         int nights,
         CancellationToken cancellationToken = default)
     {
+        var inquiryInstant = AvailabilityCheckoutBlocking.ResolveInquiryStartInstant(inquiryStart);
         var index = await BuildBlockingEndIndexAsync(inquiryStart, cancellationToken);
         var roomApartmentById = await GetRoomApartmentIdsAsync(cancellationToken);
         var blockedApartmentIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -246,8 +251,8 @@ public class UnitOccupancyService(SonoBookingDbContext dbContext) : IUnitOccupan
         {
             if (string.IsNullOrWhiteSpace(room.ApartmentId)) continue;
             var blockingEnd = index.GetRoomBlockingEnd(room.Id, room.ApartmentId);
-            var nextApprovedStart = index.GetRoomNextApprovedStart(room.Id, room.ApartmentId);
-            if (!IsUnitFreeForInquiryWindow(inquiryStart, nights, blockingEnd, nextApprovedStart))
+            var nextApprovedStart = index.GetRoomNextApprovedStart(room.Id, room.ApartmentId, inquiryStart);
+            if (!IsUnitFreeForInquiryWindow(inquiryInstant, inquiryStart, nights, blockingEnd, nextApprovedStart))
                 blockedApartmentIds.Add(room.ApartmentId.Trim());
         }
 
@@ -262,8 +267,8 @@ public class UnitOccupancyService(SonoBookingDbContext dbContext) : IUnitOccupan
             if (string.IsNullOrWhiteSpace(bed.RoomId)) continue;
             if (!roomApartmentById.TryGetValue(bed.RoomId.Trim(), out var apartmentId)) continue;
             var blockingEnd = index.GetBedBlockingEnd(bed.Id, bed.RoomId, apartmentId);
-            var nextApprovedStart = index.GetBedNextApprovedStart(bed.Id, bed.RoomId, apartmentId);
-            if (!IsUnitFreeForInquiryWindow(inquiryStart, nights, blockingEnd, nextApprovedStart))
+            var nextApprovedStart = index.GetBedNextApprovedStart(bed.Id, bed.RoomId, apartmentId, inquiryStart);
+            if (!IsUnitFreeForInquiryWindow(inquiryInstant, inquiryStart, nights, blockingEnd, nextApprovedStart))
                 blockedApartmentIds.Add(apartmentId.Trim());
         }
 
@@ -275,6 +280,7 @@ public class UnitOccupancyService(SonoBookingDbContext dbContext) : IUnitOccupan
         int nights,
         CancellationToken cancellationToken = default)
     {
+        var inquiryInstant = AvailabilityCheckoutBlocking.ResolveInquiryStartInstant(inquiryStart);
         var index = await BuildBlockingEndIndexAsync(inquiryStart, cancellationToken);
         var roomApartmentById = await GetRoomApartmentIdsAsync(cancellationToken);
         var blockedRoomIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -288,10 +294,11 @@ public class UnitOccupancyService(SonoBookingDbContext dbContext) : IUnitOccupan
         foreach (var bed in beds)
         {
             if (string.IsNullOrWhiteSpace(bed.RoomId)) continue;
+            if (!index.HasDirectBedBooking(bed.Id)) continue;
             if (!roomApartmentById.TryGetValue(bed.RoomId.Trim(), out var apartmentId)) continue;
             var blockingEnd = index.GetBedBlockingEnd(bed.Id, bed.RoomId, apartmentId);
-            var nextApprovedStart = index.GetBedNextApprovedStart(bed.Id, bed.RoomId, apartmentId);
-            if (!IsUnitFreeForInquiryWindow(inquiryStart, nights, blockingEnd, nextApprovedStart))
+            var nextApprovedStart = index.GetBedNextApprovedStart(bed.Id, bed.RoomId, apartmentId, inquiryStart);
+            if (!IsUnitFreeForInquiryWindow(inquiryInstant, inquiryStart, nights, blockingEnd, nextApprovedStart))
                 blockedRoomIds.Add(bed.RoomId.Trim());
         }
 
@@ -322,6 +329,7 @@ public class UnitOccupancyService(SonoBookingDbContext dbContext) : IUnitOccupan
             return new Dictionary<string, IReadOnlySet<Gender>>(StringComparer.OrdinalIgnoreCase);
 
         var flexibleSet = new HashSet<string>(flexibleApartments, StringComparer.OrdinalIgnoreCase);
+        var inquiryInstant = AvailabilityCheckoutBlocking.ResolveInquiryStartInstant(inquiryStart);
         var blockingIndex = await BuildBlockingEndIndexAsync(inquiryStart, cancellationToken);
         var rooms = await dbContext.Rooms
             .AsNoTracking()
@@ -345,7 +353,7 @@ public class UnitOccupancyService(SonoBookingDbContext dbContext) : IUnitOccupan
             var blockedByStatus = room.Status is UnitStatus.Occupied or UnitStatus.Reserved;
             var blockedByInquiry =
                 !IsUnitFreeOnInquiryStart(
-                    inquiryStart,
+                    inquiryInstant,
                     blockingIndex.GetRoomBlockingEnd(room.Id, room.ApartmentId));
             if (!blockedByStatus && !blockedByInquiry) continue;
             occupiedRoomIds.Add(room.Id);
@@ -357,7 +365,7 @@ public class UnitOccupancyService(SonoBookingDbContext dbContext) : IUnitOccupan
             var blockedByStatus = bed.Status is UnitStatus.Occupied or UnitStatus.Reserved;
             var blockedByInquiry =
                 !IsUnitFreeOnInquiryStart(
-                    inquiryStart,
+                    inquiryInstant,
                     blockingIndex.GetBedBlockingEnd(bed.Id, bed.RoomId, aptId));
             if (!blockedByStatus && !blockedByInquiry) continue;
             occupiedBedIds.Add(bed.Id);
@@ -375,7 +383,8 @@ public class UnitOccupancyService(SonoBookingDbContext dbContext) : IUnitOccupan
                 && req.Status == Status.Approved
                 && res.Status != ReservationStatus.Canceled
                 && res.Status != ReservationStatus.NoShow
-                && (res.ActualCheckOutDate == null || DateOnly.FromDateTime(res.ActualCheckOutDate.Value.Date) >= inquiryStart)
+                && req.StartDate <= inquiryStart
+                && res.EndDate > inquiryStart
                 && (
                     (ru.ApartmentId != null && occupiedApartmentIds.Contains(ru.ApartmentId)) ||
                     (ru.RoomId != null && occupiedRoomIds.Contains(ru.RoomId)) ||
@@ -409,7 +418,7 @@ public class UnitOccupancyService(SonoBookingDbContext dbContext) : IUnitOccupan
                 var freeByStatus = room.Status == UnitStatus.Available;
                 var freeByInquiry =
                     IsUnitFreeOnInquiryStart(
-                        inquiryStart,
+                        inquiryInstant,
                         blockingIndex.GetRoomBlockingEnd(room.Id, room.ApartmentId));
                 return freeByStatus && freeByInquiry;
             });
@@ -418,7 +427,7 @@ public class UnitOccupancyService(SonoBookingDbContext dbContext) : IUnitOccupan
                 var freeByStatus = bed.Status == UnitStatus.Available;
                 var freeByInquiry =
                     IsUnitFreeOnInquiryStart(
-                        inquiryStart,
+                        inquiryInstant,
                         blockingIndex.GetBedBlockingEnd(bed.Id, bed.RoomId, aptId));
                 return freeByStatus && freeByInquiry;
             });
@@ -465,35 +474,20 @@ public class UnitOccupancyService(SonoBookingDbContext dbContext) : IUnitOccupan
     }
 
     private static void MergeRequestEnd(
-        Dictionary<string, DateOnly> requestEndById,
+        Dictionary<string, DateTime> requestEndById,
         string requestId,
-        DateOnly endYmd)
+        DateTime blockingEnd)
     {
         if (string.IsNullOrWhiteSpace(requestId)) return;
         var key = requestId.Trim();
         if (requestEndById.TryGetValue(key, out var current))
         {
-            if (endYmd > current) requestEndById[key] = endYmd;
+            if (blockingEnd > current) requestEndById[key] = blockingEnd;
         }
         else
         {
-            requestEndById[key] = endYmd;
+            requestEndById[key] = blockingEnd;
         }
     }
 
-    private static string ResolveRootStayRequestId(
-        string requestId,
-        IReadOnlyDictionary<string, string?> previousRequestById)
-    {
-        var current = requestId.Trim();
-        var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        while (previousRequestById.TryGetValue(current, out var previous)
-            && !string.IsNullOrWhiteSpace(previous))
-        {
-            if (!visited.Add(current)) break;
-            current = previous.Trim();
-        }
-
-        return current;
-    }
 }

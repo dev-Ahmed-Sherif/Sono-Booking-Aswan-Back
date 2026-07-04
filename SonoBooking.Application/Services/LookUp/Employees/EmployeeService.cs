@@ -39,8 +39,14 @@ namespace SonoBooking.Application.Services.LookUp.Employees
         static Expression<Func<Employee, bool>> PredicateBuilderFunction(EmployeeFilter filter)
         {
             var predicate = PredicateBuilder.New<Employee>(x => x.IsDeleted == filter.IsDeleted);
+            if (!string.IsNullOrWhiteSpace(filter.Name))
+                predicate = predicate.And(x => x.Name.Contains(filter.Name));
             if (!string.IsNullOrWhiteSpace(filter.NationalId))
                 predicate = predicate.And(x => x.NationalId.Contains(filter.NationalId));
+            if (!string.IsNullOrWhiteSpace(filter.EmployeeOrgId))
+                predicate = predicate.And(x => x.EmployeeOrgId == filter.EmployeeOrgId);
+            if (!string.IsNullOrWhiteSpace(filter.EmployeeJobId))
+                predicate = predicate.And(x => x.EmployeeJobId == filter.EmployeeJobId);
 
             return predicate;
         }

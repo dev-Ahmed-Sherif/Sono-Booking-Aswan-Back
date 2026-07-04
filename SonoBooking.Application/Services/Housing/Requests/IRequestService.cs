@@ -14,6 +14,7 @@ namespace SonoBooking.Application.Services.Housing.Requests
     {
         Task<PagingResult> GetAllPagedAsync(BaseParam<RequestFilter> filter, CancellationToken cancellationToken = default);
         Task<IFinalResult> GetAllReportAsync(FilterRequestReportDto filter, CancellationToken cancellationToken = default);
+        Task<IFinalResult> GetRequestDetailsReportAsync(FilterRequestReportDto filter, CancellationToken cancellationToken = default);
         Task<byte[]> GenerateReportAsync(FilterRequestReportDto filter, CancellationToken cancellationToken = default);
     }
 }

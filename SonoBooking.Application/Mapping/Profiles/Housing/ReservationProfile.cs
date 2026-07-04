@@ -11,7 +11,8 @@ namespace SonoBooking.Application.Mapping
         public void MapReservation()
         {
             CreateMap<Reservation, ReservationDto>()
-                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Request != null ? src.Request.UserId : null));
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Request != null ? src.Request.UserId : null))
+                .ForMember(dest => dest.PaymentAmount, opt => opt.MapFrom(src => src.Payment != null ? (decimal?)src.Payment.Amount : null));
 
             CreateMap<ReservationDto, Reservation>()
                 .ForMember(dest => dest.Request, opt => opt.Ignore());

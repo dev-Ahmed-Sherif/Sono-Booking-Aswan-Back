@@ -12,8 +12,20 @@ namespace SonoBooking.Application.Services.Housing.Availability;
 
 public static class AvailabilityInquiryFilter
 {
-    public static bool TryParseInquiryStart(string startDateHeader, out DateOnly inquiryStart) =>
-        DateOnly.TryParse(startDateHeader?.Trim(), out inquiryStart);
+    public static bool TryParseInquiryStart(string startDateHeader, out DateOnly inquiryStart)
+    {
+        if (AvailabilityCheckoutBlocking.TryParseInquiryStartInstant(startDateHeader, out var instant))
+        {
+            inquiryStart = DateOnly.FromDateTime(instant.Date);
+            return true;
+        }
+
+        inquiryStart = default;
+        return false;
+    }
+
+    public static bool TryParseInquiryStartInstant(string startDateHeader, out DateTime inquiryStart) =>
+        AvailabilityCheckoutBlocking.TryParseInquiryStartInstant(startDateHeader, out inquiryStart);
 
     /// <summary>
     /// Parses `Gender` header: comma/semicolon-separated tokens (Male, Female, male, female, 1, 2, Arabic labels).
@@ -64,11 +76,12 @@ public static class AvailabilityInquiryFilter
     public static async Task<IEnumerable<BedDto>> FilterBedsAsync(
         IEnumerable<BedDto> items,
         IUnitOccupancyService occupancyService,
-        DateOnly inquiryStart,
+        DateTime inquiryStartInstant,
+        DateOnly inquiryStartDate,
         int? nights,
         CancellationToken cancellationToken)
     {
-        var index = await occupancyService.BuildBlockingEndIndexAsync(inquiryStart, cancellationToken);
+        var index = await occupancyService.BuildBlockingEndIndexAsync(inquiryStartDate, cancellationToken);
         var roomApartmentById = await occupancyService.GetRoomApartmentIdsAsync(cancellationToken);
 
         return items.Where(bed =>
@@ -80,9 +93,10 @@ public static class AvailabilityInquiryFilter
             }
 
             var blockingEnd = index.GetBedBlockingEnd(bed.Id, bed.RoomId, apartmentId);
-            var nextApprovedStart = index.GetBedNextApprovedStart(bed.Id, bed.RoomId, apartmentId);
+            var nextApprovedStart = index.GetBedNextApprovedStart(bed.Id, bed.RoomId, apartmentId, inquiryStartDate);
             return occupancyService.IsUnitFreeForInquiryWindow(
-                inquiryStart,
+                inquiryStartInstant,
+                inquiryStartDate,
                 nights ?? 0,
                 blockingEnd,
                 nextApprovedStart);
@@ -92,14 +106,15 @@ public static class AvailabilityInquiryFilter
     public static async Task<IEnumerable<RoomDto>> FilterRoomsAsync(
         IEnumerable<RoomDto> items,
         IUnitOccupancyService occupancyService,
-        DateOnly inquiryStart,
+        DateTime inquiryStartInstant,
+        DateOnly inquiryStartDate,
         int? nights,
         CancellationToken cancellationToken)
     {
-        var index = await occupancyService.BuildBlockingEndIndexAsync(inquiryStart, cancellationToken);
+        var index = await occupancyService.BuildBlockingEndIndexAsync(inquiryStartDate, cancellationToken);
         var nightsValue = nights ?? 0;
         var roomsWithBlockedBeds = await occupancyService.GetRoomIdsWithBlockedBedsAsync(
-            inquiryStart,
+            inquiryStartDate,
             nightsValue,
             cancellationToken);
 
@@ -110,9 +125,10 @@ public static class AvailabilityInquiryFilter
                 return false;
 
             var blockingEnd = index.GetRoomBlockingEnd(room.Id, room.ApartmentId);
-            var nextApprovedStart = index.GetRoomNextApprovedStart(room.Id, room.ApartmentId);
+            var nextApprovedStart = index.GetRoomNextApprovedStart(room.Id, room.ApartmentId, inquiryStartDate);
             return occupancyService.IsUnitFreeForInquiryWindow(
-                inquiryStart,
+                inquiryStartInstant,
+                inquiryStartDate,
                 nightsValue,
                 blockingEnd,
                 nextApprovedStart);
@@ -122,29 +138,31 @@ public static class AvailabilityInquiryFilter
     public static async Task<IEnumerable<ApartmentDto>> FilterApartmentsAsync(
         IEnumerable<ApartmentDto> items,
         IUnitOccupancyService occupancyService,
-        DateOnly inquiryStart,
+        DateTime inquiryStartInstant,
+        DateOnly inquiryStartDate,
         int? nights,
         CancellationToken cancellationToken)
     {
-        var index = await occupancyService.BuildBlockingEndIndexAsync(inquiryStart, cancellationToken);
+        var index = await occupancyService.BuildBlockingEndIndexAsync(inquiryStartDate, cancellationToken);
         var nightsValue = nights ?? 0;
         var apartmentsWithAvailableChildren =
             await occupancyService.GetApartmentIdsWithAvailableChildrenAsync(
-                inquiryStart,
+                inquiryStartDate,
                 nightsValue,
                 cancellationToken);
         var apartmentsWithBlockedChildren =
             await occupancyService.GetApartmentIdsWithBlockedChildrenAsync(
-                inquiryStart,
+                inquiryStartDate,
                 nightsValue,
                 cancellationToken);
 
         return items.Where(apartment =>
         {
             var blockingEnd = index.GetApartmentBlockingEnd(apartment.Id);
-            var nextApprovedStart = index.GetApartmentNextApprovedStart(apartment.Id);
+            var nextApprovedStart = index.GetApartmentNextApprovedStart(apartment.Id, inquiryStartDate);
             if (!occupancyService.IsUnitFreeForInquiryWindow(
-                    inquiryStart,
+                    inquiryStartInstant,
+                    inquiryStartDate,
                     nightsValue,
                     blockingEnd,
                     nextApprovedStart))

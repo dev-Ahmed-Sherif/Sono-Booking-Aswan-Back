@@ -9,7 +9,7 @@
         public const string DefaultPassword = "12345";
         public const string Permissions = nameof(Permissions);
         public const string OrgId = nameof(OrgId);
-        public const string FloatingUnitId = nameof(FloatingUnitId);
+        public const string LeaderId = nameof(LeaderId);
         public const string GovId = nameof(GovId);
         public const string EmployeeId = nameof(EmployeeId);
     }

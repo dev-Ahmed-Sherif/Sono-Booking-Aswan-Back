@@ -44,6 +44,11 @@ public class Request : BaseAudit<string>
     [MaxLength(500)]
     public string? RejectionReason { get; set; }
 
+    public DateTime? ApprovedAt { get; set; }
+
+    [Required]
+    public required float Percentage { get; set; }
+
     [MaxLength(50)]
     [ForeignKey(nameof(Request))]
     public string? PreviousRequestId { get; set; }
@@ -64,7 +69,11 @@ public class Request : BaseAudit<string>
     public string? ApprovedById { get; set; }
     public virtual User? ApprovedBy { get; set; }
 
-    public DateTime? ApprovedAt { get; set; }
+    [Required, MaxLength(50)]
+    [ForeignKey(nameof(RequestTo))]
+    public required string RequestToId { get; set; }
+    public virtual Leader? RequestTo { get; set; }
+
 
     public virtual Reservation Reservation { get; set; }
     public virtual Approval Approval { get; set; }

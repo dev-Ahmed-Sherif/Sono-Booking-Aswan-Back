@@ -1,8 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using SonoBooking.Common.Constants;
+using SonoBooking.Application.Services.Housing.Availability;
 using SonoBooking.Common.Core;
 using SonoBooking.Common.DTO.Housing.Dashboard;
 using SonoBooking.Domain;
+using SonoBooking.Domain.Entities.Housing;
 using SonoBooking.Infrastructure.Context;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,8 @@ namespace SonoBooking.Application.Services.Housing.Dashboard;
 
 public class DashboardService(
     IResponseResult responseResult,
-    SonoBookingDbContext dbContext) : IDashboardService
+    SonoBookingDbContext dbContext,
+    IUnitOccupancyService unitOccupancyService) : IDashboardService
 {
     private const int ChartDays = 365;
 
@@ -24,77 +26,104 @@ public class DashboardService(
         DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
         DateTime todayStartUtc = today.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
         DateTime todayEndUtc = todayStartUtc.AddDays(1);
-
-        List<Domain.Entities.Housing.Request> todayRequests = await dbContext.Requests
-            .AsNoTracking()
-            .Where(r => !r.IsDeleted
-                && r.RequestDate >= todayStartUtc
-                && r.RequestDate < todayEndUtc)
-            .ToListAsync(cancellationToken);
-
-        int todayTotal = todayRequests.Count;
-        int todayApproved = todayRequests.Count(r => r.Status == Status.Approved);
-        int todayRejected = todayRequests.Count(r => r.Status == Status.Rejected);
-
-        HashSet<string> activeReservationRequestIds = await dbContext.Reservations
-            .AsNoTracking()
-            .Where(r => !r.IsDeleted
-                && r.Status != ReservationStatus.Canceled
-                && r.Status != ReservationStatus.NoShow
-                && r.Status != ReservationStatus.Checkout
-                && r.StartDate <= today
-                && (r.ActualCheckOutDate.HasValue
-                    ? DateOnly.FromDateTime(r.ActualCheckOutDate.Value.Date) >= today
-                    : r.EndDate >= today))
-            .Select(r => r.RequestId)
-            .ToHashSetAsync(StringComparer.OrdinalIgnoreCase, cancellationToken);
-
-        decimal totalRevenue = await dbContext.Reservations
-            .AsNoTracking()
-            .Where(r => !r.IsDeleted && activeReservationRequestIds.Contains(r.RequestId))
-            .SumAsync(r => r.Payment!.Amount, cancellationToken);
-
         DateOnly chartStart = today.AddDays(-(ChartDays - 1));
         DateTime chartStartUtc = chartStart.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
 
-        List<(DateOnly RequestDay, Status Status)> requestsInChartRange = (await dbContext.Requests
+        List<(DateOnly RequestDay, Status Status)> requestsInChartRange = [.. (await dbContext.Requests
             .AsNoTracking()
             .Where(r => !r.IsDeleted
                 && r.RequestDate >= chartStartUtc
                 && r.RequestDate < todayEndUtc)
             .Select(r => new { r.RequestDate, r.Status })
             .ToListAsync(cancellationToken))
-            .Select(r => (DateOnly.FromDateTime(r.RequestDate), r.Status))
-            .ToList();
+            .Select(r => (DateOnly.FromDateTime(r.RequestDate.Date), r.Status))];
 
-        List<(DateOnly StartDate, DateOnly EndDate, DateOnly? ActualCheckOutDay, decimal Amount)> revenueReservations =
-            (await dbContext.Reservations
-                .AsNoTracking()
-                .Where(r => !r.IsDeleted
-                    && r.Payment != null
-                    && r.Status != ReservationStatus.Canceled
-                    && r.Status != ReservationStatus.NoShow
-                    && r.Status != ReservationStatus.Checkout
-                    && r.StartDate <= today
-                    && (r.ActualCheckOutDate.HasValue
-                        ? DateOnly.FromDateTime(r.ActualCheckOutDate.Value.Date) >= chartStart
-                        : r.EndDate >= chartStart))
-                .Select(r => new
-                {
-                    r.StartDate,
-                    r.EndDate,
-                    r.ActualCheckOutDate,
-                    Amount = r.Payment!.Amount
-                })
-                .ToListAsync(cancellationToken))
-            .Select(r => (
-                r.StartDate,
-                r.EndDate,
-                r.ActualCheckOutDate.HasValue
+        List<ReservationChartRow> reservations = await dbContext.Reservations
+            .AsNoTracking()
+            .Where(r => !r.IsDeleted)
+            .Select(r => new ReservationChartRow
+            {
+                ReservationId = r.Id,
+                RequestId = r.RequestId,
+                StartDate = r.StartDate,
+                EndDate = r.EndDate,
+                ActualCheckOutDay = r.ActualCheckOutDate.HasValue
                     ? DateOnly.FromDateTime(r.ActualCheckOutDate.Value.Date)
-                    : (DateOnly?)null,
-                r.Amount))
-            .ToList();
+                    : null,
+                Status = r.Status
+            })
+            .ToListAsync(cancellationToken);
+
+        List<PaymentChartRow> paymentsInChartRange = [.. (await dbContext.Payments
+            .AsNoTracking()
+            .Where(p => !p.IsDeleted
+                && p.PaymentStatus != PaymentStatus.Failed
+                && p.PaymentStatus != PaymentStatus.Refunded
+                && p.PaymentDate >= chartStartUtc
+                && p.PaymentDate < todayEndUtc)
+            .Select(p => new { p.PaymentDate, p.Amount })
+            .ToListAsync(cancellationToken))
+            .Select(p => new PaymentChartRow
+            {
+                PaymentDay = DateOnly.FromDateTime(p.PaymentDate.Date),
+                Amount = p.Amount
+            })];
+
+        Dictionary<string, string?> previousRequestById = await dbContext.Requests
+            .AsNoTracking()
+            .Where(r => !r.IsDeleted)
+            .Select(r => new { r.Id, r.PreviousRequestId })
+            .ToDictionaryAsync(
+                r => r.Id,
+                r => r.PreviousRequestId,
+                StringComparer.OrdinalIgnoreCase,
+                cancellationToken);
+
+        List<DashboardOccupancyCache.ApprovedRequestRow> approvedRequests = await dbContext.Requests
+            .AsNoTracking()
+            .Where(r => !r.IsDeleted && r.Status == Status.Approved)
+            .Select(r => new DashboardOccupancyCache.ApprovedRequestRow
+            {
+                Id = r.Id,
+                StartDate = r.StartDate,
+                EndDate = r.EndDate,
+                PreviousRequestId = r.PreviousRequestId,
+                RequestCatagory = r.RequestCatagory
+            })
+            .ToListAsync(cancellationToken);
+
+        List<DashboardOccupancyCache.ExtensionEndRow> approvedExtensions = await dbContext.Extensions
+            .AsNoTracking()
+            .Where(e => !e.IsDeleted && e.Status == Status.Approved)
+            .Select(e => new DashboardOccupancyCache.ExtensionEndRow
+            {
+                ReservationId = e.ReservationId,
+                EndDate = e.EndDate
+            })
+            .ToListAsync(cancellationToken);
+
+        List<DashboardOccupancyCache.ReservationEndRow> reservationEndRows = [.. reservations
+            .Select(r => new DashboardOccupancyCache.ReservationEndRow
+            {
+                ReservationId = r.ReservationId,
+                RequestId = r.RequestId,
+                EffectiveEndDay = r.ActualCheckOutDay ?? r.EndDate,
+                Status = r.Status
+            })];
+
+        List<RequestUnit> requestUnits = await dbContext.RequestUnits
+            .AsNoTracking()
+            .Where(ru => !ru.IsDeleted)
+            .ToListAsync(cancellationToken);
+
+        DashboardOccupancyCache occupancyCache = DashboardOccupancyCache.Create(
+            reservationEndRows,
+            approvedExtensions,
+            approvedRequests,
+            previousRequestById,
+            requestUnits);
+
+        DashboardOccupancyCalculator.HousingStructure housingStructure = await LoadHousingStructureAsync(cancellationToken);
 
         List<DashboardDailyStatDto> dailyStats = [];
         for (int offset = 0; offset < ChartDays; offset++)
@@ -107,12 +136,16 @@ public class DashboardService(
             int dayRejected = requestsInChartRange.Count(r =>
                 r.RequestDay == day && r.Status == Status.Rejected);
 
-            decimal dayRevenue = revenueReservations
-                .Where(r => r.StartDate <= day
-                    && (r.ActualCheckOutDay.HasValue
-                        ? r.ActualCheckOutDay.Value >= day
-                        : r.EndDate >= day))
-                .Sum(r => r.Amount);
+            decimal dayRevenue = paymentsInChartRange
+                .Where(p => p.PaymentDay == day)
+                .Sum(p => p.Amount);
+
+            (int overallPercent, List<ApartmentOccupancyItemDto> apartmentOccupancy) =
+                DashboardOccupancyCalculator.CalculateForDay(
+                    day,
+                    occupancyCache,
+                    housingStructure,
+                    unitOccupancyService);
 
             dailyStats.Add(new DashboardDailyStatDto
             {
@@ -120,92 +153,13 @@ public class DashboardService(
                 TotalRequests = dayTotalRequests,
                 ApprovedRequests = dayApproved,
                 RejectedRequests = dayRejected,
-                TotalRevenue = dayRevenue
+                TotalRevenue = dayRevenue,
+                OccupancyPercent = overallPercent,
+                ApartmentOccupancy = apartmentOccupancy
             });
         }
 
-        var apartments = await dbContext.Apartments
-            .AsNoTracking()
-            .Where(a => !a.IsDeleted)
-            .Select(a => new
-            {
-                a.Id,
-                a.ApartmentNumber,
-                Rooms = a.Rooms
-                    .Where(room => !room.IsDeleted)
-                    .Select(room => new
-                    {
-                        room.Id,
-                        Beds = room.Beds
-                            .Where(bed => !bed.IsDeleted)
-                            .Select(bed => bed.Id)
-                            .ToList()
-                    })
-                    .ToList()
-            })
-            .OrderBy(a => a.ApartmentNumber)
-            .ToListAsync(cancellationToken);
-
-        var occupiedBedIds = await dbContext.RequestUnits
-            .AsNoTracking()
-            .Where(ru => activeReservationRequestIds.Contains(ru.RequestId)
-                && ru.BedId != null
-                && ru.BedId != "")
-            .Select(ru => ru.BedId!)
-            .Distinct()
-            .ToHashSetAsync(StringComparer.OrdinalIgnoreCase, cancellationToken);
-
-        var occupiedRoomIds = await dbContext.RequestUnits
-            .AsNoTracking()
-            .Where(ru => activeReservationRequestIds.Contains(ru.RequestId)
-                && (ru.BedId == null || ru.BedId == "")
-                && ru.RoomId != null
-                && ru.RoomId != "")
-            .Select(ru => ru.RoomId!)
-            .Distinct()
-            .ToHashSetAsync(StringComparer.OrdinalIgnoreCase, cancellationToken);
-
-        List<ApartmentOccupancyItemDto> apartmentOccupancy = [];
-        int totalCapacity = 0;
-        int totalOccupied = 0;
-
-        foreach (var apartment in apartments)
-        {
-            int apartmentCapacity = 0;
-            int apartmentOccupied = 0;
-
-            foreach (var room in apartment.Rooms)
-            {
-                if (room.Beds.Count > 0)
-                {
-                    apartmentCapacity += room.Beds.Count;
-                    apartmentOccupied += room.Beds.Count(bedId => occupiedBedIds.Contains(bedId));
-                }
-                else
-                {
-                    apartmentCapacity += 1;
-                    if (occupiedRoomIds.Contains(room.Id))
-                        apartmentOccupied += 1;
-                }
-            }
-
-            totalCapacity += apartmentCapacity;
-            totalOccupied += apartmentOccupied;
-
-            int percent = apartmentCapacity == 0
-                ? 0
-                : (int)Math.Round(apartmentOccupied * 100m / apartmentCapacity, MidpointRounding.AwayFromZero);
-
-            apartmentOccupancy.Add(new ApartmentOccupancyItemDto
-            {
-                UnitLabel = $"شقة {apartment.ApartmentNumber}",
-                Percent = percent
-            });
-        }
-
-        int occupancyPercent = totalCapacity == 0
-            ? 0
-            : (int)Math.Round(totalOccupied * 100m / totalCapacity, MidpointRounding.AwayFromZero);
+        DashboardDailyStatDto todayStats = dailyStats.LastOrDefault() ?? new DashboardDailyStatDto();
 
         List<ApprovedRequestItemDto> latestApproved = await dbContext.Requests
             .AsNoTracking()
@@ -223,12 +177,12 @@ public class DashboardService(
 
         GovernorDashboardDto summary = new()
         {
-            TodayTotalRequests = todayTotal,
-            TodayApprovedRequests = todayApproved,
-            TodayRejectedRequests = todayRejected,
-            OccupancyPercent = occupancyPercent,
-            TotalRevenue = totalRevenue,
-            ApartmentOccupancy = apartmentOccupancy,
+            TodayTotalRequests = todayStats.TotalRequests,
+            TodayApprovedRequests = todayStats.ApprovedRequests,
+            TodayRejectedRequests = todayStats.RejectedRequests,
+            OccupancyPercent = todayStats.OccupancyPercent,
+            TotalRevenue = todayStats.TotalRevenue,
+            ApartmentOccupancy = todayStats.ApartmentOccupancy,
             LatestApprovedRequests = latestApproved,
             DailyStats = dailyStats
         };
@@ -238,5 +192,59 @@ public class DashboardService(
             HttpStatusCode.OK,
             null,
             MessagesConstants.Success);
+    }
+
+    private async Task<DashboardOccupancyCalculator.HousingStructure> LoadHousingStructureAsync(
+        CancellationToken cancellationToken)
+    {
+        List<DashboardOccupancyCalculator.ApartmentStructureRow> apartments = await dbContext.Apartments
+            .AsNoTracking()
+            .Where(a => !a.IsDeleted)
+            .OrderBy(a => a.ApartmentNumber)
+            .Select(a => new DashboardOccupancyCalculator.ApartmentStructureRow
+            {
+                Id = a.Id,
+                ApartmentNumber = a.ApartmentNumber,
+                Rooms = a.Rooms
+                    .Where(room => !room.IsDeleted)
+                    .Select(room => new DashboardOccupancyCalculator.RoomStructureRow
+                    {
+                        Id = room.Id,
+                        ApartmentId = room.ApartmentId,
+                        Status = room.Status,
+                        Beds = room.Beds
+                            .Where(bed => !bed.IsDeleted)
+                            .Select(bed => new DashboardOccupancyCalculator.BedStructureRow
+                            {
+                                Id = bed.Id,
+                                RoomId = bed.RoomId,
+                                Status = bed.Status
+                            })
+                            .ToList()
+                    })
+                    .ToList()
+            })
+            .ToListAsync(cancellationToken);
+
+        return new DashboardOccupancyCalculator.HousingStructure
+        {
+            Apartments = apartments
+        };
+    }
+
+    private sealed class ReservationChartRow
+    {
+        public string? ReservationId { get; init; }
+        public required string RequestId { get; init; }
+        public required DateOnly StartDate { get; init; }
+        public required DateOnly EndDate { get; init; }
+        public DateOnly? ActualCheckOutDay { get; init; }
+        public required ReservationStatus Status { get; init; }
+    }
+
+    private sealed class PaymentChartRow
+    {
+        public required DateOnly PaymentDay { get; init; }
+        public required decimal Amount { get; init; }
     }
 }

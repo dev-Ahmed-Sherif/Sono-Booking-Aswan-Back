@@ -68,11 +68,13 @@ namespace SonoBooking.Api.Controllers.V1.Housing
             if (res?.Data is IEnumerable<ApartmentDto> apartments)
             {
                 var filtered = apartments;
-                if (AvailabilityInquiryFilter.TryParseInquiryStart(startDate, out var inquiryStart))
+                if (AvailabilityInquiryFilter.TryParseInquiryStartInstant(startDate, out var inquiryInstant)
+                    && AvailabilityInquiryFilter.TryParseInquiryStart(startDate, out var inquiryStart))
                 {
                     filtered = await AvailabilityInquiryFilter.FilterApartmentsAsync(
                         filtered,
                         unitOccupancyService,
+                        inquiryInstant,
                         inquiryStart,
                         nights,
                         cancellationToken);

@@ -68,6 +68,7 @@ namespace SonoBooking.Api
                 //app.UseHangfireServer();
                 ReservationNoShowJob.RegisterDailySchedule();
                 ReservationCheckoutJob.RegisterDailySchedule();
+                ReservationUnitAvailabilityGapJob.RegisterSchedules();
                 app.ConfigureCustomMiddleware();
                 app.UseWebSockets();
                 app.UseRouting();

@@ -152,8 +152,8 @@ namespace SonoBooking.Api.Extensions
                 user.Claims.FirstOrDefault(x => x.Type == AuthConstants.OrgId)?.Value ??
                 string.Empty;
 
-                string floatingUnitId =
-                user.Claims.FirstOrDefault(x => x.Type == AuthConstants.FloatingUnitId)?.Value ??
+                string leaderId =
+                user.Claims.FirstOrDefault(x => x.Type == AuthConstants.LeaderId)?.Value ??
                 string.Empty;
 
                 string governorateId =
@@ -173,7 +173,7 @@ namespace SonoBooking.Api.Extensions
                 .Where(c =>
                     c.Type != ClaimTypes.NameIdentifier && c.Type != ClaimTypes.Name &&
                     c.Type != AuthConstants.OrgId && c.Type != ClaimTypes.Role &&
-                    c.Type != AuthConstants.FloatingUnitId &&
+                    c.Type != AuthConstants.LeaderId &&
                     c.Type != AuthConstants.EmployeeId &&
                     c.Type != "exp" && c.Type != "iss")
                 .Select(c =>
@@ -186,7 +186,7 @@ namespace SonoBooking.Api.Extensions
                 //bool parsedUserId = int.TryParse(stringId, out int id);
                 //bool parsedOrgId = int.TryParse(stringOrganizationId, out int organizationId);
 
-                return new UserDataDto(Id, name, role, permissions, organizationId, floatingUnitId, governorateId,
+                return new UserDataDto(Id, name, role, permissions, organizationId, leaderId, governorateId,
                     string.IsNullOrWhiteSpace(employeeId) ? null : employeeId);
             });
             services.AddCors(option =>
@@ -510,6 +510,7 @@ namespace SonoBooking.Api.Extensions
             services.AddScoped<HousingNotificationService>();
             services.AddTransient<ReservationNoShowJob>();
             services.AddTransient<ReservationCheckoutJob>();
+            services.AddTransient<ReservationUnitAvailabilityGapJob>();
         }
     }
 }

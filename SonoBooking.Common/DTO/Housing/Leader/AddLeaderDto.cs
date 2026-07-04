@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using SonoBooking.Common.Core;
 using System.Diagnostics.CodeAnalysis;
 
@@ -11,5 +12,6 @@ namespace SonoBooking.Common.DTO.Housing.Leader
         public string FullName { get; set; }
         public string Position { get; set; }
         public bool IsActive { get; set; }
+        public IFormFile File { get; set; }
     }
 }

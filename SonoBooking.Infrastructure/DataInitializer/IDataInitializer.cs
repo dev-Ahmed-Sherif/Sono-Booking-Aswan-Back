@@ -5,6 +5,7 @@ using ApartmentType = SonoBooking.Domain.Entities.Lookups.ApartmentType;
 using Employee = SonoBooking.Domain.Entities.Lookups.Employee;
 using Governorate = SonoBooking.Domain.Entities.Lookups.Governorate;
 using NotificationGroup = SonoBooking.Domain.Entities.BusinessNotification.NotificationGroup;
+using Leader = SonoBooking.Domain.Entities.Housing.Leader;
 using RequestType = SonoBooking.Domain.Entities.Lookups.RequestType;
 using Relationship = SonoBooking.Domain.Entities.Lookups.Relationship;
 using RoomType = SonoBooking.Domain.Entities.Lookups.RoomType;
@@ -33,6 +34,8 @@ namespace SonoBooking.Infrastructure.DataInitializer
         IEnumerable<Employee> SeedEmployeesAsync();
 
         IEnumerable<NotificationGroup> SeedNotificationGroupsAsync();
+
+        IEnumerable<Leader> SeedLeadersAsync();
 
         //IEnumerable<Status> SeedStatusesAsync();
     }

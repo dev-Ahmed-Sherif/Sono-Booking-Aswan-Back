@@ -45,7 +45,7 @@ namespace SonoBooking.Api.Controllers.V1.Housing
         [ProducesResponseType<IFinalResult>(StatusCodes.Status201Created)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<IFinalResult>> AddAsync([FromBody] AddLeaderDto dto, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> AddAsync([FromForm] AddLeaderDto dto, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await leaderService.AddAsync(dto, cancellationToken);
 
@@ -59,7 +59,7 @@ namespace SonoBooking.Api.Controllers.V1.Housing
         [ProducesResponseType<IFinalResult>(StatusCodes.Status202Accepted)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status400BadRequest)]
         [ProducesResponseType<IFinalResult>(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromBody] AddLeaderDto model, CancellationToken cancellationToken = default)
+        public async Task<ActionResult<IFinalResult>> UpdateAsync([FromForm] AddLeaderDto model, CancellationToken cancellationToken = default)
         {
             IFinalResult res = await leaderService.UpdateAsync(model, cancellationToken);
 

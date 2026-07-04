@@ -322,6 +322,17 @@ namespace SonoBooking.Application.Services.BusinessNotification.Chat
                 }
 
                 await context.SaveChangesAsync(cancellationToken);
+
+                await realtimePublisher.PublishConversationUpdatedAsync(
+                    currentUser.Id,
+                    new ChatConversationUpdatedDto
+                    {
+                        Id = conversationId,
+                        UnreadCount = 0
+                    },
+                    cancellationToken);
+
+                await PublishChatUnreadCountAsync(currentUser.Id, cancellationToken);
             }
 
             var dtos = page
@@ -512,14 +523,10 @@ namespace SonoBooking.Application.Services.BusinessNotification.Chat
 
                 foreach (var participantId in participants)
                 {
-                    var unreadCount = await context.Messages
-                        .AsNoTracking()
-                        .CountAsync(m =>
-                            !m.IsDeleted &&
-                            m.MessagingGroupId == conversationId &&
-                            m.ReceiverId == participantId &&
-                            !m.IsRead,
-                            cancellationToken);
+                    var unreadCount = await GetConversationUnreadCountAsync(
+                        conversationId,
+                        participantId,
+                        cancellationToken);
 
                     await realtimePublisher.PublishConversationUpdatedAsync(
                         participantId,
@@ -531,6 +538,8 @@ namespace SonoBooking.Application.Services.BusinessNotification.Chat
                             UnreadCount = unreadCount
                         },
                         cancellationToken);
+
+                    await PublishChatUnreadCountAsync(participantId, cancellationToken);
                 }
             }
 
@@ -868,6 +877,65 @@ namespace SonoBooking.Application.Services.BusinessNotification.Chat
                 Content = message.Content,
                 CreatedAt = message.CreatedAt
             };
+        }
+
+        private async Task<int> GetConversationUnreadCountAsync(
+            string conversationId,
+            string userId,
+            CancellationToken cancellationToken)
+        {
+            return await context.Messages
+                .AsNoTracking()
+                .CountAsync(m =>
+                    !m.IsDeleted &&
+                    m.MessagingGroupId == conversationId &&
+                    m.ReceiverId == userId &&
+                    !m.IsRead,
+                    cancellationToken);
+        }
+
+        private async Task<int> GetTotalUnreadCountForUserAsync(
+            string userId,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return 0;
+            }
+
+            return await context.Messages
+                .AsNoTracking()
+                .CountAsync(m =>
+                    !m.IsDeleted &&
+                    m.ReceiverId == userId &&
+                    !m.IsRead,
+                    cancellationToken);
+        }
+
+        private Task PublishChatUnreadCountAsync(
+            string userId,
+            CancellationToken cancellationToken)
+        {
+            return PublishChatUnreadCountAsync(userId, null, cancellationToken);
+        }
+
+        private async Task PublishChatUnreadCountAsync(
+            string userId,
+            int? unreadCount,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return;
+            }
+
+            var totalUnread = unreadCount
+                ?? await GetTotalUnreadCountForUserAsync(userId, cancellationToken);
+
+            await realtimePublisher.PublishChatUnreadCountAsync(
+                userId,
+                totalUnread,
+                cancellationToken);
         }
 
         public async Task<IFinalResult> GetOnlineStatusesAsync(

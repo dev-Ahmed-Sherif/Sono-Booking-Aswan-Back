@@ -7,7 +7,7 @@ using SonoBooking.Common.DTO.Base;
 using SonoBooking.Common.DTO.Housing.Apartment;
 using SonoBooking.Common.DTO.Housing.Room;
 using SonoBooking.Common.DTO.Housing.Room.Parameters;
-using SonoBooking.Common.DTO.Housing.UnitImage;
+using SonoBooking.Application.Services.Housing.UnitImages;
 using SonoBooking.Common.DTO.Lookup.Attachment;
 using SonoBooking.Domain;
 using SonoBooking.Domain.Entities.Housing;
@@ -34,15 +34,7 @@ namespace SonoBooking.Application.Services.Housing.Rooms
 
             RoomDto mapped = Mapper.Map<Room, RoomDto>(entity);
 
-            mapped.Images = [.. entity.UnitImages.Select(a => new UnitImageDto
-                                        {
-                                            Id = a.Id,
-                                            AttachmentId = a.AttachmentId,
-                                            RoomId = a.RoomId,
-                                            Name = a.Attachment.FileName,
-                                            Url = a.Attachment.Url,
-                                            IsPrimary = a.IsPrimary
-                                        })];
+            mapped.Images = UnitImageDtoMapper.MapFromEntities(entity?.UnitImages);
 
 
             return ResponseResult.PostResult
@@ -58,15 +50,21 @@ namespace SonoBooking.Application.Services.Housing.Rooms
                 disableTracking: disableTracking,
                 include: source => source
                     .Include(r => r.Apartment)
-                    .Include(r => r.RoomType),
+                    .Include(r => r.RoomType)
+                    .Include(r => r.UnitImages)
+                    .ThenInclude(ui => ui.Attachment),
                 cancellationToken: cancellationToken);
 
             IEnumerable<Room> filteredEntities = isSuperAdmin
                 ? entities
                 : entities.Where(e => !e.IsDeleted);
 
-            IEnumerable<RoomDto> mapped =
-                Mapper.Map<IEnumerable<Room>, IEnumerable<RoomDto>>(filteredEntities);
+            var entityList = filteredEntities.ToList();
+            List<RoomDto> mapped =
+                Mapper.Map<List<Room>, List<RoomDto>>(entityList);
+
+            for (var i = 0; i < entityList.Count; i++)
+                mapped[i].Images = UnitImageDtoMapper.MapFromEntities(entityList[i].UnitImages);
 
             return ResponseResult.PostResult(result: mapped, status: HttpStatusCode.OK, exception: null,
                                              message: HttpStatusCode.OK.ToString());

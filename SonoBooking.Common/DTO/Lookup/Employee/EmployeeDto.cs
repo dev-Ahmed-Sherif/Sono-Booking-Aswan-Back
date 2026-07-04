@@ -10,8 +10,16 @@ namespace SonoBooking.Common.DTO.Lookup.Employee
     {
         public string Id { get; set; }
 
+        [Required, MaxLength(280)]
+        public string Name { get; set; }
+
         [Required, MaxLength(20)]
         public string NationalId { get; set; }
+
+        public string EmployeeOrgId { get; set; }
+        public string EmployeeJobId { get; set; }
+        public string EmployeeOrg { get; set; }
+        public string EmployeeJob { get; set; }
 
         public DateTime CreatedAt { get; set; }
         public string CreatedById { get; set; }

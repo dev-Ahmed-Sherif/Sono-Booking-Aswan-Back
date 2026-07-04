@@ -40,4 +40,6 @@ public class DashboardDailyStatDto
     public int ApprovedRequests { get; set; }
     public int RejectedRequests { get; set; }
     public decimal TotalRevenue { get; set; }
+    public int OccupancyPercent { get; set; }
+    public List<ApartmentOccupancyItemDto> ApartmentOccupancy { get; set; } = [];
 }

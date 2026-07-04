@@ -17,6 +17,11 @@ namespace SonoBooking.Application.Services.BusinessNotification.Chat
             ChatConversationUpdatedDto update,
             CancellationToken cancellationToken = default);
 
+        Task PublishChatUnreadCountAsync(
+            string userId,
+            int unreadCount,
+            CancellationToken cancellationToken = default);
+
         Task PublishUserPresenceChangedAsync(
             string userId,
             bool isOnline,

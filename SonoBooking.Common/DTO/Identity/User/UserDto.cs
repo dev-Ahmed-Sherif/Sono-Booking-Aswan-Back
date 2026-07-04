@@ -15,6 +15,10 @@ namespace SonoBooking.Common.DTO.Identity.User
         public string DocumentNumber { get; set; }
         public IDType DocumentType { get; set; }
         public string DocumentImageUrl { get; set; }
+        public string LeaderId { get; set; }
+        public string LeaderName { get; set; }
+        public string JobTitle { get; set; }
+        public string Organization { get; set; }
         public string RoleId { get; set; }
         public string Role { get; set; }
         public DateTime CreatedAt { get; set; }

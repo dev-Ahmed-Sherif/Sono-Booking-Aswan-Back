@@ -21,6 +21,8 @@ namespace SonoBooking.Common.DTO.Housing.Request
         public string? RejectionReason { get; set; }
         public string RequestTypeId { get; set; }
         public string UserId { get; set; }
+        public string RequestToId { get; set; }
+        public float Percentage { get; set; }
         public string? ApprovedById { get; set; }
         public DateTime? ApprovedAt { get; set; }
         public DateTime CreatedAt { get; set; }

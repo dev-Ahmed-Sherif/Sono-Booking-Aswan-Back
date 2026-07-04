@@ -6,6 +6,7 @@ using SonoBooking.Common.Constants.Auth;
 using SonoBooking.Common.Constants.BusinessNotification;
 using SonoBooking.Domain;
 using SonoBooking.Domain.Entities.BusinessNotification;
+using SonoBooking.Domain.Entities.Housing;
 using SonoBooking.Domain.Entities.Identity;
 using SonoBooking.Infrastructure.Context;
 using SonoBooking.Infrastructure.DataInitializer;
@@ -325,11 +326,53 @@ namespace SonoBooking.Api.Seed
                         await dbContext.Set<NotificationGroup>().AddRangeAsync(groupsToAdd);
                 }
 
+                var seedLeaders = dataInitializer.SeedLeadersAsync().ToList();
+                if (seedLeaders.Count > 0)
+                {
+                    var existingLeaderIds = await dbContext.Leaders
+                        .Where(l => !l.IsDeleted)
+                        .Select(l => l.Id)
+                        .ToListAsync();
+
+                    var leadersToAdd = seedLeaders
+                        .Where(l => !string.IsNullOrWhiteSpace(l.Id))
+                        .Where(l => !existingLeaderIds.Contains(l.Id))
+                        .ToList();
+
+                    if (leadersToAdd.Count > 0)
+                        await dbContext.Leaders.AddRangeAsync(leadersToAdd);
+                }
+
                 await dbContext.SaveChangesAsync();
+                await BackfillRequestToLeaderAsync(dbContext);
             }
             catch (Exception ex)
             {
                 Log.Warning(ex, "Lookup seed skipped or failed");
+            }
+        }
+
+        private static async Task BackfillRequestToLeaderAsync(SonoBookingDbContext dbContext)
+        {
+            try
+            {
+                string? defaultLeaderId = await dbContext.Leaders
+                    .Where(l => !l.IsDeleted && l.IsActive)
+                    .OrderBy(l => l.CreatedAt)
+                    .Select(l => l.Id)
+                    .FirstOrDefaultAsync();
+
+                if (string.IsNullOrWhiteSpace(defaultLeaderId))
+                    return;
+
+                await dbContext.Database.ExecuteSqlInterpolatedAsync(
+                    $@"UPDATE [booking].[Requests]
+                       SET [RequestToId] = {defaultLeaderId}
+                       WHERE [RequestToId] IS NULL OR [RequestToId] = ''");
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "RequestToId backfill skipped");
             }
         }
 

@@ -311,7 +311,8 @@ namespace SonoBooking.Application.Services.Base
             var claimData = new UserDataDto(
                 claims?.FindFirst(t => t.Type == ClaimTypes.NameIdentifier)?.Value,
                 claims?.FindFirst(t => t.Type == ClaimTypes.Name)?.Value,
-                claims?.FindFirst(t => t.Type == ClaimTypes.Role)?.Value, [], "", "",
+                claims?.FindFirst(t => t.Type == ClaimTypes.Role)?.Value, [], "",
+                claims?.FindFirst(x => x.Type == AuthConstants.LeaderId)?.Value ?? "",
                 claims?.FindFirst(x => x.Type == AuthConstants.GovId)?.Value,
                 claims?.FindFirst(x => x.Type == AuthConstants.EmployeeId)?.Value);
             return claimData;

@@ -7,8 +7,8 @@ namespace SonoBooking.Common.DTO.Identity.User
                               string Role, 
                               List<UserPermissionDto> Permissions, 
                               string OrganizationId,
-                              string FloatingUnitId,
+                              string LeaderId,
                               string GovernorateId,
-                              string? EmployeeId);
+                              string EmployeeId);
 }
 

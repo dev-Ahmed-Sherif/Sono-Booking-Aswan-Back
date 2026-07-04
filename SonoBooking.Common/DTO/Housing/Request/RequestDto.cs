@@ -24,6 +24,9 @@ namespace SonoBooking.Common.DTO.Housing.Request
         public string RequestType { get; set; }
         public string UserId { get; set; }
         public string UserName { get; set; }
+        public string RequestToId { get; set; }
+        public string RequestToName { get; set; }
+        public float Percentage { get; set; }
         public string? ApprovedById { get; set; }
         public DateTime? ApprovedAt { get; set; }
         public ICollection<RequestAttachDto> RequestAttaches { get; set; }

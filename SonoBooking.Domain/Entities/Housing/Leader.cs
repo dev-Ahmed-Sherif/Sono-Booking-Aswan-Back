@@ -24,6 +24,7 @@ public class Leader : BaseAudit<string>
     [Required]
     public required bool IsActive { get; set; }
 
+    public byte[]? FileContent { get; set; }
 
     public virtual ICollection<Approval> Approvals { get; set; } = new List<Approval>();
 

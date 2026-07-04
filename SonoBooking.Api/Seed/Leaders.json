@@ -1,0 +1,41 @@
+[
+  {
+    "Id": "019f0e10-3a9b-7a5c-9c9b-5b44b1a30001",
+    "FullName": "محافظ أسوان",
+    "Position": "محافظ أسوان",
+    "IsActive": true,
+    "CreatedAt": "01/01/2023",
+    "CreatedById": "System",
+    "CreatedBy": "System",
+    "ModifiedAt": "01/01/2023",
+    "ModifiedById": "System",
+    "ModifiedBy": "System",
+    "IsDeleted": false
+  },
+  {
+    "Id": "019f0e10-3a9b-7a5c-9c9b-5b44b1a30002",
+    "FullName": "السكرتير العام",
+    "Position": "السكرتير العام",
+    "IsActive": true,
+    "CreatedAt": "01/01/2023",
+    "CreatedById": "System",
+    "CreatedBy": "System",
+    "ModifiedAt": "01/01/2023",
+    "ModifiedById": "System",
+    "ModifiedBy": "System",
+    "IsDeleted": false
+  },
+  {
+    "Id": "019f0e10-3a9b-7a5c-9c9b-5b44b1a30003",
+    "FullName": "السكرتير المساعد",
+    "Position": "السكرتير المساعد",
+    "IsActive": true,
+    "CreatedAt": "01/01/2023",
+    "CreatedById": "System",
+    "CreatedBy": "System",
+    "ModifiedAt": "01/01/2023",
+    "ModifiedById": "System",
+    "ModifiedBy": "System",
+    "IsDeleted": false
+  }
+]
