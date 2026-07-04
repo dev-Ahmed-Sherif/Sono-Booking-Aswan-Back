@@ -164,7 +164,7 @@ namespace SonoBooking.Application.Services.Housing.Requests
 
             float totalRevenue = (float)requests
                 .Where(r => r.Reservation != null && r.Status == Status.Approved)
-                .Sum(r => r.Reservation!.Payment.Amount);
+                .Sum(r => r.Reservation!.Payment?.Amount ?? 0);
 
             RequestReportDto reportData = new()
             {

@@ -15,6 +15,9 @@
         public string User { get; set; }
         public string StartDateReport { get; set; }
         public string EndDateReport { get; set; }
+        public string StartDate { get; set; }
+        public string CheckInDate { get; set; }
+        public string ActualCheckOutDate { get; set; }
     }
 }
 

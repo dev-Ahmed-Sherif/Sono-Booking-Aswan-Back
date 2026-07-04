@@ -37,9 +37,12 @@ namespace SonoBooking.Application.Mapping
                 .ForMember(dest => dest.Beds, opt => opt.MapFrom(src => CountRequestUnits(src, unit => !string.IsNullOrWhiteSpace(unit.BedId))))
                 .ForMember(dest => dest.RequestStatus, opt => opt.MapFrom(src => src.Request != null && src.Request.Status == Status.Approved))
                 .ForMember(dest => dest.ReservationStatus, opt => opt.MapFrom(src =>
-                    src.Status != ReservationStatus.Canceled && src.Status != ReservationStatus.NoShow))
+                    src.Status != ReservationStatus.Canceled && src.Status != ReservationStatus.NoShow && src.Status != ReservationStatus.Reserved))
                 .ForMember(dest => dest.Revenue, opt => opt.MapFrom(src => (float)src.Payment.Amount))
                 .ForMember(dest => dest.Notes, opt => opt.MapFrom(src => src.CancelationReason ?? string.Empty))
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.StartDate.ToString("dd/MM/yyyy")))
+                .ForMember(dest => dest.CheckInDate, opt => opt.MapFrom(src => src.CheckInDate.HasValue ? src.CheckInDate.Value.ToString("dd/MM/yyyy") : string.Empty))
+                .ForMember(dest => dest.ActualCheckOutDate, opt => opt.MapFrom(src => src.ActualCheckOutDate.HasValue ? src.ActualCheckOutDate.Value.ToString("dd/MM/yyyy") : string.Empty))
                 .ForMember(dest => dest.User, opt => opt.Ignore())
                 .ForMember(dest => dest.StartDateReport, opt => opt.Ignore())
                 .ForMember(dest => dest.EndDateReport, opt => opt.Ignore());
