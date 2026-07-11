@@ -51,7 +51,6 @@ namespace SonoBooking.Api
                 var app = builder.Build();
 
                 var shell = new Shell();
-                app.UseCors("policy");
                 shell.ConfigureHttp(app, app.Environment);
                 Shell.Start(shell);
                 if (app.Environment.IsDevelopment())
@@ -72,6 +71,7 @@ namespace SonoBooking.Api
                 app.ConfigureCustomMiddleware();
                 app.UseWebSockets();
                 app.UseRouting();
+                app.UseCors("policy");
                 app.UseAuthentication();
                 app.UseAuthorization();
                 app.MapControllers();

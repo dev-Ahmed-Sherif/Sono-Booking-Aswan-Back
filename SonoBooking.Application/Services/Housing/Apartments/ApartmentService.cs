@@ -7,6 +7,7 @@ using SonoBooking.Common.DTO.Base;
 using SonoBooking.Common.DTO.Housing.Apartment;
 using SonoBooking.Common.DTO.Housing.Apartment.Parameters;
 using SonoBooking.Application.Services.Housing.UnitImages;
+using SonoBooking.Application.Services.BackgroundJobs.Housing.Units;
 using SonoBooking.Common.DTO.Lookup.ApartmentType;
 using SonoBooking.Common.DTO.Lookup.Attachment;
 using SonoBooking.Domain;
@@ -24,7 +25,8 @@ namespace SonoBooking.Application.Services.Housing.Apartments
 {
     public class ApartmentService(
            IServiceBaseParameter<Apartment> businessBaseParameter, 
-           IAttachmentService attachmentService) : 
+           IAttachmentService attachmentService,
+           IUnitAdministrativeStatusJobScheduler administrativeStatusJobScheduler) : 
            BaseService<Apartment, AddApartmentDto, EditApartmentDto, ApartmentDto, string, string>(businessBaseParameter), IApartmentService
     {
         public override async Task<IFinalResult> GetByIdAsync(object id, CancellationToken cancellationToken = default)
@@ -123,6 +125,13 @@ namespace SonoBooking.Application.Services.Housing.Apartments
 
                 SetEntityCreatedBaseProperties(entity);
 
+                entity.AdministrativeStatusJobId = administrativeStatusJobScheduler.SyncAdministrativeStatusJob(
+                    entity.AdministrativeStatus,
+                    null,
+                    entity.EndAdministrativeDate,
+                    entity.Id,
+                    HousingUnitType.Apartment);
+
                 await UnitOfWork.Repository.AddAsync(entity, cancellationToken);
 
                 var affectedRows = await UnitOfWork.SaveChangesAsync(cancellationToken);
@@ -200,6 +209,13 @@ namespace SonoBooking.Application.Services.Housing.Apartments
                 }
 
                 SetEntityModifiedBaseProperties(entity);
+
+                entity.AdministrativeStatusJobId = administrativeStatusJobScheduler.SyncAdministrativeStatusJob(
+                    entity.AdministrativeStatus,
+                    entityToUpdate.AdministrativeStatusJobId,
+                    entity.EndAdministrativeDate,
+                    entity.Id,
+                    HousingUnitType.Apartment);
 
                 UnitOfWork.Repository.Update(entityToUpdate, entity);
 

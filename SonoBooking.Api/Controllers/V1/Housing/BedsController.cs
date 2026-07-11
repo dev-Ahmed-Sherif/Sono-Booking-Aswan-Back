@@ -65,7 +65,10 @@ namespace SonoBooking.Api.Controllers.V1.Housing
             Expression<Func<Bed, bool>> predicate;
 
             predicate = isAnonymous || isAvailableRequested
-                ? AvailabilityCatalogStatus.BedMatchesInquiry(hasInquiryStart, roomId)
+                ? AvailabilityCatalogStatus.BedMatchesInquiry(
+                    hasInquiryStart,
+                    roomId,
+                    excludeAdministrative: !isHierarchyCatalog)
                 : string.IsNullOrWhiteSpace(roomId) ? null : b => b.RoomId == roomId;
 
             IFinalResult res = await bedService.GetAllAsync(predicate: predicate, cancellationToken: cancellationToken);

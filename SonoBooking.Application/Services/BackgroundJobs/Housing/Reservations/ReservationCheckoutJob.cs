@@ -18,7 +18,7 @@ namespace SonoBooking.Application.Services.BackgroundJobs.Housing.Reservations
             RecurringJob.AddOrUpdate<ReservationCheckoutJob>(
                 "reservation-checkout",
                 job => job.ReservationCheckoutJobAsync(),
-                Cron.Daily(14));
+                Cron.Daily(7));
         }
 
         public async Task ReservationCheckoutJobAsync()

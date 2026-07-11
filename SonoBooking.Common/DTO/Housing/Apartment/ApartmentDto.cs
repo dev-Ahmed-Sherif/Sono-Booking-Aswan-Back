@@ -15,6 +15,9 @@ namespace SonoBooking.Common.DTO.Housing.Apartment
         public string Description { get; set; }
         public decimal Price { get; set; }
         public UnitStatus Status { get; set; }
+        public bool AdministrativeStatus { get; set; }
+        public DateOnly? StartAdministrativeDate { get; set; }
+        public DateOnly? EndAdministrativeDate { get; set; }
         public Gender Gender { get; set; }
         public AllocationType AllocationType { get; set; }
         public string Street { get; set; }

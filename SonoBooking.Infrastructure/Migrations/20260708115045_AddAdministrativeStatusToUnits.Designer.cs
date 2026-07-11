@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SonoBooking.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using SonoBooking.Infrastructure.Context;
 namespace SonoBooking.Infrastructure.Migrations
 {
     [DbContext(typeof(SonoBookingDbContext))]
-    partial class SonoBookingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260708115045_AddAdministrativeStatusToUnits")]
+    partial class AddAdministrativeStatusToUnits
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -444,10 +447,6 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<string>("AdministrativeStatusJobId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<string>("AllocationType")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -500,9 +499,6 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<DateOnly?>("EndAdministrativeDate")
-                        .HasColumnType("date");
-
                     b.Property<string>("Floor")
                         .IsRequired()
                         .HasMaxLength(10)
@@ -542,9 +538,6 @@ namespace SonoBooking.Infrastructure.Migrations
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(10, 2)");
-
-                    b.Property<DateOnly?>("StartAdministrativeDate")
-                        .HasColumnType("date");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -660,10 +653,6 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<string>("AdministrativeStatusJobId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<string>("BedNumber")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -694,9 +683,6 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<DateOnly?>("EndAdministrativeDate")
-                        .HasColumnType("date");
-
                     b.Property<string>("IpAddress")
                         .HasMaxLength(28)
                         .HasColumnType("nvarchar(28)");
@@ -724,9 +710,6 @@ namespace SonoBooking.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateOnly?>("StartAdministrativeDate")
-                        .HasColumnType("date");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -1366,10 +1349,6 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<string>("AdministrativeStatusJobId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<string>("ApartmentId")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -1394,9 +1373,6 @@ namespace SonoBooking.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateOnly?>("EndAdministrativeDate")
-                        .HasColumnType("date");
 
                     b.Property<string>("IpAddress")
                         .HasMaxLength(28)
@@ -1430,9 +1406,6 @@ namespace SonoBooking.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateOnly?>("StartAdministrativeDate")
-                        .HasColumnType("date");
 
                     b.Property<string>("Status")
                         .IsRequired()

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SonoBooking.Infrastructure.Context;
 
@@ -11,9 +12,11 @@ using SonoBooking.Infrastructure.Context;
 namespace SonoBooking.Infrastructure.Migrations
 {
     [DbContext(typeof(SonoBookingDbContext))]
-    partial class SonoBookingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260709104258_AddAdministrativeDatesToUnits")]
+    partial class AddAdministrativeDatesToUnits
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -444,10 +447,6 @@ namespace SonoBooking.Infrastructure.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<string>("AdministrativeStatusJobId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<string>("AllocationType")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -659,10 +658,6 @@ namespace SonoBooking.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
-
-                    b.Property<string>("AdministrativeStatusJobId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("BedNumber")
                         .IsRequired()
@@ -1365,10 +1360,6 @@ namespace SonoBooking.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
-
-                    b.Property<string>("AdministrativeStatusJobId")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("ApartmentId")
                         .IsRequired()

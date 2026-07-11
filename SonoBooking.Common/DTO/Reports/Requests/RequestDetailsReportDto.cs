@@ -26,6 +26,7 @@ namespace SonoBooking.Common.DTO.Reports.Requests
         public string Phone { get; set; }
         public string Attachments { get; set; }
         public string RejectionReason { get; set; }
+        public string ApprovalNotes { get; set; }
         public string ShowApprovedStamp { get; set; }
         public string ShowRejectedStamp { get; set; }
         public string StatusUpdatedAt { get; set; }
@@ -33,6 +34,9 @@ namespace SonoBooking.Common.DTO.Reports.Requests
         public byte[]? LeaderSignatureImage { get; set; }
         public string LeaderSignatureMimeType { get; set; }
         public string ShowLeaderSignature { get; set; }
+        public byte[]? QrCodeImage { get; set; }
+        public byte[]? ApprovedStampImage { get; set; }
+        public byte[]? RejectedStampImage { get; set; }
         public string User { get; set; }
     }
 }

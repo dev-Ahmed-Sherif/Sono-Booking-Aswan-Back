@@ -29,6 +29,15 @@ public class Room : BaseAudit<string>
     [Required]
     public required UnitStatus Status { get; set; } = UnitStatus.Available;
 
+    public bool AdministrativeStatus { get; set; }
+
+    public DateOnly? StartAdministrativeDate { get; set; }
+
+    public DateOnly? EndAdministrativeDate { get; set; }
+
+    [MaxLength(50)]
+    public string? AdministrativeStatusJobId { get; set; }
+
     [Required, MaxLength(50)]
     [ForeignKey(nameof(Apartment))]
     public required string ApartmentId { get; set; }

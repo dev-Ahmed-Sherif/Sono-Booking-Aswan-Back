@@ -27,7 +27,7 @@
         public const string NationalIdExisted = "NATIONAL_ID_EXISTED";
         public const string EmailExisted = "EMAIL_EXISTED";
         public const string PasswordResetContactAdmin =
-            "يرجى التواصل مع الادارة فى الديوان لتغير الباسورد";
+            "يرجى التواصل مع ادارة الديوان لتغيير الباسورد";
         public const string NotEmployee = "NOT_EMPLOYEE";
 
     }

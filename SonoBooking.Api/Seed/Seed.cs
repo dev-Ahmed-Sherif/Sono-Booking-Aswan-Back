@@ -23,6 +23,7 @@ namespace SonoBooking.Api.Seed
         private const string UserRoleName = "User";
         private const string SuperUserEmail = "super@sonobooking.com";
         private const string LeaderUserEmail = "leader@sonobooking.com";
+        private const string LeaderSeedLeaderId = "019f0e10-3a9b-7a5c-9c9b-5b44b1a30001";
         private const string ReceptionStaffUserEmail = "reception@sonobooking.com";
         private const string OwnerUserEmail = "owner@sonobooking.com";
         private const string SuperAdminSeedPassword = "(as1+me2)";
@@ -345,6 +346,9 @@ namespace SonoBooking.Api.Seed
 
                 await dbContext.SaveChangesAsync();
                 await BackfillRequestToLeaderAsync(dbContext);
+
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+                await EnsureLeaderUserLeaderIdAsync(userManager);
             }
             catch (Exception ex)
             {
@@ -373,6 +377,35 @@ namespace SonoBooking.Api.Seed
             catch (Exception ex)
             {
                 Log.Warning(ex, "RequestToId backfill skipped");
+            }
+        }
+
+        private static async Task EnsureLeaderUserLeaderIdAsync(UserManager<User> userManager)
+        {
+            try
+            {
+                User? user = await userManager.FindByEmailAsync(LeaderUserEmail);
+                if (user == null)
+                    return;
+
+                if (string.Equals(user.LeaderId, LeaderSeedLeaderId, StringComparison.Ordinal))
+                    return;
+
+                user.LeaderId = LeaderSeedLeaderId;
+                user.ModifiedAt = DateTime.UtcNow;
+
+                var result = await userManager.UpdateAsync(user);
+                if (result.Succeeded)
+                    Log.Information("Assigned LeaderId {LeaderId} to seed user: {Email}", LeaderSeedLeaderId, LeaderUserEmail);
+                else
+                    Log.Warning(
+                        "Failed to assign LeaderId to seed user {Email}: {Errors}",
+                        LeaderUserEmail,
+                        string.Join(", ", result.Errors.Select(e => e.Description)));
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Leader user LeaderId seed skipped or failed");
             }
         }
 

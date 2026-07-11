@@ -46,6 +46,7 @@ namespace SonoBooking.Api.Controllers.V1.Housing
             [FromHeader(Name = "StartDate")] string startDate = null,
             [FromHeader(Name = "Nights")] int? nights = null,
             [FromHeader(Name = "Gender")] string gender = null,
+            [FromHeader(Name = "Hierarchy")] string hierarchy = null,
             CancellationToken cancellationToken = default)
         {
             var isAnonymous = !(User?.Identity?.IsAuthenticated ?? false);
@@ -53,14 +54,20 @@ namespace SonoBooking.Api.Controllers.V1.Housing
             var isAvailableRequested =
                 string.Equals(requestedStatus, "متاح", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(requestedStatus, "Available", StringComparison.OrdinalIgnoreCase);
+            var isHierarchyCatalog =
+                string.Equals(hierarchy, "true", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(hierarchy, "1", StringComparison.OrdinalIgnoreCase);
 
             if (isAnonymous && !isAvailableRequested)
                 return Unauthorized();
 
-            var hasInquiryStart = AvailabilityInquiryFilter.TryParseInquiryStart(startDate, out _);
+            var hasInquiryStart = AvailabilityInquiryFilter.TryParseInquiryStart(startDate, out _)
+                || isHierarchyCatalog;
             Expression<Func<Apartment, bool>> predicate =
                 isAnonymous || isAvailableRequested
-                    ? AvailabilityCatalogStatus.ApartmentMatchesInquiry(hasInquiryStart)
+                    ? AvailabilityCatalogStatus.ApartmentMatchesInquiry(
+                        hasInquiryStart,
+                        excludeAdministrative: !isHierarchyCatalog)
                     : null;
 
             IFinalResult res = await apartmentService.GetAllAsync(predicate: predicate, cancellationToken: cancellationToken);

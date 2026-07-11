@@ -22,11 +22,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Globalization;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.IO;
 using System.Net;
+using System.Text.Json;
+using QRCoder;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -557,10 +560,14 @@ namespace SonoBooking.Application.Services.Housing.Requests
                     .Include(r => r.RequestTo)
                     .Include(r => r.RequestType)
                     .Include(r => r.RequestAttaches).ThenInclude(a => a.Attachment)
+                    .Include(r => r.RequestUnits).ThenInclude(u => u.Apartment)
+                    .Include(r => r.RequestUnits).ThenInclude(u => u.Room)
+                    .Include(r => r.RequestUnits).ThenInclude(u => u.Bed)
                     .Include(r => r.RequestUnits).ThenInclude(u => u.Apartment).ThenInclude(a => a.Governorate)
                     .Include(r => r.RequestUnits).ThenInclude(u => u.Room).ThenInclude(room => room.Apartment).ThenInclude(a => a.Governorate)
                     .Include(r => r.RequestUnits).ThenInclude(u => u.Bed).ThenInclude(b => b.Room).ThenInclude(room => room.Apartment).ThenInclude(a => a.Governorate)
-                    .Include(r => r.RequestParticipants).ThenInclude(p => p.Companion).ThenInclude(c => c.Relationship),
+                    .Include(r => r.RequestParticipants).ThenInclude(p => p.Companion).ThenInclude(c => c.Relationship)
+                    .Include(r => r.Reservation),
                 disableTracking: true,
                 cancellationToken: cancellationToken);
 
@@ -624,14 +631,184 @@ namespace SonoBooking.Application.Services.Housing.Requests
                 RejectionReason = isRejected
                     ? (string.IsNullOrWhiteSpace(entity.RejectionReason) ? "لم يتم تحديد سبب" : entity.RejectionReason.Trim())
                     : string.Empty,
+                ApprovalNotes = isApproved
+                    ? BuildApprovalNotes(entity, unitGovernorate)
+                    : string.Empty,
                 ShowApprovedStamp = PurposeCheckboxMark(isApproved),
                 ShowRejectedStamp = PurposeCheckboxMark(isRejected),
                 StatusUpdatedAt = statusUpdatedAt,
                 StatusUpdatedAtImage = GenerateRotatedStatusDateImage(statusUpdatedAt, isRejected),
                 LeaderSignatureImage = leaderSignature,
                 LeaderSignatureMimeType = leaderSignature == null ? string.Empty : ResolveImageMimeType(leaderSignature),
-                ShowLeaderSignature = PurposeCheckboxMark(showLeaderSignature)
+                ShowLeaderSignature = PurposeCheckboxMark(showLeaderSignature),
+                QrCodeImage = GenerateRequestDetailsQrCodeImage(entity),
+                ApprovedStampImage = LoadStampImageWithTransparentBackground("RequestApprovedStamp.png"),
+                RejectedStampImage = LoadStampImageWithTransparentBackground("RequestRejectedStamp.png")
             };
+        }
+
+        private static string BuildApprovalNotes(Request entity, string unitLocation)
+        {
+            decimal totalAmount = ResolveRequestTotalAmount(entity);
+            decimal paymentRate = NormalizeRequestPaymentPercentage(entity.Percentage);
+            decimal remainingAmount = Math.Max(0, totalAmount - (totalAmount * paymentRate));
+            string formattedAmount = remainingAmount.ToString("N0", CultureInfo.GetCultureInfo("ar-EG"));
+            string location = string.IsNullOrWhiteSpace(unitLocation) ? "أسوان" : unitLocation.Trim();
+
+            return string.Join(
+                Environment.NewLine,
+                $"• سداد المستحقات: يرجى التكرم بسداد المبلغ المتبقي وقدره {formattedAmount} ج.م في (استراحة {location}) قبل البدء في إجراءات تسجيل الوصول، حيث يتعذر تسليم الوحدة قبل سداد كامل قيمة الحجز.",
+                "• مواعيد الوصول والمغادرة: تبدأ فترة الإقامة المحجوزة من الساعة 12:00 ظهراً في اليوم الأول للوصول، وتنتهي في تمام الساعة 12:00 ظهراً في يوم المغادرة.",
+                "• المغادرة المبكرة: في حال رغبتكم في المغادرة قبل انتهاء المدة المحجوزة، نود إفادتكم بأن المبالغ المدفوعة غير قابلة للاسترداد.",
+                "• إلغاء الحجز التلقائي: يرجى تأكيد ساعة وصولكم في اليوم الأول؛ وفي حال عدم الحضور أو التأكيد، يتم إلغاء الحجز تلقائياً في تمام الساعة 12:00 منتصف الليل.",
+                "• إعادة تفعيل الحجز: في حال إلغاء الحجز، يمكن إعادة تفعيله مجدداً حسب توفر الوحدات السكنية وقتها، وتُطبق الأسعار السائدة حينها مع الالتزام بدفع كامل مدة الحجز الأصلي.");
+        }
+
+        private static decimal ResolveRequestTotalAmount(Request entity)
+        {
+            if (entity.Reservation?.TotalAmount > 0)
+                return entity.Reservation.TotalAmount;
+
+            int nights = entity.EndDate.DayNumber - entity.StartDate.DayNumber;
+            if (nights <= 0)
+                nights = 1;
+
+            decimal nightlySum = entity.RequestUnits?
+                .Where(u => !u.IsDeleted)
+                .Sum(ResolveRequestUnitNightlyPrice) ?? 0;
+
+            return nightlySum * nights;
+        }
+
+        private static decimal ResolveRequestUnitNightlyPrice(RequestUnit unit)
+        {
+            if (!string.IsNullOrWhiteSpace(unit.BedId) && unit.Bed != null)
+                return unit.Bed.Price;
+
+            if (!string.IsNullOrWhiteSpace(unit.RoomId) && unit.Room != null)
+                return unit.Room.Price;
+
+            if (!string.IsNullOrWhiteSpace(unit.ApartmentId) && unit.Apartment != null)
+                return unit.Apartment.Price;
+
+            return 0;
+        }
+
+        private static decimal NormalizeRequestPaymentPercentage(float percentage)
+        {
+            decimal rate = (decimal)percentage;
+            if (rate > 1m)
+                rate /= 100m;
+
+            if (rate < 0m)
+                return 0m;
+
+            if (rate > 1m)
+                return 1m;
+
+            return rate;
+        }
+
+        private static byte[]? LoadStampImageWithTransparentBackground(string fileName)
+        {
+            string fileDirPath = Assembly.GetExecutingAssembly().Location.Replace("SonoBooking.Application.dll", string.Empty);
+            string filePath = Path.Combine(fileDirPath, "ReportsFiles", fileName);
+            if (!File.Exists(filePath))
+                return null;
+
+            using Bitmap original = new(filePath);
+            using Bitmap bitmap = new(original.Width, original.Height, PixelFormat.Format32bppArgb);
+            using (Graphics graphics = Graphics.FromImage(bitmap))
+            {
+                graphics.Clear(Color.Transparent);
+                graphics.DrawImage(original, 0, 0, original.Width, original.Height);
+            }
+
+            BitmapData bitmapData = bitmap.LockBits(
+                new Rectangle(0, 0, bitmap.Width, bitmap.Height),
+                ImageLockMode.ReadWrite,
+                PixelFormat.Format32bppArgb);
+
+            try
+            {
+                int byteCount = Math.Abs(bitmapData.Stride) * bitmap.Height;
+                byte[] pixels = new byte[byteCount];
+                System.Runtime.InteropServices.Marshal.Copy(bitmapData.Scan0, pixels, 0, byteCount);
+
+                for (int index = 0; index < pixels.Length; index += 4)
+                {
+                    byte blue = pixels[index];
+                    byte green = pixels[index + 1];
+                    byte red = pixels[index + 2];
+
+                    if (red >= 235 && green >= 235 && blue >= 235)
+                        pixels[index + 3] = 0;
+                }
+
+                System.Runtime.InteropServices.Marshal.Copy(pixels, 0, bitmapData.Scan0, byteCount);
+            }
+            finally
+            {
+                bitmap.UnlockBits(bitmapData);
+            }
+
+            using MemoryStream memoryStream = new();
+            bitmap.Save(memoryStream, ImageFormat.Png);
+            return memoryStream.ToArray();
+        }
+
+        private static byte[] GenerateRequestDetailsQrCodeImage(Request entity)
+        {
+            string[] lines =
+            [
+                "بيانات الطلب :",
+                $"{ToArabicDigits("1")}. رقم الطلب: {FormatRequestNumberForQr(entity.RequestNumber)}",
+                $"{ToArabicDigits("2")}. رقم القومي: {ToArabicDigits(entity.User?.DocumentNumber)}",
+                $"{ToArabicDigits("3")}. اسم مقدم الطلب: {entity.User?.FullName ?? string.Empty}",
+                $"{ToArabicDigits("4")}. رقم الهاتف: {ToArabicDigits(entity.User?.PhoneNumber)}",
+                $"{ToArabicDigits("5")}. تاريخ البداية: {ToArabicDigits(entity.StartDate.ToString("dd/MM/yyyy"))}",
+                $"{ToArabicDigits("6")}. تاريخ النهاية: {ToArabicDigits(entity.EndDate.ToString("dd/MM/yyyy"))}",
+                $"{ToArabicDigits("7")}. الحالة: {entity.Status.GetName().NameAr}"
+            ];
+            string payload = string.Join(Environment.NewLine, lines);
+
+            using QRCodeGenerator generator = new();
+            using QRCodeData qrData = generator.CreateQrCode(payload, QRCodeGenerator.ECCLevel.Q);
+            using PngByteQRCode qrCode = new(qrData);
+            return qrCode.GetGraphic(8);
+        }
+
+        private static string FormatRequestNumberForQr(string? requestNumber)
+        {
+            if (string.IsNullOrWhiteSpace(requestNumber))
+                return string.Empty;
+
+            const string prefix = "REQ-";
+            if (requestNumber.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                requestNumber = requestNumber[prefix.Length..];
+
+            string[] parts = requestNumber.Split('-', 2);
+            if (parts.Length == 2)
+                requestNumber = $"{parts[1]}-{parts[0]}";
+
+            return ToArabicDigits(requestNumber);
+        }
+
+        private static string ToArabicDigits(string? value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return string.Empty;
+
+            return string.Create(value.Length, value, static (span, input) =>
+            {
+                for (int i = 0; i < input.Length; i++)
+                {
+                    char character = input[i];
+                    span[i] = character is >= '0' and <= '9'
+                        ? (char)('\u0660' + (character - '0'))
+                        : character;
+                }
+            });
         }
 
         private static string ResolveImageMimeType(byte[] content)

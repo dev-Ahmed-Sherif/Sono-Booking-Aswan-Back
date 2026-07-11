@@ -696,8 +696,7 @@ namespace SonoBooking.Application.Services.Identity.Accounts
 
         private static bool IsPasswordResetExcludedEmail(string? email) =>
             !string.IsNullOrWhiteSpace(email) &&
-            (string.Equals(email.Trim(), AccountEmails.Leader, StringComparison.OrdinalIgnoreCase) ||
-             string.Equals(email.Trim(), AccountEmails.ReceptionStaff, StringComparison.OrdinalIgnoreCase));
+            email.Trim().Contains(AccountEmails.InternalDomain, StringComparison.OrdinalIgnoreCase);
 
         private async Task<string> CreateToken(User user, IEnumerable<Claim> claimDB, CancellationToken cancellationToken = default)
         {

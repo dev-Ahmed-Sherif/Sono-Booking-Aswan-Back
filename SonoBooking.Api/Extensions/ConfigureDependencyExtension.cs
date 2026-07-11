@@ -36,6 +36,7 @@ using SonoBooking.Application.Services.Base;
 using SonoBooking.Common.Infrastructure.UnitOfWork;
 using SonoBooking.Application.Services.Identity.Accounts;
 using SonoBooking.Application.Services.BackgroundJobs.Housing.Reservations;
+using SonoBooking.Application.Services.BackgroundJobs.Housing.Units;
 using SonoBooking.Application.Services.BusinessNotification.Chat;
 using SonoBooking.Application.Services.BusinessNotification.Notification;
 using SonoBooking.Api.Hubs;
@@ -511,6 +512,8 @@ namespace SonoBooking.Api.Extensions
             services.AddTransient<ReservationNoShowJob>();
             services.AddTransient<ReservationCheckoutJob>();
             services.AddTransient<ReservationUnitAvailabilityGapJob>();
+            services.AddSingleton<IUnitAdministrativeStatusJobScheduler, UnitAdministrativeStatusJobScheduler>();
+            services.AddTransient<UnitAdministrativeStatusJob>();
         }
     }
 }

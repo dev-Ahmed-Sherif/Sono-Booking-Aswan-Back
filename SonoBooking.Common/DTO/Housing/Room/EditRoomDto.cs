@@ -14,6 +14,9 @@ namespace SonoBooking.Common.DTO.Housing.Room
         public string Description { get; set; }
         public decimal Price { get; set; }
         public UnitStatus Status { get; set; }
+        public bool AdministrativeStatus { get; set; }
+        public DateOnly? StartAdministrativeDate { get; set; }
+        public DateOnly? EndAdministrativeDate { get; set; }
         public string ApartmentId { get; set; }
         public string RoomTypeId { get; set; }
         public DateTime CreatedAt { get; set; }

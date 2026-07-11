@@ -29,6 +29,15 @@ public class Apartment : BaseAudit<string>
     [Required]
     public required UnitStatus Status { get; set; } = UnitStatus.Available;
 
+    public bool AdministrativeStatus { get; set; }
+
+    public DateOnly? StartAdministrativeDate { get; set; }
+
+    public DateOnly? EndAdministrativeDate { get; set; }
+
+    [MaxLength(50)]
+    public string? AdministrativeStatusJobId { get; set; }
+
     [Required]
     public required Gender Gender { get; set; }
 

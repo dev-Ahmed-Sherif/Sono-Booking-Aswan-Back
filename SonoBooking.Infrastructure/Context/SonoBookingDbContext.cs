@@ -191,6 +191,16 @@ public partial class SonoBookingDbContext(
                 .HasConversion<string>()
                 .HasMaxLength(20)
                 .HasDefaultValue(UnitStatus.Available);
+            entity.Property(e => e.AdministrativeStatus)
+                .IsRequired()
+                .HasDefaultValue(false);
+            entity.Property(e => e.StartAdministrativeDate)
+                .IsRequired(false);
+            entity.Property(e => e.EndAdministrativeDate)
+                .IsRequired(false);
+            entity.Property(e => e.AdministrativeStatusJobId)
+                .IsRequired(false)
+                .HasMaxLength(50);
             entity.Property(e => e.Street)
                 .IsRequired()
                 .HasMaxLength(50);
@@ -265,6 +275,16 @@ public partial class SonoBookingDbContext(
                 .HasConversion<string>()
                 .HasMaxLength(20)
                 .HasDefaultValue(UnitStatus.Available);
+            entity.Property(e => e.AdministrativeStatus)
+                .IsRequired()
+                .HasDefaultValue(false);
+            entity.Property(e => e.StartAdministrativeDate)
+                .IsRequired(false);
+            entity.Property(e => e.EndAdministrativeDate)
+                .IsRequired(false);
+            entity.Property(e => e.AdministrativeStatusJobId)
+                .IsRequired(false)
+                .HasMaxLength(50);
 
             entity.HasOne(d => d.Room).WithMany(p => p.Beds)
                 .HasForeignKey(d => d.RoomId)
@@ -742,6 +762,16 @@ public partial class SonoBookingDbContext(
                 .HasConversion<string>()
                 .HasMaxLength(20)
                 .HasDefaultValue(UnitStatus.Available);
+            entity.Property(e => e.AdministrativeStatus)
+                .IsRequired()
+                .HasDefaultValue(false);
+            entity.Property(e => e.StartAdministrativeDate)
+                .IsRequired(false);
+            entity.Property(e => e.EndAdministrativeDate)
+                .IsRequired(false);
+            entity.Property(e => e.AdministrativeStatusJobId)
+                .IsRequired(false)
+                .HasMaxLength(50);
 
             entity.HasOne(d => d.Apartment).WithMany(p => p.Rooms)
                 .HasForeignKey(d => d.ApartmentId)
