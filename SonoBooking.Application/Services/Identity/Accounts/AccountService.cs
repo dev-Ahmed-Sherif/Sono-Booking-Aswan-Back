@@ -603,7 +603,7 @@ namespace SonoBooking.Application.Services.Identity.Accounts
 
             for (int i = 0; i < userRole.Count; i++)
             {
-                Entities.Identity.Role roleName = await roleManager.FindByNameAsync(userRole[i]);
+                Role roleName = await roleManager.FindByNameAsync(userRole[i]);
                 perRoleClaim = await roleManager.GetClaimsAsync(roleName!);
             }
 
@@ -725,7 +725,7 @@ namespace SonoBooking.Application.Services.Identity.Accounts
             (
                 issuer: configuration.GetValue<string>("Jwt:Issuer"),
                 claims: claims,
-                expires: DateTime.UtcNow.AddDays(AuthConstants.AccessTokenLifeInHours),
+                expires: DateTime.UtcNow.AddDays(AuthConstants.AccessTokenLife),
                 signingCredentials: creds
             );
 
