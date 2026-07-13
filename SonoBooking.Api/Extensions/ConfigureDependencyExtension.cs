@@ -216,7 +216,9 @@ namespace SonoBooking.Api.Extensions
                             }
 
                             return uri.Host.EndsWith(".sono.net", StringComparison.OrdinalIgnoreCase)
-                                || uri.Host.Equals("sonobooking.runasp.net", StringComparison.OrdinalIgnoreCase);
+                                || uri.Host.Equals("sonobooking.runasp.net", StringComparison.OrdinalIgnoreCase)
+                                || uri.Host.EndsWith(".aswan.gov.eg", StringComparison.OrdinalIgnoreCase)
+                                || uri.Host.Contains(".aswan.gov.eg", StringComparison.OrdinalIgnoreCase);
                         })
                         .AllowCredentials();
                 });
