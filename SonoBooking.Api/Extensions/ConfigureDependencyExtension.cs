@@ -210,7 +210,8 @@ namespace SonoBooking.Api.Extensions
                             }
 
                             if (uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase)
-                                || uri.Host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase))
+                                || uri.Host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase)
+                                || uri.Host.StartsWith("192.168.", StringComparison.OrdinalIgnoreCase))
                             {
                                 return true;
                             }
