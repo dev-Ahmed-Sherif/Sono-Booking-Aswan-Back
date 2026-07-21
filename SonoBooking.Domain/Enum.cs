@@ -72,7 +72,7 @@ namespace SonoBooking.Domain
         Canceled = 3,
         [Values("NoShow", "لم يظهر", "NOSHOW")]
         NoShow = 4,
-        [Values("Checkout", "مقبول", "CHECKOUT")]
+        [Values("Checkout", "تاكيد مغادرة", "CHECKOUT")]
         Checkout = 5
     }
 

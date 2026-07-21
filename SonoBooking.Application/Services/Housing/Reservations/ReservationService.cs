@@ -98,14 +98,7 @@ namespace SonoBooking.Application.Services.Housing.Reservations
                 cancellationToken: cancellationToken);
 
             List<ReservationReportDto> reportData = Mapper.Map<List<ReservationReportDto>>(query);
-            string startDateReport = filter.StartDate.ToString("dd/MM/yyyy");
-            string endDateReport = filter.EndDate.ToString("dd/MM/yyyy");
-
-            foreach (ReservationReportDto row in reportData)
-            {
-                row.StartDateReport = startDateReport;
-                row.EndDateReport = endDateReport;
-            }
+            ApplyReservationReportMetadata(reportData, filter);
 
             return ResponseResult.PostResult(
                 reportData,
@@ -132,10 +125,21 @@ namespace SonoBooking.Application.Services.Housing.Reservations
             {
                 reportResult = await GetAllReportAsync(filter, cancellationToken);
                 List<ReservationReportDto> reportData = (reportResult.Data as IEnumerable<ReservationReportDto>)?.ToList()
-                    ?? throw new InvalidOperationException("No data found for the report.");
+                    ?? [];
+
+                string startDateReport = filter.StartDate.ToString("dd/MM/yyyy");
+                string endDateReport = filter.EndDate.ToString("dd/MM/yyyy");
+                string reportUser = _user.Name ?? string.Empty;
+
+                report.SetParameters(
+                [
+                    new ReportParameter("StartDateReport", startDateReport),
+                    new ReportParameter("EndDateReport", endDateReport),
+                    new ReportParameter("ReportUser", reportUser)
+                ]);
 
                 foreach (ReservationReportDto row in reportData)
-                    row.User = _user.Name;
+                    row.User = reportUser;
 
                 report.DataSources.Add(new ReportDataSource() { Name = "ReservationDetailsReport", Value = reportData });
             }
@@ -303,6 +307,20 @@ namespace SonoBooking.Application.Services.Housing.Reservations
             {
                 return ResponseResult.PostResult(result: false, status: HttpStatusCode.BadRequest, exception: e,
                     message: MessagesConstants.DeleteError);
+            }
+        }
+
+        private static void ApplyReservationReportMetadata(
+            List<ReservationReportDto> reportData,
+            FilterReservationReportDto filter)
+        {
+            string startDateReport = filter.StartDate.ToString("dd/MM/yyyy");
+            string endDateReport = filter.EndDate.ToString("dd/MM/yyyy");
+
+            foreach (ReservationReportDto row in reportData)
+            {
+                row.StartDateReport = startDateReport;
+                row.EndDateReport = endDateReport;
             }
         }
 

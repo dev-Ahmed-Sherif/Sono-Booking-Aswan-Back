@@ -629,7 +629,7 @@
             <Paragraph>
               <TextRuns>
                 <TextRun>
-                  <Value>="من " &amp; First(Fields!StartDateReport.Value, "ReservationDetailsReport") &amp; " إلى " &amp; First(Fields!EndDateReport.Value, "ReservationDetailsReport")</Value>
+                  <Value>="من " &amp; Parameters!StartDateReport.Value &amp; " إلى " &amp; Parameters!EndDateReport.Value</Value>
                   <Style>
                     <FontSize>11pt</FontSize>
                     <FontWeight>Bold</FontWeight>
@@ -794,7 +794,7 @@
             <Paragraph>
               <TextRuns>
                 <TextRun>
-                  <Value>=First(Fields!User.Value, "ReservationDetailsReport")</Value>
+                  <Value>=Parameters!ReportUser.Value</Value>
                   <Style>
                     <FontWeight>Bold</FontWeight>
                   </Style>
@@ -999,6 +999,29 @@
       </Fields>
     </DataSet>
   </DataSets>
+  <ReportParameters>
+    <ReportParameter Name="StartDateReport">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>Start Date</Prompt>
+      <Hidden>true</Hidden>
+    </ReportParameter>
+    <ReportParameter Name="EndDateReport">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>End Date</Prompt>
+      <Hidden>true</Hidden>
+    </ReportParameter>
+    <ReportParameter Name="ReportUser">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>User</Prompt>
+      <Hidden>true</Hidden>
+    </ReportParameter>
+  </ReportParameters>
   <EmbeddedImages>
     <EmbeddedImage Name="sonoLogo">
       <MIMEType>image/png</MIMEType>
