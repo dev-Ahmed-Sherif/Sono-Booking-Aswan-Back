@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Reporting.NETCore;
 using SonoBooking.Application.Services.Base;
 using SonoBooking.Application.Services.Email;
+using SonoBooking.Application.Services.WhatsApp;
 using SonoBooking.Application.Services.Housing.Notifications;
 using SonoBooking.Application.Services.LookUp.Attachments;
 using SonoBooking.Common.Constants;
@@ -41,6 +42,7 @@ namespace SonoBooking.Application.Services.Housing.Requests
         IServiceBaseParameter<Request> businessBaseParameter,
         IAttachmentService attachmentService,
         IEmailService emailService,
+        IWhatsAppService whatsAppService,
         HousingNotificationService housingNotificationService) : BaseService<Request, AddRequestDto, EditRequestDto, RequestDto, string, string>(businessBaseParameter), IRequestService
     {
         public override async Task<IFinalResult> GetByIdAsync(object id, CancellationToken cancellationToken = default)
@@ -1282,7 +1284,7 @@ namespace SonoBooking.Application.Services.Housing.Requests
                 disableTracking: true,
                 cancellationToken: cancellationToken);
 
-            if (owner == null || string.IsNullOrWhiteSpace(owner.Email))
+            if (owner == null)
                 return;
 
             try
@@ -1292,22 +1294,42 @@ namespace SonoBooking.Application.Services.Housing.Requests
                     ? "قبول طلب الحجز - نظام حجز الإسكان"
                     : "رفض طلب الحجز - نظام حجز الإسكان";
                 string statusText = isApproved ? "مقبول" : "مرفوض";
-                string rejectionSection = !isApproved
-                    ? $"<p><strong>سبب الرفض:</strong> {WebUtility.HtmlEncode(
-                        string.IsNullOrWhiteSpace(request.RejectionReason) ? "لم يتم تحديد سبب" : request.RejectionReason)}</p>"
+                string rejectionLine = !isApproved
+                    ? $"سبب الرفض: {(string.IsNullOrWhiteSpace(request.RejectionReason) ? "لم يتم تحديد سبب" : request.RejectionReason)}"
                     : string.Empty;
 
-                string body = $"""
-                    <div dir="rtl" style="font-family: Arial, sans-serif;">
-                    <h2>مرحباً {WebUtility.HtmlEncode(owner.FullName)}</h2>
-                    <p>طلب الحجز رقم <strong>{WebUtility.HtmlEncode(request.RequestNumber)}</strong> أصبح الآن <strong>{statusText}</strong>.</p>
-                    <p><strong>تاريخ الوصول:</strong> {request.StartDate:dd/MM/yyyy}</p>
-                    <p><strong>تاريخ المغادرة:</strong> {request.EndDate:dd/MM/yyyy}</p>
-                    {rejectionSection}
-                    </div>
+                string whatsAppMessage = $"""
+                    مرحباً {owner.FullName}
+                    طلب الحجز رقم {request.RequestNumber} أصبح الآن {statusText}.
+                    تاريخ الوصول: {request.StartDate:dd/MM/yyyy}
+                    تاريخ المغادرة: {request.EndDate:dd/MM/yyyy}
+                    {rejectionLine}
                     """;
 
-                await emailService.SendEmailAsync(owner.Email, subject, body);
+                if (!string.IsNullOrWhiteSpace(owner.Email))
+                {
+                    string rejectionSection = !isApproved
+                        ? $"<p><strong>سبب الرفض:</strong> {WebUtility.HtmlEncode(
+                            string.IsNullOrWhiteSpace(request.RejectionReason) ? "لم يتم تحديد سبب" : request.RejectionReason)}</p>"
+                        : string.Empty;
+
+                    string body = $"""
+                        <div dir="rtl" style="font-family: Arial, sans-serif;">
+                        <h2>مرحباً {WebUtility.HtmlEncode(owner.FullName)}</h2>
+                        <p>طلب الحجز رقم <strong>{WebUtility.HtmlEncode(request.RequestNumber)}</strong> أصبح الآن <strong>{statusText}</strong>.</p>
+                        <p><strong>تاريخ الوصول:</strong> {request.StartDate:dd/MM/yyyy}</p>
+                        <p><strong>تاريخ المغادرة:</strong> {request.EndDate:dd/MM/yyyy}</p>
+                        {rejectionSection}
+                        </div>
+                        """;
+
+                    await emailService.SendEmailAsync(owner.Email, subject, body);
+                }
+
+                if (!string.IsNullOrWhiteSpace(owner.PhoneNumber))
+                {
+                    await whatsAppService.SendMessageAsync(owner.PhoneNumber, whatsAppMessage);
+                }
             }
             catch
             {

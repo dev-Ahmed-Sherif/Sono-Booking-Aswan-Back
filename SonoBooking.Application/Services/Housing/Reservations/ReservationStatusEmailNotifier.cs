@@ -2,6 +2,8 @@ using SonoBooking.Application.Services.BusinessNotification.Notification;
 
 using SonoBooking.Application.Services.Email;
 
+using SonoBooking.Application.Services.WhatsApp;
+
 using SonoBooking.Application.Services.Housing.Notifications;
 
 using SonoBooking.Common.Infrastructure.UnitOfWork;
@@ -31,6 +33,8 @@ namespace SonoBooking.Application.Services.Housing.Reservations
         IUnitOfWork<Reservation> unitOfWork,
 
         IEmailService emailService,
+
+        IWhatsAppService whatsAppService,
 
         HousingNotificationService housingNotificationService)
 
@@ -104,7 +108,7 @@ namespace SonoBooking.Application.Services.Housing.Reservations
 
 
 
-            if (owner == null || string.IsNullOrWhiteSpace(owner.Email))
+            if (owner == null)
 
                 return;
 
@@ -122,27 +126,57 @@ namespace SonoBooking.Application.Services.Housing.Reservations
 
                 string subject = BuildSubject(previousStatus, reservation.Status);
 
-                string body = $"""
+                string whatsAppMessage = $"""
 
-                    <div dir="rtl" style="font-family: Arial, sans-serif;">
+                    مرحباً {owner.FullName}
 
-                    <h2>مرحباً {WebUtility.HtmlEncode(owner.FullName)}</h2>
+                    {statusMessage}
 
-                    <p>تم تحديث حالة الحجز لطلب رقم <strong>{WebUtility.HtmlEncode(request.RequestNumber)}</strong>.</p>
+                    تاريخ الوصول: {reservation.StartDate:dd/MM/yyyy}
 
-                    <p><strong>{WebUtility.HtmlEncode(statusMessage)}</strong></p>
-
-                    <p><strong>تاريخ الوصول:</strong> {reservation.StartDate:dd/MM/yyyy}</p>
-
-                    <p><strong>تاريخ المغادرة:</strong> {reservation.EndDate:dd/MM/yyyy}</p>
-
-                    </div>
+                    تاريخ المغادرة: {reservation.EndDate:dd/MM/yyyy}
 
                     """;
 
 
 
-                await emailService.SendEmailAsync(owner.Email, subject, body);
+                if (!string.IsNullOrWhiteSpace(owner.Email))
+
+                {
+
+                    string body = $"""
+
+                        <div dir="rtl" style="font-family: Arial, sans-serif;">
+
+                        <h2>مرحباً {WebUtility.HtmlEncode(owner.FullName)}</h2>
+
+                        <p>تم تحديث حالة الحجز لطلب رقم <strong>{WebUtility.HtmlEncode(request.RequestNumber)}</strong>.</p>
+
+                        <p><strong>{WebUtility.HtmlEncode(statusMessage)}</strong></p>
+
+                        <p><strong>تاريخ الوصول:</strong> {reservation.StartDate:dd/MM/yyyy}</p>
+
+                        <p><strong>تاريخ المغادرة:</strong> {reservation.EndDate:dd/MM/yyyy}</p>
+
+                        </div>
+
+                        """;
+
+
+
+                    await emailService.SendEmailAsync(owner.Email, subject, body);
+
+                }
+
+
+
+                if (!string.IsNullOrWhiteSpace(owner.PhoneNumber))
+
+                {
+
+                    await whatsAppService.SendMessageAsync(owner.PhoneNumber, whatsAppMessage);
+
+                }
 
             }
 

@@ -22,7 +22,9 @@ using SonoBooking.Common.Helpers.JsonHelper;
 using SonoBooking.Common.Constants.Auth;
 using SonoBooking.Common.DTO.Identity.User;
 using SonoBooking.Common.DTO.Email;
+using SonoBooking.Common.DTO.WhatsApp;
 using SonoBooking.Application.Services.Email;
+using SonoBooking.Application.Services.WhatsApp;
 using SonoBooking.Application.Services.Housing.Reservations;
 using SonoBooking.Application.Services.Housing.Notifications;
 using SonoBooking.Common.Helpers.HttpClient.RestSharp;
@@ -228,6 +230,10 @@ namespace SonoBooking.Api.Extensions
             // Register Email Service
             services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
             services.AddScoped<IEmailService, EmailService>();
+
+            // Register WhatsApp Service
+            services.Configure<WhatsAppSettings>(configuration.GetSection("WhatsAppSettings"));
+            services.AddHttpClient<IWhatsAppService, WhatsAppService>();
 
             return services;
         }

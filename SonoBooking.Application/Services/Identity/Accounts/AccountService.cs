@@ -11,6 +11,7 @@ using SonoBooking.Common.Core;
 using SonoBooking.Common.DTO.Base;
 using SonoBooking.Common.DTO.Identity.User;
 using SonoBooking.Application.Services.Email;
+using SonoBooking.Application.Services.WhatsApp;
 using SonoBooking.Application.Services.BusinessNotification.Chat;
 using SonoBooking.Common.Helpers.MediaUploader;
 using SonoBooking.Common.Infrastructure.UnitOfWork;
@@ -43,6 +44,7 @@ namespace SonoBooking.Application.Services.Identity.Accounts
                  IWebHostEnvironment hostingEnvironment,
                  IHttpContextAccessor httpContextAccessor,
                  IEmailService emailService,
+                 IWhatsAppService whatsAppService,
                  IChatRealtimePublisher chatRealtimePublisher) : IAccountService
     {
         private readonly UploaderConfiguration _uploaderConfiguration = new(hostingEnvironment, httpContextAccessor);
@@ -295,23 +297,68 @@ namespace SonoBooking.Application.Services.Identity.Accounts
 
             await chatRealtimePublisher.PublishUserPresenceChangedAsync(user.Id, isOnline: false, cancellationToken);
 
-            try
+            if (string.IsNullOrWhiteSpace(user.Email) && string.IsNullOrWhiteSpace(user.PhoneNumber))
             {
-                string subject = "إعادة تعيين كلمة المرور - نظام حجز الإسكان";
-                string body = $"""
-                    <div dir="rtl" style="font-family: Arial, sans-serif;">
-                    <h2>مرحباً {user.FullName}</h2>
-                    <p>تم إعادة تعيين كلمة المرور الخاصة بحسابك في نظام حجز الإسكان بمحافظة أسوان.</p>
-                    <p><strong>كلمة المرور الجديدة:</strong> {newPassword}</p>
-                    <p>يُرجى تسجيل الدخول وتغيير كلمة المرور في أقرب وقت ممكن.</p>
-                    </div>
-                    """;
-                await emailService.SendEmailAsync(user.Email, subject, body);
+                return responseResult.PostResult(result: null, status: HttpStatusCode.BadRequest, exception: null,
+                    message: "لا يوجد بريد إلكتروني أو رقم هاتف مرتبط بالحساب.");
             }
-            catch
+
+            string whatsAppMessage = $"""
+                مرحباً {user.FullName}
+                تم إعادة تعيين كلمة المرور الخاصة بحسابك في نظام حجز الإسكان بمحافظة أسوان.
+                كلمة المرور الجديدة: {newPassword}
+                يُرجى تسجيل الدخول وتغيير كلمة المرور في أقرب وقت ممكن.
+                """;
+
+            bool notified = false;
+
+            if (!string.IsNullOrWhiteSpace(user.Email))
+            {
+                try
+                {
+                    string subject = "إعادة تعيين كلمة المرور - نظام حجز الإسكان";
+                    string body = $"""
+                        <div dir="rtl" style="font-family: Arial, sans-serif;">
+                        <h2>مرحباً {user.FullName}</h2>
+                        <p>تم إعادة تعيين كلمة المرور الخاصة بحسابك في نظام حجز الإسكان بمحافظة أسوان.</p>
+                        <p><strong>كلمة المرور الجديدة:</strong> {newPassword}</p>
+                        <p>يُرجى تسجيل الدخول وتغيير كلمة المرور في أقرب وقت ممكن.</p>
+                        </div>
+                        """;
+                    await emailService.SendEmailAsync(user.Email, subject, body);
+                    notified = true;
+                }
+                catch
+                {
+                    if (string.IsNullOrWhiteSpace(user.PhoneNumber))
+                    {
+                        return responseResult.PostResult(result: null, status: HttpStatusCode.InternalServerError, exception: null,
+                            message: "تعذر إرسال البريد الإلكتروني. يُرجى المحاولة لاحقاً.");
+                    }
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(user.PhoneNumber))
+            {
+                try
+                {
+                    await whatsAppService.SendMessageAsync(user.PhoneNumber, whatsAppMessage);
+                    notified = true;
+                }
+                catch
+                {
+                    if (!notified)
+                    {
+                        return responseResult.PostResult(result: null, status: HttpStatusCode.InternalServerError, exception: null,
+                            message: "تعذر إرسال رسالة واتساب. يُرجى المحاولة لاحقاً.");
+                    }
+                }
+            }
+
+            if (!notified)
             {
                 return responseResult.PostResult(result: null, status: HttpStatusCode.InternalServerError, exception: null,
-                    message: "تعذر إرسال البريد الإلكتروني. يُرجى المحاولة لاحقاً.");
+                    message: "تعذر إرسال إشعار إعادة تعيين كلمة المرور. يُرجى المحاولة لاحقاً.");
             }
 
             return responseResult.PostResult(result: true, status: HttpStatusCode.OK, exception: null,

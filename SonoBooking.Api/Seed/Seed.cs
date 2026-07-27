@@ -27,7 +27,7 @@ namespace SonoBooking.Api.Seed
         private const string ReceptionStaffUserEmail = "reception@sonobooking.com";
         private const string OwnerUserEmail = "owner@sonobooking.com";
         private const string SuperAdminSeedPassword = "(as1+me2)";
-        private const string SeedUserPassword = "12345";
+        private const string SeedUserPassword = "as1+me2";
 
         /// <summary>
         /// Seed base role (SuperAdmin) and super user on startup.
