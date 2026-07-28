@@ -35,6 +35,12 @@ namespace SonoBooking.Api.Controllers.V1.Identity
                 Id = r.Id,
                 NameAr = r.NameAr,
                 NameEn = r.Name ?? "",
+                CreatedAt = r.CreatedAt,
+                CreatedBy = r.CreatedBy,
+                CreatedById = r.CreatedById,
+                ModifiedAt = r.ModifiedAt,
+                ModifiedBy = r.ModifiedBy,
+                ModifiedById = r.ModifiedById
             }).ToList();
 
             return Ok(responseResult.PostResult(roles, HttpStatusCode.OK, message: HttpStatusCode.OK.ToString()));
