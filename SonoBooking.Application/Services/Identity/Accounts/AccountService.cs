@@ -442,7 +442,8 @@ namespace SonoBooking.Application.Services.Identity.Accounts
             user.JobTitle = updateUser.JobTitle.Trim();
             user.Organization = updateUser.Organization.Trim();
 
-            user.ModifiedById = auditUser.Name != "" ? auditUser.Name : user.FullName;
+            user.ModifiedBy = auditUser.Name != "" ? auditUser.Name : user.FullName;
+            user.ModifiedById = auditUser.Id != "" ? auditUser.Id : user.Id;
             user.ModifiedAt = DateTime.UtcNow;
 
             if (updateUser.NewPassword != "" && updateUser.NewPassword is not null)
